@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "patchtst-koopman"
+version = "0.1.0"
+description = "PatchTST-Koopman: noise-robust nonlinear system modeling and control"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Research-internal"}
+authors = [
+    {name = "Paper 4 Author"},
+]
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.65.0",
+    "scikit-learn>=1.2.0",
+]
+
+[project.optional-dependencies]
+deploy = ["control", "PyQt6"]
+
+[project.scripts]
+inspect-npz = "patchtst_koopman.utils.npz_inspector:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

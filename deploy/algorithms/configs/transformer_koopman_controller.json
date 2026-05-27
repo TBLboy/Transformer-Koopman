@@ -1,0 +1,11 @@
+{
+    "Q_x1": 800.0,
+    "Q_x2": 700.0,
+    "alpha": 0.0,
+    "R_control": 1.0,
+    "ff_gain": 1.0,
+    "u_limit": 100.0,
+    "device": "cuda",
+    "output_sign_x": -1.0,
+    "output_sign_y": 1.0
+}

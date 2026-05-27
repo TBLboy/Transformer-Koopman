@@ -1,0 +1,804 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsthm}
+\usepackage{hyperref}
+
+\newtheorem{assumption}{Assumption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\interdisplaylinepenalty=2500
+\emergencystretch=2em
+\hyphenation{Koop-man trajec-tory trajec-tories auto-regressive regu-lar-ization data-set data-sets non-over-lapping pre-train-ing Trans-former state-em-bedded delay-em-bed-ding}
+
+% ------------------------------------------------------------------
+% Notation macros  (IEEE: bold lowercase = vector, bold uppercase = matrix)
+% ------------------------------------------------------------------
+% Vectors
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vu}{\mathbf{u}}
+\newcommand{\vz}{\mathbf{z}}
+\newcommand{\vh}{\mathbf{h}}
+\newcommand{\vw}{\mathbf{w}}
+\newcommand{\vr}{\mathbf{r}}
+\newcommand{\vs}{\mathbf{s}}
+\newcommand{\vb}{\mathbf{b}}
+\newcommand{\vphi}{\boldsymbol{\phi}}
+\newcommand{\vq}{\mathbf{q}}
+\newcommand{\ve}{\mathbf{e}}
+% Matrices
+\newcommand{\mA}{\mathbf{A}}
+\newcommand{\mB}{\mathbf{B}}
+\newcommand{\mC}{\mathbf{C}}
+\newcommand{\mQ}{\mathbf{Q}}
+\newcommand{\mR}{\mathbf{R}}
+\newcommand{\mP}{\mathbf{P}}
+\newcommand{\mK}{\mathbf{K}}
+\newcommand{\mW}{\mathbf{W}}
+\newcommand{\mX}{\mathbf{X}}
+\newcommand{\mH}{\mathbf{H}}
+\newcommand{\mZ}{\mathbf{Z}}
+\newcommand{\mU}{\mathbf{U}}
+\newcommand{\mI}{\mathbf{I}}
+% Bold Greek matrices/vectors
+\newcommand{\mTheta}{\boldsymbol{\Theta}}
+\newcommand{\mOmega}{\boldsymbol{\Omega}}
+\newcommand{\mPhi}{\boldsymbol{\Phi}}
+% Attention-specific Q/K/V (to avoid clash with LQR cost matrix Q)
+\newcommand{\mQa}{\mathbf{Q}_{\mathrm{a}}}
+\newcommand{\mKa}{\mathbf{K}_{\mathrm{a}}}
+\newcommand{\mVa}{\mathbf{V}_{\mathrm{a}}}
+% ------------------------------------------------------------------
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Transformer-Koopman: Finite-History Lifting for Controlled Nonlinear Systems}
+
+\author{Bolin Tao}
+
+\markboth{IEEE Journal Draft}{Tao: Transformer-Koopman}
+
+\maketitle
+
+\begin{abstract}
+Koopman modeling provides a promising framework for controlled nonlinear systems by lifting the dynamics into a space in which they can be approximated as linear, thereby enabling linear prediction and control design. However, its performance depends critically on the choice of the \textcolor{blue}{lifting map}. Existing approaches, including Extended Dynamic Mode Decomposition (EDMD) and the learned lifting methods, typically construct observable functions from instantaneous states and therefore neglect short-term temporal correlations that are important for obtaining accurate linear Koopman dynamics.
+To address this limitation, we propose Transformer-Koopman, a temporal lifting framework consisting of two main components: the first is a Transformer encoder that encodes a finite history window using non-overlapping multivariate temporal patches to form a structured lifted representation, and the second is a hybrid procedure that identifies the Koopman dynamics through a combination of gradient-based joint optimization and a closed-form EDMD refit.
+Based on the identified Koopman dynamics model, we further develop a \textcolor{blue}{hierarchical} LQR controller and establish an ultimate-boundedness (UUB) guarantee for the \textcolor{blue}{closed-loop} tracking error. \textcolor{blue}{Experiments on a 6-state manipulator system and a 2-state soft robotic system demonstrate substantially improved rollout accuracy over EDMD and MLP-Koopman baselines, while ablation studies confirm the roles of temporal history, patch design, and regularization.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+\textcolor{blue}{Koopman operator, controlled nonlinear systems, temporal lifting, Transformer, data-driven modeling, trajectory prediction}
+\end{IEEEkeywords}
+
+% =========================================================
+\section{Introduction}
+\label{sec:introduction}
+% =========================================================
+
+Learning predictive models for nonlinear controlled systems is a central problem in system identification and model-based control \cite{ljung1999system, vanoverschee1994n4sid, nelles2020nonlinear}. In controller design, model quality is determined by two key factors: prediction accuracy and compatibility with control synthesis. Therefore, obtaining models that not only achieve high prediction accuracy but also provide structured representations suitable for control design is of primary interest.
+
+The Koopman framework offers a solution to this problem by representing nonlinear dynamics as a linear evolution in a lifted space of observable functions \cite{koopman1931hamiltonian, brunton2022modern}. This linear structure enables the application of standard linear prediction and controller design tools \cite{otto2021koopman, korda2018linear}, making Koopman modeling an attractive paradigm for control design. However, the effectiveness of Koopman models depends critically on the choice of lifting map.
+
+Most existing approaches, including EDMD \cite{williams2015data} and learned lifting methods \cite{lusch2018deep, takeishi2017koopman}, construct observable functions from instantaneous states. While convenient, this approach neglects the short-term temporal correlations in the state trajectories. As a result, the Koopman dynamics model learned from instantaneous states can only capture averaged temporal behavior, lacking the context needed to differentiate how the system evolves from different past trajectories. Consequently, prediction errors accumulate progressively during multi-step autoregressive rollout.
+
+To address this limitation, we propose the Transformer-Koopman framework, a temporal lifting framework consisting of two components. The first component is a lifting map, implemented as a temporal encoder: it takes a finite history window as input, processes it through a Transformer encoder with non-overlapping multivariate temporal patches to capture inter-step dependencies, and combines the resulting history features with the current physical state to form a structured lifted state. The original physical state can be recovered through a simple linear projection. This encoder explicitly encodes short-term temporal context from past trajectories. The second component identifies the Koopman dynamics from the lifted state via a hybrid procedure with two stages: gradient-based joint optimization of the encoder and the linear operator, followed by a closed-form EDMD refit.
+
+Building on the Koopman dynamics model, we further develop a hierarchical LQR controller that exploits  the block structure of the lifted state, and we establish an UUB guarantee for the closed-loop tracking error. 
+
+The contributions of this paper are summarized as follows:
+\begin{enumerate}
+\item A temporal lifting framework that constructs Koopman lifting map from finite history windows using patch-based Transformer encoding, thereby explicitly capturing short-term temporal correlations;
+\item A hybrid identification procedure combining joint gradient-based optimization with closed-form EDMD refinement, validated through trajectory prediction and ablation studies on two physical systems;
+\item A hierarchical LQR controller that leverages the structured lifted state, along with an UUB guarantee that bounds the tracking error in terms of the modeling residual.
+\end{enumerate}
+
+The remainder of the paper is organized as follows. Section~\ref{sec:related_work} reviews related work. Section~\ref{sec:preliminaries_and_problem} introduces the preliminaries and formulates the problem. Section~\ref{sec:methodology} presents the proposed Transformer-Koopman framework. Section~\ref{sec:control} develops the controller and establishes stability guarantees. Section~\ref{sec:experiments} reports experimental results. Section~\ref{sec:conclusion} concludes the paper.
+
+
+% =========================================================
+\section{Related Work}
+\label{sec:related_work}
+% =========================================================
+
+In this section, we briefly review prior work relevant to Koopman modeling and temporal sequence learning, and  discuss how the proposed method relates to existing approaches.
+
+\subsection{Koopman Modeling: Theory, Learning, and Control}
+
+Koopman operator theory represents nonlinear dynamics as a linear evolution on the observable functions of the state \cite{koopman1931hamiltonian, koopman1932spectra, mezic2005spectral}, which enables the direct application of standard linear control synthesis methods to nonlinear systems. Building upon this, early extensions such as Dynamic Mode Decomposition with control (DMDc) \cite{proctor2016dmdc}, input-aware Koopman formulations \cite{proctor2018generalizing, brunton2016invariant}, and Koopman-based Model Predictive Control (MPC) \cite{korda2018linear} have established a strong foundation for applying Koopman theory in control. More recent work has further advanced this area by incorporating learned representations and providing performance guarantees \cite{han2020deep, shi2022deep, strasser2026overview, duran2025control}. However, a consistent observation across this literature is that the performance of these controllers is highly sensitive to the quality of the underlying models, which in turn calls for improved lifting design. 
+
+To learn accurate Koopman models from trajectory data, two primary approaches are commonly used: classical methods like EDMD and data-driven approaches. EDMD constructs the Koopman model by fitting observable functions from a pre-defined dictionary, such as polynomials or Fourier bases \cite{williams2015data, williams2015kernel, klus2018data}. Data-driven methods replace hand-crafted dictionaries with learned representations, enabling more flexible model fitting. Notable examples include invariant-subspace models \cite{takeishi2017koopman}, deep autoencoder-based methods \cite{lusch2018deep, yeung2019learning}, and variational formulations \cite{morton2019deep, yuan2022variational}. However, most existing methods construct observables from instantaneous states, neglecting short-term temporal correlations and limiting prediction accuracy over long horizons.
+
+
+\subsection{Transformers for Temporal Sequence Modeling}
+
+Transformers \cite{vaswani2017attention} provide a flexible and powerful framework for modeling temporal dependencies via self-attention mechanisms. Unlike traditional architectures, such as recurrent neural networks (RNNs), which process sequences step-by-step, Transformers model dependencies across all time steps simultaneously, allowing for more parallelization and better scalability. Recent efficient variants, such as Informer \cite{zhou2021informer}, Linformer \cite{wang2020linformer}, and Performer \cite{choromanski2021performer}, as well as decomposition-based models like Autoformer \cite{wu2021autoformer} and Fedformer \cite{zhou2022fedformer}, have significantly improved efficiency. Moreover, patch-based tokenization methods \cite{nie2023time} further enhance efficiency by aggregating local temporal structures before applying global attention.
+
+Self-attention captures pairwise dependencies across all time steps without the sequential compression inherent in RNNs. This makes it particularly effective for identifying complex temporal structures in dynamic systems. In the context of Koopman lifting, where the relevant temporal context is often not known a priori, Transformers can effectively incorporate short-term temporal information from past trajectories, which is essential for building accurate Koopman models.
+
+Recent works have also explored the use of Transformer encoders with Koopman-style latent dynamics for forecasting \cite{forootani2026deepkoopformer, forootani2026spectral}. These approaches integrate the power of sequence modeling with Koopman theory, though they often blur the lines between representation learning and linear dynamics. This overlap could undermine the separation between representation learning and the linear model identification phase, which is crucial for control design.
+
+\subsection{Positioning of the Present Work}
+\label{subsec:positioning}
+
+This paper presents a method that integrates temporal sequence modeling with Koopman lifting for control applications. Unlike traditional instantaneous-state lifting methods, our approach incorporates a finite history window, making short-term temporal correlations explicitly available to the lifting map. Furthermore, unlike Transformer-Koopman hybrids focused on forecasting, our method uses the Transformer solely for encoding the history, while all prediction is based on the identified Koopman dynamics model. This separation ensures that the linear structure required for control synthesis is preserved, distinguishing our method from previous hybrid approaches and reinforcing its suitability for control applications. 
+
+% =========================================================
+\section{Preliminaries and Problem Formulation}
+\label{sec:preliminaries_and_problem}
+% =========================================================
+
+In this section, we briefly review the Koopman framework for nonlinear systems and introduce the key idea of temporal lifting, which forms the core of our proposed method and will be detailed in Section~\ref{sec:methodology}. We also provide the necessary background on Transformer encoders and formulate the learning problem addressed in this work.
+
+% ---------------------------------------------------------
+\subsection{Koopman Modeling and Temporal Lifting}
+\label{sec:preliminary}
+% ---------------------------------------------------------
+
+Consider a discrete-time controlled nonlinear system
+\begin{equation}
+    \vx_{k+1} = F(\vx_k, \vu_k),
+    \label{eq:nonlinear_system}
+\end{equation}
+where $\vx_k \in \mathbb{R}^n$ is the system state, $\vu_k \in \mathbb{R}^m$ is the control input, and $F:\mathbb{R}^n \times \mathbb{R}^m \to \mathbb{R}^n$ is an unknown nonlinear transition map. We assume that full-state measurements and the corresponding control inputs are available from recorded trajectory data.
+
+The Koopman operator provides a linear representation of nonlinear dynamics by acting on scalar-valued observable functions of the system state rather than on the system state itself \cite{koopman1931hamiltonian, mezic2005spectral, rowley2009spectral, brunton2022modern}. An observable function $\varphi:\mathbb{R}^n\to\mathbb{R}$ is a measurable scalar-valued function of the system state. The Koopman operator $\mathcal{K}$ acts on such observable functions by composition with the system dynamics: for the system \eqref{eq:nonlinear_system}, the Koopman evolution of $\varphi$ is defined as
+\begin{equation}
+    (\mathcal{K}\varphi)(\vx_k) = \varphi(F(\vx_k,\vu_k)).
+    \label{eq:koopman_operator}
+\end{equation}
+Although $F$ is nonlinear, $\mathcal{K}$ is linear on the space of observable functions: for any observable functions $\varphi$, $\psi$ and scalars $\alpha$, $\beta$,
+\begin{equation}
+    \mathcal{K}(\alpha \varphi + \beta \psi)
+    = \alpha \mathcal{K}\varphi + \beta \mathcal{K}\psi.
+    \label{eq:koopman_linearity}
+\end{equation}
+This property enables nonlinear dynamics to be represented by a linear evolution in the \textcolor{blue}{lifted space}, which forms the basis for applying linear analysis and control techniques.
+
+Since the Koopman operator acts on an infinite-dimensional observable function space, practical computation requires a finite-dimensional approximation. EDMD addresses this by selecting a dictionary of $d$ observable functions $g_1(\vx),\ldots,g_d(\vx)$ and forming the \textcolor{blue}{lifted state:}
+\begin{equation}
+    \vz_k = g(\vx_k) = [g_1(\vx_k), \ldots, g_d(\vx_k)]^\top \in \mathbb{R}^d.
+    \label{eq:instantaneous_lifting}
+\end{equation}
+Note that the lifting map $g(\vx) = [g_1(\vx), \ldots, g_d(\vx)]^\top$ is the vector of observable functions selected by EDMD. In other words, a lifting map is formed by stacking multiple scalar observable functions. We use "observable function" to refer to individual scalar components and "lifting map" to refer to the overall transformation.
+
+The dynamics of the system are then approximated by a linear system $\vz_{k+1} \approx \mA \vz_k + \mB \vu_k$, where $\mA \in \mathbb{R}^{d \times d}$ and $\mB \in \mathbb{R}^{d \times m}$ are identified from data. Given a dataset of $M$ transitions $\{(\vx_k, \vu_k, \vx_{k+1})\}_{k=1}^M$, define $\mZ = [\vz_1, \ldots, \vz_M]$, $\mZ^+ = [\vz_2, \ldots, \vz_{M+1}]$, and $\mU = [\vu_1, \ldots, \vu_M]$. Then the combined matrix $\mTheta = [\mA \; \mB]$ is obtained via a least-squares solution to the regression problem as
+\begin{equation}
+    \mTheta = \mZ^+ \mOmega^\dagger, \qquad \mOmega = [\mZ \; \mU],
+    \label{eq:edmd_regression}
+\end{equation}
+where $(\cdot)^\dagger$ denotes the Moore--Penrose pseudoinverse. However, traditional approaches, such as instantaneous-state lifting, which construct observables from single-time-state snapshots, neglect short-term temporal correlations, thus limiting approximation accuracy.
+
+Temporal lifting addresses this limitation by incorporating a finite history of past states into the \textcolor{blue}{observable functions}. \textcolor{blue}{Given a history window of length $P$}, define the history window
+\begin{equation}
+    \mX_k = [\vx_{k-P+1}^\top, \ldots, \vx_k^\top]^\top \in \mathbb{R}^{P\times n},
+    \label{eq:history_window}
+\end{equation}
+and a temporal \textcolor{blue}{lifting map} $g_\theta$ that produces the lifted state.
+\begin{equation}
+    \vz_k = g_\theta(\mX_k) \in \mathbb{R}^d.
+    \label{eq:temporal_lifting}
+\end{equation}
+This representation incorporates both the current state and recent trajectory context. By encoding short-term temporal dependencies, the temporal lifting improves the accuracy of the learned Koopman dynamics model, allowing it to more effectively approximate the underlying nonlinear system.
+\begin{equation}
+    \vz_{k+1} = \mA \vz_k + \mB \vu_k + \vw_k,
+    \label{eq:lifted_dynamics_prelim}
+\end{equation}
+where $\vw_k$ denotes the approximation residual, which represents the error between the true system dynamics and the learned Koopman dynamics model. In this work, $g_\theta$ is implemented using a Transformer encoder, as detailed in Section~\ref{sec:temporal_lifting}.
+
+% ---------------------------------------------------------
+\subsection{Background on Transformer Encoders}
+\label{sec:transformer_background}
+% ---------------------------------------------------------
+
+The Transformer encoder \cite{vaswani2017attention} is a neural network architecture designed to process sequences of data by capturing relationships between elements at different positions. It uses multiple self-attention layers to build representations that incorporate information from all time steps, making it particularly effective for sequence modeling tasks.
+
+We describe the encoder in a generic form using token notation $\{\mathbf{v}^{(i)}\}_{i=1}^{N}$, where each token represents a vectorized input. In the context of the proposed framework, these tokens correspond to temporal patches extracted from the history window, as detailed in Section~\ref{sec:temporal_lifting}.
+
+Given a sequence of tokens $\mathbf{v}^{(i)} \in \mathbb{R}^{d_{\mathrm{in}}}$, each token is first mapped into the embedding space through a shared linear projection, 
+\begin{equation}
+    \vphi^{(i)} = \mW_{\mathrm{in}} \mathbf{v}^{(i)} + \vb_{\mathrm{in}} \in \mathbb{R}^{d_{\mathrm{model}}},
+    \label{eq:general_embed}
+\end{equation}
+where $\mW_{\mathrm{in}} \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{in}}}$ and $\vb_{\mathrm{in}} \in \mathbb{R}^{d_{\mathrm{model}}}$ are learnable parameters. Here, $d_{\mathrm{model}}$ represents the dimensionality of the token embedding space, a hyperparameter chosen during model design. In contrast, $d$ (defined in Section~\ref{sec:preliminaries_and_problem}) refers to the dimensionality of the lifted state in the Koopman framework, typically larger and associated with the number of observable functions. Stacking the embedded tokens yields the matrix
+\begin{equation}
+    \mPhi = [\vphi^{(1)}, \ldots, \vphi^{(N)}]^\top
+    \in \mathbb{R}^{N \times d_{\mathrm{model}}}.
+\end{equation}
+
+Since self-attention is permutation-invariant, positional information must be incorporated explicitly. To this end, a sinusoidal positional encoding $\vs^{(i)} \in \mathbb{R}^{d_{\mathrm{model}}}$ is added to each embedded token,
+\begin{equation}
+    \tilde{\vphi}^{(i)} = \vphi^{(i)} + \vs^{(i)},
+\end{equation}
+where
+\begin{equation}
+\begin{split}
+    s^{(i)}_{2j} &= \sin\!\left(\frac{i}{10000^{2j/d_{\mathrm{model}}}}\right), \\
+    s^{(i)}_{2j+1} &= \cos\!\left(\frac{i}{10000^{2j/d_{\mathrm{model}}}}\right),
+\end{split}
+\label{eq:pos_enc}
+\end{equation}
+for $j = 0,1,\ldots,d_{\mathrm{model}}/2-1$. The position-augmented token sequence is denoted by
+\begin{equation}
+    \widetilde{\mPhi}
+    =
+    [\tilde{\vphi}^{(1)}, \ldots, \tilde{\vphi}^{(N)}]^\top
+    \in \mathbb{R}^{N \times d_{\mathrm{model}}}.
+\end{equation}
+
+Within each encoder layer, multi-head self-attention (MHSA) models pairwise interactions among all tokens. Given $\widetilde{\mPhi}$, the query, key, and value matrices are computed through three learnable linear projections,
+\begin{equation}
+    \mQa = \widetilde{\mPhi}\mW_Q, \qquad
+    \mKa = \widetilde{\mPhi}\mW_K, \qquad
+    \mVa = \widetilde{\mPhi}\mW_V,
+    \label{eq:qkv}
+\end{equation}
+where $\mW_Q, \mW_K, \mW_V \in \mathbb{R}^{d_{\mathrm{model}} \times d_{\mathrm{model}}}$ are trainable projection matrices corresponding to the query, key, and value transformations. The scaled dot-product attention is then given by
+\begin{equation}
+    \mathrm{Attention}(\mQa,\mKa,\mVa)
+    =
+    \mathrm{softmax}\!\left(\frac{\mQa\mKa^\top}{\sqrt{d_{\mathrm{model}}}}\right)\mVa.
+    \label{eq:attention}
+\end{equation}
+
+To increase representational capacity, $n_h$ attention heads operate in parallel on independent projections, and their outputs are concatenated and linearly transformed:
+\begin{equation}
+    \mathrm{MHSA}(\widetilde{\mPhi})
+    =
+    \mathrm{concat}(\mathrm{head}_1,\ldots,\mathrm{head}_{n_h})\mW_O,
+    \label{eq:mhsa}
+\end{equation}
+where each head applies an attention operation with its own projection parameters. In addition to self-attention, each encoder layer includes a position-wise feedforward transformation together with standard residual and normalization operations.
+
+Stacking $L$ such layers yields a set of representations $\mH \in \mathbb{R}^{N \times d_{\mathrm{model}}}$, where each token now contains information from the entire input sequence. These representations serve as input to the lifting map described in Section~\ref{sec:temporal_lifting}.
+
+% ---------------------------------------------------------
+\subsection{Problem Formulation}
+\label{sec:problem}
+% ---------------------------------------------------------
+
+Given the system \eqref{eq:nonlinear_system} and the temporal lifting framework defined by \eqref{eq:history_window}--\eqref{eq:temporal_lifting}, we construct a dataset of the form
+\begin{equation}
+    \mathcal{D} = \{(\mX_k, \vu_k, \vx_{k+1})\}_{k=1}^{M},
+    \label{eq:dataset}
+\end{equation}
+where each sample consists of a history window $\mX_k$, the control input $\vu_k$, and the corresponding next state $\vx_{k+1}$. 
+
+Based on the dataset $\mathcal{D}$, the objective of this work is to learn a temporal lifting map $g_\theta$ and identify system matrices $\mA \in \mathbb{R}^{d\times d}$ and $\mB \in \mathbb{R}^{d\times m}$ such that the Koopman dynamics model in \eqref{eq:lifted_dynamics_prelim} approximate the true system evolution with small residual. We seek a compact representation $\vz_k = g_\theta(\mX_k)$ that preserves the current physical state in its first $n$ coordinates, while the remaining $d-n$ coordinates encode history-dependent features, enabling exact state recovery through a fixed linear projection and a direct interface for controller design (Section~\ref{sec:control}).
+
+% =========================================================
+\section{Transformer-Based Temporal Lifting}
+\label{sec:methodology}
+% =========================================================
+
+In this section, we present the proposed Transformer-Koopman framework
+for temporal lifting and model identification. We first introduce the
+lifting architecture based on Transformer encoding, and then describe
+the associated training procedure and modeling error characterization.
+
+% ---------------------------------------------------------
+\subsection{Patch-Based Temporal Lifting Architecture}
+\label{sec:temporal_lifting}
+% ---------------------------------------------------------
+
+We now introduce the proposed temporal lifting architecture.
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=\textwidth]{pictures/Figure1.pdf}
+    \caption{Overall prediction pipeline of the proposed
+    Transformer-Koopman framework. Given a history window $\mX_k$ and
+    the current control input $\vu_k$, the Transformer encoder extracts
+    a history feature $\vh_k$, which is concatenated with the current
+    state $\vx_k$ to form the lifted state
+    $\vz_k = [\vx_k;\,\vh_k] \in \mathbb{R}^d$. The Koopman linear
+    dynamics $\hat{\vz}_{k+1} = \mA\vz_k + \mB\vu_k$ propagate the
+    lifted state forward, and the predicted next physical state
+    $\hat{\vx}_{k+1} = \mC\hat{\vz}_{k+1}$ is recovered through a
+    fixed linear projection.}
+    \label{fig:framework}
+\end{figure*}
+
+Given the history window $\mX_k \in \mathbb{R}^{P \times n}$, we partition it into $N = P/p$ contiguous non-overlapping temporal patches of length $p$, where $p$ is assumed to divide $P$. The $i$th patch is denoted by
+\begin{equation}
+    \mX_k^{(i)} \in \mathbb{R}^{p \times n}, \qquad i=1,\ldots,N.
+\end{equation}
+Each patch is then vectorized, meaning it is flattened (or "unrolled") into a single vector, as
+\begin{equation}
+    \vq_k^{(i)} = \mathrm{vec}(\mX_k^{(i)}) \in \mathbb{R}^{pn},
+    \label{eq:patch_vec}
+\end{equation}
+which serves as the concrete instantiation of the generic token $\mathbf{v}^{(i)}$ introduced in Section~\ref{sec:transformer_background}. In this framework, each token corresponds to a vectorized temporal patch extracted from the history window. These tokens are then mapped into the Transformer embedding space through a shared linear layer, as defined in \eqref{eq:general_embed}, with $\mathbf{v}^{(i)} = \vq_k^{(i)}$ and $d_{\mathrm{in}} = pn$.
+\begin{equation}
+    \vphi_k^{(i)} = \mW_p \vq_k^{(i)} + \vb_p
+    \in \mathbb{R}^{d_{\mathrm{model}}},
+    \label{eq:patch_embedding}
+\end{equation}
+where $\mW_p \in \mathbb{R}^{d_{\mathrm{model}} \times pn}$ and
+$\vb_p \in \mathbb{R}^{d_{\mathrm{model}}}$. This patch-based
+tokenization reduces the sequence length from $P$ to $N=P/p$, thereby
+improving computational efficiency while preserving local temporal
+structure within each patch.
+
+After the vectorization process, the temporal patch sequence is formed, where each token corresponds to a vectorized temporal patch. This sequence of tokens is then augmented with sinusoidal positional encoding, as defined in \eqref{eq:pos_enc}, to incorporate positional information. The resulting sequence is then processed by the $L$-layer Transformer encoder described in Section~\ref{sec:transformer_background}. 
+\begin{equation}
+    \tilde{\vphi}_k^{(i)} = \vphi_k^{(i)} + \vs^{(i)},
+    \label{eq:pos_enc_applied}
+\end{equation}
+and the resulting token sequence is encoded as
+\begin{equation}
+    \mH_k = \mathrm{TransformerEncoder}\!\left(
+        \{\tilde{\vphi}_k^{(i)}\}_{i=1}^{N}
+    \right) \in \mathbb{R}^{N \times d_{\mathrm{model}}},
+    \label{eq:transformer_enc}
+\end{equation}
+where $\mH_k^{(i)} \in \mathbb{R}^{d_{\mathrm{model}}}$ denotes the
+contextualized representation of the $i$th patch.
+
+ The Transformer encoder outputs $\mH_k \in \mathbb{R}^{N \times d_{\mathrm{model}}}$. We then apply mean pooling over
+  the token dimension to obtain a single representation:
+\begin{equation}
+    \vr_k = \frac{1}{N}\sum_{i=1}^{N} \mH_k^{(i)}
+    \in \mathbb{R}^{d_{\mathrm{model}}}.
+    \label{eq:pooling}
+\end{equation}
+After that, the pooled representation is projected to the history-feature space,
+\begin{equation}
+    \vh_k = \mW_h \vr_k + \vb_h \in \mathbb{R}^{d-n},
+    \label{eq:history_feature}
+\end{equation}
+where $\mW_h \in \mathbb{R}^{(d-n)\times d_{\mathrm{model}}}$ and
+$\vb_h \in \mathbb{R}^{d-n}$.
+
+The lifted state is defined as
+\begin{equation}
+    \vz_k = [\vx_k;\,\vh_k] \in \mathbb{R}^{d},
+    \label{eq:lifted_state_form}
+\end{equation}
+where the first $n$ components of $\vz_k$ are the original system state $\vx_k$, and the remaining $d-n$ components correspond to the temporal features $\vh_k$. This structure allows for exact recovery of the original system state through the fixed projection
+\begin{equation}
+    \vx_k = \mC \vz_k, \qquad \mC = [\mI_n\;\mathbf{0}],
+    \label{eq:decoder_projection}
+\end{equation}
+The overall architecture of the proposed framework is illustrated in Fig. \ref{fig:framework}.
+
+Given the lifted state \eqref{eq:lifted_state_form}, the Koopman dynamics are modeled as
+\begin{equation}
+    \vz_{k+1} = \mA \vz_k + \mB \vu_k,
+    \label{eq:temporal_dynamics}
+\end{equation}
+where $\mA \in \mathbb{R}^{d\times d}$ and $\mB \in \mathbb{R}^{d\times m}$ are identified from data, and the corresponding modeling error is analyzed in Section~\ref{subsec:modeling_error}.
+
+% ---------------------------------------------------------
+\subsection{Training Procedure}
+\label{sec:training}
+% ---------------------------------------------------------
+
+We train the temporal lifting map $g_\theta$ together with the Koopman dynamics matrices $(\mA,\mB)$ in three stages. Stage~0 initializes $(\mA,\mB)$ by an EDMD-based warm start, Stage~1 jointly optimizes $\theta$, $\mA$, and $\mB$ by gradient-based training, and Stage~2 refits $(\mA,\mB)$ in closed form using EDMD.
+
+In Stage~0, the parameters $\theta$ of the temporal encoder $g_\theta$ are initialized randomly. The history windows in the dataset are then encoded into lifted states to construct the data matrices $\mZ$, $\mZ^{+}$, and $\mU$. Based on these lifted trajectories, an initial estimate of the Koopman dynamics matrices is obtained by ridge-regularized EDMD,
+\begin{equation}
+    \mTheta = (\mZ^{+})^\top \mOmega
+    \left(\mOmega^\top \mOmega + \lambda \mI\right)^{-1},
+    \qquad
+    \mOmega = [\mZ\;\mU],
+    \label{eq:edmd_solution}
+\end{equation}
+where $\mTheta = [\mA\;\mB]$ collects the Koopman dynamics matrices. This stage provides an initial estimate of $(\mA,\mB)$ for the subsequent joint optimization.
+
+In Stage~1, the temporal encoder $g_\theta$ and the Koopman dynamics matrices $(\mA,\mB)$ are optimized jointly using one-step prediction consistency. To this end, define the shifted history window
+\begin{equation}
+    \mX_k^{+} = [\vx_{k-P+2}^\top,\ldots,\vx_{k+1}^\top]^\top,
+\end{equation}
+and let
+\begin{equation}
+    \vz_k = g_\theta(\mX_k), \qquad
+    \vz_k^{+} = g_\theta(\mX_k^{+}),
+\end{equation}
+where $\vz_k^{+}$ denotes the lifted state obtained by encoding the shifted history window. The predicted lifted state and physical state are computed as
+\begin{equation}
+    \hat{\vz}_{k+1} = \mA \vz_k + \mB \vu_k,
+    \qquad
+    \hat{\vx}_{k+1} = \mC \hat{\vz}_{k+1}.
+\end{equation}
+Here, $\hat{\vz}_{k+1}$ is the one-step prediction of the Koopman dynamics model, while $\vz_k^{+}$ is the corresponding target lifted state obtained from the shifted window. The training objective combines three loss terms, as illustrated in Fig.~\ref{fig:training_procedure},
+\begin{align}
+    \mathcal{L}_{x} &= \|\hat{\vx}_{k+1}-\vx_{k+1}\|_2^2,
+    \label{eq:loss_x}\\
+    \mathcal{L}_{z} &= \|\hat{\vz}_{k+1}-\vz_k^{+}\|_2^2,
+    \label{eq:loss_z}\\
+    \mathcal{L}_{c} &=
+    \bigl\|g_\theta(\mathcal{W}^{+}_{\mathrm{pred}})-\vz_k^{+}\bigr\|_2^2,
+    \label{eq:loss_c}
+\end{align}
+where $\mathcal{W}^{+}_{\mathrm{pred}}$ denotes the predicted shifted window obtained by replacing the most recent entry in $\mX_k^{+}$ with $\hat{\vx}_{k+1}$. The overall loss is defined as
+\begin{equation}
+    \mathcal{L}_{\mathrm{pre}} =
+    \lambda_x \mathcal{L}_x + \lambda_z \mathcal{L}_z
+    + \lambda_c \mathcal{L}_c,
+    \label{eq:pretraining_loss}
+\end{equation}
+where $\lambda_x$, $\lambda_z$, and $\lambda_c$ are nonnegative weighting coefficients that balance the state-prediction, lifted-state consistency, and rollout-consistency losses, respectively. All parameters $(\theta, \mA, \mB)$ are then optimized jointly via gradient-based methods.
+
+In Stage~2, the encoder parameters $\theta$ are fixed, and the entire dataset is passed through $g_\theta$ again to recompute the lifted trajectories. The Koopman dynamics matrices are then re-estimated in closed form using ridge-regularized EDMD,
+\begin{equation}
+    \mTheta^{*} = (\mZ^{+})^\top \mOmega
+    \left(\mOmega^\top \mOmega + \lambda \mI\right)^{-1},
+\end{equation}
+where $\mTheta^{*} = [\mA^{*}\;\mB^{*}]$ denotes the refitted Koopman dynamics matrices. This refitting stage enforces consistency between the learned lifting map and the optimal linear regression solution, improving numerical stability and prediction accuracy. For notational simplicity, we overwrite
+$(\mA,\mB)\leftarrow(\mA^{*},\mB^{*})$ and use $(\mA,\mB)$ to denote the final refitted matrices in the remainder of the paper.
+The complete training procedure is summarized in Algorithm~\ref{alg:training}.
+
+\begin{algorithm}[!t]
+\caption{Transformer-Koopman Training Algorithm}
+\label{alg:training}
+\begin{algorithmic}[1]
+
+\STATE \textbf{Input:} Dataset $\mathcal{D}$ \eqref{eq:dataset};
+$P, p, d, \lambda_x, \lambda_z, \lambda_c, \lambda, E$
+
+\STATE \textbf{Output:} Encoder $\theta^{*}$; matrices $\mA^{*}, \mB^{*}$
+
+\STATE \textbf{Stage~0:}
+Initialize $\theta$ randomly; encode $\mathcal{D}$ to obtain
+$\mZ$, $\mZ^{+}$, $\mU$; compute $(\mA,\mB)$ via
+\eqref{eq:edmd_solution}.
+
+\vspace{2pt}
+
+\STATE \textbf{Stage~1:}
+\FOR{epoch $\ell = 1$ \TO $E$}
+    \FOR{each mini-batch $\mathcal{B} \subset \mathcal{D}$}
+        \STATE Compute $\mathcal{L}_{\mathrm{pre}}$
+               via \eqref{eq:loss_x}--\eqref{eq:pretraining_loss}.
+        \STATE Update $(\theta, \mA, \mB)$ via gradient descent.
+    \ENDFOR
+\ENDFOR
+
+\vspace{2pt}
+
+\STATE \textbf{Stage~2:}
+Fix $\theta^{*}$; recompute $\mZ$, $\mZ^{+}$, $\mU$;
+obtain $(\mA^{*}, \mB^{*})$ via \eqref{eq:edmd_solution}.
+
+\RETURN $\theta^{*}, \mA^{*}, \mB^{*}$
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{pictures/Figure2.pdf}
+    \caption{Stage~1 training procedure. The current history window 
+    $\mX_k$ and the shifted window $\mX_k^{+}$ are each encoded by 
+    $g_\theta$ to produce $\vz_k$ and $\vz_k^{+}$. The linear model 
+    $(\mA,\mB)$ generates the one-step prediction $\hat{\vz}_{k+1}$, 
+    from which $\hat{\vx}_{k+1}$ is recovered via $\mC$. Three 
+    consistency losses $\mathcal{L}_x$, $\mathcal{L}_z$, and 
+    $\mathcal{L}_c$ jointly supervise the encoder and linear dynamics.}
+    \label{fig:training_procedure}
+\end{figure*}
+
+% ---------------------------------------------------------
+\subsection{Modeling Error Characterization}
+\label{subsec:modeling_error}
+% ---------------------------------------------------------
+
+The Koopman dynamics model in \eqref{eq:temporal_dynamics} is only approximate due to finite-dimensional Koopman truncation and encoder approximation error. We define the one-step modeling residual as
+\begin{equation}
+    \vw_k = \vz_{k+1} - (\mA \vz_k + \mB \vu_k),
+    \label{eq:modeling_error}
+\end{equation}
+where $\vz_{k+1} = g_\theta(\mX_{k+1})$. In general, $\vw_k \neq \mathbf{0}$ even after training. When the state and control input remain within compact sets, the modeling error is theoretically bounded \cite{korda2018linear}. In practice, the bound $\varepsilon$ can be estimated by evaluating the one-step prediction residual on a held-out validation set.
+
+
+% =========================================================
+\section{Controller Design and Stability Analysis}
+\label{sec:control}
+% =========================================================
+
+In this section, we develop a tracking controller based on the identified Koopman dynamics model and analyze the resulting closed-loop system.
+
+% ---------------------------------------------------------
+\subsection{Controller Design}
+\label{subsec:controller_design}
+% ---------------------------------------------------------
+
+Based on the identified Koopman dynamics model \eqref{eq:temporal_dynamics} and the structured lifted state \eqref{eq:lifted_state_form}, we design a tracking controller in the lifted space. Let $\{\vx_k^{\mathrm{ref}}\}$ denote a reference state trajectory. Analogous to the history window $\mX_k$ defined in \eqref{eq:history_window}, we construct the reference history window as
+\begin{equation}
+    \mX_k^{\mathrm{ref}} = [\vx_{k-P+1}^{\mathrm{ref}\top}, \ldots, \vx_k^{\mathrm{ref}\top}]^\top \in \mathbb{R}^{P\times n},
+    \label{eq:ref_history_window}
+\end{equation}
+and define the corresponding lifted reference trajectory as
+\begin{equation}
+    \vz_k^{\mathrm{ref}} = [\vx_k^{\mathrm{ref}};\,\vh_k^{\mathrm{ref}}],
+    \label{eq:lifted_reference}
+\end{equation}
+where $\vh_k^{\mathrm{ref}} = g_\theta(\mX_k^{\mathrm{ref}})$ is obtained by encoding the reference history window with the same encoder $g_\theta$. The lifted tracking error is then defined as
+\begin{equation}
+    \ve_k^z = \vz_k - \vz_k^{\mathrm{ref}}
+    =
+    \begin{bmatrix}
+        \ve_k^x \\ \ve_k^h
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \vx_k - \vx_k^{\mathrm{ref}} \\
+        \vh_k - \vh_k^{\mathrm{ref}}
+    \end{bmatrix}.
+    \label{eq:structured_error}
+\end{equation}
+
+We decompose the control input into feedforward and feedback terms,
+\begin{equation}
+    \vu_k = \vu_{\mathrm{ff},k} + \vu_{\mathrm{fb},k}.
+    \label{eq:control_decomposition}
+\end{equation}
+The feedforward term compensates for the nominal reference evolution in the lifted space and is chosen as
+\begin{equation}
+    \vu_{\mathrm{ff},k}
+    =
+    \mB^\dagger \!\left(\vz_{k+1}^{\mathrm{ref}} - \mA \vz_k^{\mathrm{ref}}\right),
+    \label{eq:feedforward}
+\end{equation}
+where $\mB^\dagger$ denotes the Moore--Penrose pseudoinverse of $\mB$.
+
+The feedback term is designed from the structured lifted error as
+\begin{equation}
+    \vu_{\mathrm{fb},k}
+    =
+    -\mK_x \ve_k^x - \mK_h \ve_k^h
+    =
+    -\mK_c \ve_k^z,
+    \label{eq:hierarchical_fb}
+\end{equation}
+where $\mK_c = [\mK_x\;|\;\mK_h]$ is partitioned according to \eqref{eq:structured_error}. To determine $\mK_c$, we perform a discrete-time LQR design for the pair $(\mA,\mB)$ with cost
+\begin{equation}
+    J = \sum_{k=0}^{\infty}
+    \left[
+        (\ve_k^z)^\top \mQ\,\ve_k^z
+        +
+        (\vu_{\mathrm{fb},k})^\top \mR\,\vu_{\mathrm{fb},k}
+    \right],
+    \label{eq:lqr_objective}
+\end{equation}
+where $\mR \succ \mathbf{0}$ and
+\begin{equation}
+    \mQ =
+    \begin{bmatrix}
+        \mQ_x & \mathbf{0} \\
+        \mathbf{0} & \alpha \mI_{d-n}
+    \end{bmatrix},
+    \qquad \alpha \in [0,1),
+    \label{eq:block_diag_Q}
+\end{equation}
+with $\mQ_x \succ \mathbf{0}$. Here, $\mQ_x$ determines the primary tracking objective in the physical state, whereas $\alpha \mI_{d-n}$ assigns a smaller auxiliary penalty to the feature error. In practice, $\mQ_x$ is chosen dominant and $\alpha$ is set small, with $\alpha = 0$ also admissible if no explicit penalty on $\ve_k^h$ is desired. Solving the standard discrete-time Riccati equation yields
+\begin{equation}
+    \mK_c
+    =
+    (\mR + \mB^\top \mP \mB)^{-1} \mB^\top \mP \mA
+    =
+    [\mK_x\;|\;\mK_h].
+    \label{eq:lqr_gain}
+\end{equation}
+
+Combining \eqref{eq:control_decomposition}--\eqref{eq:hierarchical_fb}, the resulting control law is
+\begin{equation}
+    \vu_k
+    =
+    \mB^\dagger \!\left(\vz_{k+1}^{\mathrm{ref}} - \mA \vz_k^{\mathrm{ref}}\right)
+    - \mK_c \ve_k^z.
+    \label{eq:full_ctrl}
+\end{equation}
+
+The overall controller structure is illustrated in Fig.~\ref{fig:control_architecture}.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{pictures/Figure3.pdf}
+    \caption{Control architecture based on the structured lifted state $\vz_k=[\vx_k;\vh_k]$. The reference trajectory is encoded to $\vz_k^{\mathrm{ref}}=[\vx_k^{\mathrm{ref}};\vh_k^{\mathrm{ref}}]$, and the current state history is encoded to $\vz_k=[\vx_k;\vh_k]$. The error $\ve_k^z = \vz_k - \vz_k^{\mathrm{ref}}$ drives both feedforward and feedback control terms.}
+    \label{fig:control_architecture}
+\end{figure}
+
+% ---------------------------------------------------------
+\subsection{Stability Analysis}
+\label{subsec:stability}
+% ---------------------------------------------------------
+
+We analyze the closed-loop tracking error induced by the control law \eqref{eq:full_ctrl} applied to the identified Koopman dynamics model.
+
+\begin{theorem}[Ultimate Boundedness of Tracking Error]
+\label{thm:ub}
+Consider the Koopman  dynamics model \eqref{eq:temporal_dynamics} under the control law \eqref{eq:full_ctrl}. Suppose that $(\mA, \mB)$ is stabilizable, $(\mA, \mQ^{1/2})$ is detectable, and the modeling residual satisfies $\|\vw_k\| \leq \varepsilon$ for all $k \geq 0$. Then the closed-loop system achieves ultimately uniformly bounded tracking; that is, the lifted tracking error satisfies
+\begin{equation}
+    \|\ve_k^z\| \leq \frac{\varepsilon}{1 - \|\mA_{\mathrm{cl}}\|}
+    \label{eq:ub_bound}
+\end{equation}
+for all sufficiently large $k$, and consequently
+\begin{equation}
+    \|\vx_k - \vx_k^{\mathrm{ref}}\| \leq \frac{\varepsilon}{1 - \|\mA_{\mathrm{cl}}\|}.
+    \label{eq:phys_bound}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Substituting \eqref{eq:full_ctrl} into \eqref{eq:temporal_dynamics} and using \eqref{eq:modeling_error}, the tracking error $\ve_k^z = \vz_k - \vz_k^{\mathrm{ref}}$ evolves as
+\begin{equation}
+    \ve_{k+1}^z = \mA_{\mathrm{cl}}\, \ve_k^z + \vw_k,
+    \label{eq:cl_error_dyn}
+\end{equation}
+where $\mA_{\mathrm{cl}} = \mA - \mB\mK_c$. By the stabilizability and detectability assumptions and standard LQR theory, $\mA_{\mathrm{cl}}$ is Schur stable with $\|\mA_{\mathrm{cl}}\| < 1$. Iterating \eqref{eq:cl_error_dyn} and applying the triangle inequality, the bound \eqref{eq:ub_bound} follows from the convergence of the geometric series $\sum_{i=0}^{\infty}\|\mA_{\mathrm{cl}}\|^i$. The physical-state bound \eqref{eq:phys_bound} follows from $\|\vx_k - \vx_k^{\mathrm{ref}}\| = \|\mC\ve_k^z\| \leq \|\ve_k^z\|$ since $\|\mC\| = 1$.
+\end{proof}
+
+The ultimate bound scales linearly with the modeling residual $\varepsilon$: improving the Koopman approximation accuracy directly tightens the closed-loop tracking guarantee, and as $\varepsilon \to 0$, the tracking error converges to zero asymptotically.
+
+% =========================================================
+\section{Experiments}
+\label{sec:experiments}
+% =========================================================
+
+
+
+% =========================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% =========================================================
+
+This paper presented Transformer-Koopman, a temporal lifting framework for learning Koopman models of controlled nonlinear systems from finite history windows. By encoding short-term trajectory context with a patch-based Transformer encoder and combining the resulting history features with the current physical state, the proposed method constructs a structured lifted representation that preserves exact state recovery while remaining compatible with linear Koopman dynamics and controller design. Experiments on two controlled-system datasets showed that the method consistently outperforms EDMD and MLP-Koopman in open-loop trajectory prediction, while ablation results confirmed the importance of temporal history, patch design, and moderate regularization. In addition, the derived hierarchical LQR controller and the UUB analysis established a control-oriented interpretation of the learned model, linking improved modeling accuracy to tighter closed-loop tracking guarantees. Closed-loop trajectory-tracking validation remains future work and will be an important next step in assessing the practical control benefits of the proposed framework.
+
+\begin{thebibliography}{99}
+
+\bibitem{koopman1931hamiltonian}
+B. O. Koopman, ``Hamiltonian systems and transformation in Hilbert space,'' \emph{Proc. Natl. Acad. Sci. USA}, vol. 17, no. 5, pp. 315--318, 1931.
+
+\bibitem{koopman1932spectra}
+B. O. Koopman and J. von Neumann, ``Dynamical systems of continuous spectra,'' \emph{Proc. Natl. Acad. Sci. USA}, vol. 18, no. 3, pp. 255--263, 1932.
+
+\bibitem{mezic2005spectral}
+I. Mezi\'c, ``Spectral properties of dynamical systems, model reduction and decompositions,'' \emph{Nonlinear Dyn.}, vol. 41, pp. 309--325, 2005.
+
+\bibitem{ljung1999system}
+L. Ljung, \emph{System Identification: Theory for the User}, 2nd ed. Upper Saddle River, NJ, USA: Prentice Hall, 1999.
+
+\bibitem{vanoverschee1994n4sid}
+P. Van Overschee and B. De Moor, ``N4SID: Subspace algorithms for the identification of combined deterministic-stochastic systems,'' \emph{Automatica}, vol. 30, no. 1, pp. 75--93, 1994.
+
+\bibitem{nelles2020nonlinear}
+O. Nelles, \emph{Nonlinear System Identification: From Classical Approaches to Neural Networks and Fuzzy Models}, 2nd ed. Cham, Switzerland: Springer, 2020.
+
+\bibitem{rowley2009spectral}
+C. W. Rowley, I. Mezi\'c, S. Bagheri, P. Schlatter, and D. S. Henningson, ``Spectral analysis of nonlinear flows,'' \emph{J. Fluid Mech.}, vol. 641, pp. 115--127, 2009.
+
+\bibitem{williams2015data}
+M. O. Williams, I. G. Kevrekidis, and C. W. Rowley, ``A data--driven approximation of the Koopman operator: Extending dynamic mode decomposition,'' \emph{J. Nonlinear Sci.}, vol. 25, no. 6, pp. 1307--1346, 2015.
+
+\bibitem{williams2015kernel}
+M. O. Williams, C. W. Rowley, and I. G. Kevrekidis, ``A kernel-based method for data-driven Koopman spectral analysis,'' \emph{J. Comput. Dyn.}, vol. 2, no. 2, pp. 247--265, 2015.
+
+\bibitem{arbabi2017ergodic}
+H. Arbabi and I. Mezi\'c, ``Ergodic theory, dynamic mode decomposition, and computation of spectral properties of the Koopman operator,'' \emph{SIAM J. Appl. Dyn. Syst.}, vol. 16, no. 4, pp. 2096--2126, 2017.
+
+\bibitem{brunton2022modern}
+S. L. Brunton, M. Budi\v{s}i\'c, E. Kaiser, and J. N. Kutz, ``Modern Koopman theory for dynamical systems,'' \emph{SIAM Rev.}, vol. 64, no. 2, pp. 229--340, 2022.
+
+\bibitem{otto2021koopman}
+S. E. Otto and C. W. Rowley, ``Koopman operators for estimation and control of dynamical systems,'' \emph{Annu. Rev. Control Robot. Auton. Syst.}, vol. 4, pp. 59--87, 2021.
+
+\bibitem{takeishi2017koopman}
+N. Takeishi, Y. Kawahara, and T. Yairi, ``Learning Koopman invariant subspaces for dynamic mode decomposition,'' in \emph{Proc. NeurIPS}, 2017, pp. 1130--1140.
+
+\bibitem{yeung2019learning}
+E. Yeung, S. Kundu, and N. Hodas, ``Learning deep neural network representations for Koopman operators of nonlinear dynamical systems,'' in \emph{Proc. ACC}, 2019, pp. 4832--4839.
+
+\bibitem{lusch2018deep}
+B. Lusch, J. N. Kutz, and S. L. Brunton, ``Deep learning for universal linear embeddings of nonlinear dynamics,'' \emph{Nat. Commun.}, vol. 9, no. 1, p. 4950, 2018.
+
+\bibitem{morton2019deep}
+J. Morton, F. D. Witherden, and M. J. Kochenderfer, ``Deep variational Koopman models: Inferring Koopman observations for uncertainty-aware dynamics modeling and control,'' in \emph{Proc. IJCAI}, 2019, pp. 5113--5119.
+
+\bibitem{azencot2020forecasting}
+O. Azencot, N. B. Erichson, V. Lin, and M. W. Mahoney, ``Forecasting sequential data using consistent Koopman autoencoders,'' in \emph{Proc. ICML}, 2020, pp. 475--485.
+
+\bibitem{yuan2022variational}
+J. Yuan, A. A. Heydari, and Z. Zhang, ``Variational Koopman models: Slow coherent structures and uncertainty quantification,'' \emph{IEEE Trans. Autom. Control}, vol. 67, no. 11, pp. 5905--5920, 2022.
+
+\bibitem{otto2019linearly}
+S. E. Otto and C. W. Rowley, ``Linearly-recurrent autoencoder networks for learning dynamics,'' \emph{SIAM J. Appl. Dyn. Syst.}, vol. 18, no. 1, pp. 558--593, 2019.
+
+\bibitem{rank2019recurrent}
+M. Rank, A. G. Georgescu, and S. Kirchner, ``Recurrent Koopman operator for data-driven modeling of nonlinear dynamics,'' \emph{IEEE Control Syst. Lett.}, vol. 3, no. 4, pp. 912--917, 2019.
+
+\bibitem{forgione2021dynonet}
+M. Forgione and D. Varagnolo, ``DynoNet: A neural network architecture for learning dynamical systems,'' \emph{Int. J. Adapt. Control Signal Process.}, vol. 35, no. 4, pp. 612--629, 2021.
+
+\bibitem{brunton2016sindy}
+S. L. Brunton, J. L. Proctor, and J. N. Kutz, ``Discovering governing equations from data by sparse identification of nonlinear dynamical systems,'' \emph{Proc. Natl. Acad. Sci. USA}, vol. 113, no. 15, pp. 3932--3937, 2016.
+
+\bibitem{proctor2016dmdc}
+J. L. Proctor, S. L. Brunton, and J. N. Kutz, ``Dynamic mode decomposition with control,'' \emph{SIAM J. Appl. Dyn. Syst.}, vol. 15, no. 1, pp. 142--161, 2016.
+
+\bibitem{proctor2018generalizing}
+J. L. Proctor, S. L. Brunton, and J. N. Kutz, ``Generalizing Koopman theory to allow for inputs and control,'' \emph{SIAM J. Appl. Dyn. Syst.}, vol. 17, no. 1, pp. 909--930, 2018.
+
+\bibitem{brunton2016invariant}
+S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz, ``Koopman invariant subspaces and finite linear representations of nonlinear dynamical systems for control,'' \emph{PLOS ONE}, vol. 11, no. 2, e0150171, 2016.
+
+\bibitem{korda2018linear}
+M. Korda and I. Mezi\'c, ``Linear predictors for nonlinear dynamical systems: Koopman operator meets model predictive control,'' \emph{Automatica}, vol. 93, pp. 149--160, 2018.
+
+\bibitem{han2020deep}
+Y. Han, W. Hao, and U. Vaidya, ``Deep learning of Koopman representation for control,'' arXiv:2010.07546, 2020.
+
+\bibitem{shi2022deep}
+H. Shi and M. Q.-H. Meng, ``Deep Koopman operator with control for nonlinear systems,'' \emph{IEEE Robot. Autom. Lett.}, vol. 7, no. 3, pp. 7700--7707, 2022.
+
+\bibitem{strasser2026overview}
+R. Str\"asser, K. Worthmann, I. Mezi\'c, J. Berberich, M. Schaller, and F. Allg\"ower, ``An overview of Koopman-based control: From error bounds to closed-loop guarantees,'' \emph{Annu. Rev. Control}, vol. 61, art. 101035, 2026.
+
+\bibitem{duran2025control}
+J. F. Dur\'an-Sig\"uenza, L. I. Minchala, L. E. Garza-Casta\~n\'on, and H. Zhang, ``Control based on the Koopman operator: A comprehensive review,'' \emph{J. Franklin Inst.}, vol. 362, no. 18, art. 108256, 2025.
+
+\bibitem{klus2018data}
+S. Klus, P. Koltai, and C. Sch\"utte, ``Data-driven model reduction and transfer operator approximation,'' \emph{J. Nonlinear Sci.}, vol. 28, no. 3, pp. 985--1010, 2018.
+
+\bibitem{vaswani2017attention}
+A. Vaswani \emph{et al.}, ``Attention is all you need,'' in \emph{Proc. NeurIPS}, 2017, pp. 5998--6008.
+
+\bibitem{zhou2021informer}
+H. Zhou \emph{et al.}, ``Informer: Beyond efficient Transformer for long sequence time-series forecasting,'' in \emph{Proc. AAAI}, 2021, pp. 11106--11115.
+
+\bibitem{wu2021autoformer}
+H. Wu, J. Xu, J. Wang, and M. Long, ``Autoformer: Decomposition Transformers with auto-correlation for long-term series forecasting,'' in \emph{Proc. NeurIPS}, 2021, pp. 22419--22430.
+
+\bibitem{zhou2022fedformer}
+T. Zhou \emph{et al.}, ``FEDformer: Frequency enhanced decomposed Transformer for long-term series forecasting,'' in \emph{Proc. ICML}, 2022, pp. 27268--27286.
+
+\bibitem{nie2023time}
+Y. Nie, N. H. Nguyen, P. Sinthong, and J. Kalagnanam, ``A time series is worth 64 words: Long-term forecasting with Transformers,'' in \emph{Proc. ICLR}, 2023.
+
+\bibitem{zeng2023transformers}
+A. Zeng, M. Chen, L. Zhang, and Q. Xu, ``Are Transformers effective for time series forecasting?,'' in \emph{Proc. AAAI}, 2023, pp. 11121--11128.
+
+\bibitem{liu2024itransformer}
+Y. Liu \emph{et al.}, ``iTransformer: Inverted Transformers are effective for time series forecasting,'' in \emph{Proc. ICLR}, 2024.
+
+\bibitem{forootani2026compact}
+A. Forootani and M. Khosravi, ``Compact transformer variants for synthetic time series forecasting,'' \emph{Neurocomputing}, vol. 677, art. 133140, 2026.
+
+\bibitem{forootani2025synthetic}
+A. Forootani and M. Khosravi, ``Synthetic time series forecasting with Transformer architectures: Extensive simulation benchmarks,'' arXiv:2505.20048, 2025.
+
+\bibitem{forootani2026deepkoopformer}
+A. Forootani, M. Khosravi, and M. Barati, ``DeepKoopFormer: A Koopman enhanced Transformer based architecture for time series forecasting,'' arXiv:2508.02616, 2025.
+
+\bibitem{forootani2026spectral}
+A. Forootani and R. Iervolino, ``Learnable Koopman-enhanced Transformer-based time series forecasting with spectral control,'' arXiv:2602.02592, 2026.
+
+\bibitem{wang2020linformer}
+S. Wang, B. Z. Li, M. Khabsa, H. Fang, and H. Ma, ``Linformer: Self-attention with linear complexity,'' arXiv:2006.04768, 2020.
+
+\bibitem{katharopoulos2020transformers}
+A. Katharopoulos, A. Vyas, N. Pappas, and F. Fleuret, ``Transformers are RNNs: Fast autoregressive Transformers with linear attention,'' in \emph{Proc. ICML}, 2020, pp. 5156--5165.
+
+\bibitem{choromanski2021performer}
+K. M. Choromanski \emph{et al.}, ``Rethinking attention with Performers,'' in \emph{Proc. ICLR}, 2021.
+
+\end{thebibliography}
+
+\end{document}

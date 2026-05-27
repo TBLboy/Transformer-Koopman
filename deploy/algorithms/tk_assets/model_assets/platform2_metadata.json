@@ -1,0 +1,26 @@
+{
+    "source_checkpoint": "C:\\Users\\Windows\\Desktop\\论文4\\code_project\\results\\models\\ablation_platform2\\20260514_084213\\full_model\\full_model_model.pth",
+    "target_checkpoint": "C:\\Users\\Windows\\Desktop\\论文4\\code_project\\实验3代码\\algorithms\\model_assets\\platform2_full_model.pth",
+    "A_shape": [
+        10,
+        10
+    ],
+    "B_shape": [
+        10,
+        2
+    ],
+    "state_dim": 2,
+    "control_dim": 2,
+    "history_length": 4,
+    "patch_length": 2,
+    "latent_dim": 10,
+    "d_model": 16,
+    "n_layers": 3,
+    "n_heads": 2,
+    "normalization_keys": [
+        "x_mean",
+        "x_std",
+        "u_mean",
+        "u_std"
+    ]
+}
