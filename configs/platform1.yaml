@@ -4,8 +4,12 @@
 experiment:
   name: "platform1_patchtst"
   seed: 42
-  device: "cuda"  # 改为CPU
+  device: "cuda"
   precision: "float32"  # float32 (单精度) / float64 (双精度)
+  deterministic: false
+  cudnn_benchmark: true
+  amp: true
+  allow_tf32: true
   log_dir: "./results/logs/platform1"
   save_dir: "./results/models/platform1"
 
@@ -89,7 +93,7 @@ training:
     pretrain:
       enabled: true           # 是否预训练编码器
       num_epochs: 300         # 预训练轮数（再增加）
-      batch_size: 512         # RTX 5060 Ti 16GB 放大到 512
+      batch_size: 1024        # RTX 5060 Ti 16GB
       learning_rate: 0.0003   # 再降低学习率
       optimizer: "adam"
       early_stopping: true
@@ -98,9 +102,14 @@ training:
 
       # 三项损失权重
       loss_weights:
-        prediction: 1.0        # λ₁: 原始空间预测损失
+        prediction: 1.0        # H步自回归预测损失（H=1 → 等价原单步）
         latent: 0.5            # λ₂: 升维空间预测损失
         consistency: 0.5       # λ₃: 一致性约束损失
+
+    # 多步预测视野（H=1 → 单步，与原版一致）
+    rollout:
+      horizon: 10               # 预测步数
+      gamma: 0.95              # 步间衰减因子（越远权重越低）
 
     # EDMD计算参数
     compute:
@@ -167,7 +176,8 @@ training:
   save_best_only: true
 
   # 设备和并行
-  num_workers: 4              # DataLoader的worker数量（RTX 5060 建议 4
+  num_workers: 4              # DataLoader worker 数量
+  prefetch_factor: 4          # 每个 worker 预取 batch 数
 
 # ============================================================
 # 控制器参数

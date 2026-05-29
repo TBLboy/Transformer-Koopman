@@ -11,7 +11,7 @@ import numpy as np
 import torch
 
 
-def iterative_prediction(model, x_history_init, u_sequence, device):
+def iterative_prediction(model, x_history_init, u_sequence, device, use_amp=False):
     """Run open-loop rollout: encode -> Koopman step -> decode -> slide window.
 
     Args:
@@ -19,6 +19,7 @@ def iterative_prediction(model, x_history_init, u_sequence, device):
         x_history_init: ``[P, n]`` initial history window (on ``device``).
         u_sequence: ``[H, m]`` control inputs (on ``device``).
         device: Torch device string.
+        use_amp: Use autocast on CUDA when True.
 
     Returns:
         ``[H, n]`` numpy array of predicted states (still normalised).
@@ -26,17 +27,25 @@ def iterative_prediction(model, x_history_init, u_sequence, device):
     H = u_sequence.shape[0]
     x_history = x_history_init.clone()
     x_predictions = []
+    amp_enabled = use_amp and device == "cuda"
 
     model.eval()
     with torch.no_grad():
         for h in range(H):
-            z_t = model.encoder(x_history.unsqueeze(0))
             u_t = u_sequence[h : h + 1, :]
-            z_next = model.koopman(z_t, u_t)
-            x_next = model.decoder(z_next)
+            if amp_enabled:
+                with torch.amp.autocast("cuda"):
+                    z_t = model.encoder(x_history.unsqueeze(0))
+                    z_next = model.koopman(z_t, u_t)
+                    x_next = model.decoder(z_next)
+            else:
+                z_t = model.encoder(x_history.unsqueeze(0))
+                z_next = model.koopman(z_t, u_t)
+                x_next = model.decoder(z_next)
 
-            x_predictions.append(x_next.squeeze(0).cpu().numpy())
-            x_history = torch.cat([x_history[1:, :], x_next], dim=0)
+            x_step = x_next.squeeze(0)
+            x_predictions.append(x_step.detach().cpu().numpy())
+            x_history = torch.cat([x_history[1:, :], x_step.unsqueeze(0)], dim=0)
 
     return np.array(x_predictions)
 
@@ -67,7 +76,13 @@ def evaluate_on_first_trajectory(model, test_dataset, config, norm_stats):
     u_sequence = torch.tensor(u_traj[P - 1 : -1, :], dtype=dtype).to(device)
     x_true_norm = x_traj[P:, :]
 
-    x_pred_norm = iterative_prediction(model, x_history, u_sequence, device)
+    x_pred_norm = iterative_prediction(
+        model,
+        x_history,
+        u_sequence,
+        device,
+        use_amp=config["experiment"].get("amp", False) and precision == "float32",
+    )
 
     if norm_stats is not None and norm_stats["x_mean"] is not None:
         x_mean = norm_stats["x_mean"]

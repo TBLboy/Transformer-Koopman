@@ -23,10 +23,18 @@ class EDMDTrainer:
         self.config = config
         self.device = config['experiment']['device']
         self.edmd_config = config['training']['edmd']
+        exp = config.get('experiment', {})
+        self.use_amp = (
+            self.device == 'cuda'
+            and exp.get('amp', True)
+            and exp.get('precision', 'float32') == 'float32'
+        )
+        self.scaler = torch.amp.GradScaler('cuda', enabled=self.use_amp)
 
     def _loader_kwargs(self, shuffle=False, batch_size=256):
         """Create DataLoader kwargs with CUDA-friendly defaults."""
-        num_workers = self.config['training'].get('num_workers', 0)
+        training = self.config['training']
+        num_workers = training.get('num_workers', 0)
         kwargs = {
             'batch_size': batch_size,
             'shuffle': shuffle,
@@ -36,6 +44,7 @@ class EDMDTrainer:
             kwargs['pin_memory'] = True
             if num_workers > 0:
                 kwargs['persistent_workers'] = True
+                kwargs['prefetch_factor'] = training.get('prefetch_factor', 4)
         return kwargs
 
     def _to_device(self, tensor):
@@ -67,10 +76,9 @@ class EDMDTrainer:
                 shuffle=True, batch_size=e2e["batch_size"]
             )
         )
-        val_loader = DataLoader(val_dataset, **self._loader_kwargs(batch_size=256))
-
-        optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=e2e["learning_rate"]
+        val_loader = DataLoader(
+            val_dataset,
+            **self._loader_kwargs(batch_size=e2e["batch_size"]),
         )
 
         scheduler_type = e2e.get("scheduler", "reduce_on_plateau")
@@ -111,31 +119,44 @@ class EDMDTrainer:
                 u_t = self._to_device(batch["u_t"])
                 x_next = self._to_device(batch["x_next"])
 
-                x_pred = self.model(x_history, u_t)
+                optimizer.zero_grad(set_to_none=True)
 
-                # 1. 预测损失
-                loss = w_pred * F.mse_loss(x_pred, x_next)
+                if self.use_amp:
+                    with torch.amp.autocast("cuda"):
+                        x_pred = self.model(x_history, u_t)
+                        loss = w_pred * F.mse_loss(x_pred, x_next)
+                        if w_stab > 0:
+                            A = self.model.koopman.A
+                            I = torch.eye(A.size(-1), device=A.device, dtype=A.dtype)
+                            loss = loss + w_stab * F.mse_loss(A.T @ A, I)
+                        if w_reg > 0:
+                            reg_penalty = sum(p.pow(2).sum() for p in self.model.parameters())
+                            loss = loss + w_reg * reg_penalty
+                    self.scaler.scale(loss).backward()
+                    if e2e.get("grad_clip", 0) > 0:
+                        self.scaler.unscale_(optimizer)
+                        torch.nn.utils.clip_grad_norm_(
+                            self.model.parameters(), e2e["grad_clip"]
+                        )
+                    self.scaler.step(optimizer)
+                    self.scaler.update()
+                else:
+                    x_pred = self.model(x_history, u_t)
+                    loss = w_pred * F.mse_loss(x_pred, x_next)
+                    if w_stab > 0:
+                        A = self.model.koopman.A
+                        I = torch.eye(A.size(-1), device=A.device, dtype=A.dtype)
+                        loss = loss + w_stab * F.mse_loss(A.T @ A, I)
+                    if w_reg > 0:
+                        reg_penalty = sum(p.pow(2).sum() for p in self.model.parameters())
+                        loss = loss + w_reg * reg_penalty
+                    loss.backward()
+                    if e2e.get("grad_clip", 0) > 0:
+                        torch.nn.utils.clip_grad_norm_(
+                            self.model.parameters(), e2e["grad_clip"]
+                        )
+                    optimizer.step()
 
-                # 2. 稳定性损失：鼓励 A 接近正交 (A^T A ≈ I)
-                if w_stab > 0:
-                    A = self.model.koopman.A
-                    I = torch.eye(A.size(-1), device=A.device, dtype=A.dtype)
-                    loss += w_stab * F.mse_loss(A.T @ A, I)
-
-                # 3. 正则化损失：L2 参数惩罚
-                if w_reg > 0:
-                    reg_penalty = sum(p.pow(2).sum() for p in self.model.parameters())
-                    loss += w_reg * reg_penalty
-
-                optimizer.zero_grad()
-                loss.backward()
-
-                if e2e.get("grad_clip", 0) > 0:
-                    torch.nn.utils.clip_grad_norm_(
-                        self.model.parameters(), e2e["grad_clip"]
-                    )
-
-                optimizer.step()
                 total_loss += loss.item()
 
             # ── 可选的 SVD 投影 ──────────────────────────────────
@@ -219,7 +240,12 @@ class EDMDTrainer:
                 batch_size=self.edmd_config['pretrain']['batch_size']
             )
         )
-        val_loader = DataLoader(val_dataset, **self._loader_kwargs(batch_size=256))
+        val_loader = DataLoader(
+            val_dataset,
+            **self._loader_kwargs(
+                batch_size=self.edmd_config['pretrain'].get('batch_size', 256)
+            ),
+        )
 
         # 优化器（不包含解码器参数，因为解码器是固定的）
         optimizer = torch.optim.Adam([
@@ -245,7 +271,7 @@ class EDMDTrainer:
 
         for epoch in range(self.edmd_config['pretrain']['num_epochs']):
             # 训练
-            train_loss = self._pretrain_epoch(train_loader, optimizer)
+            train_loss = self._pretrain_epoch(train_loader, optimizer, train_dataset)
 
             # 验证
             val_loss = self._validate(val_loader)
@@ -281,57 +307,87 @@ class EDMDTrainer:
 
         print(f"预训练完成，最佳验证损失: {best_val_loss:.6f}")
 
-    def _pretrain_epoch(self, train_loader, optimizer):
-        """预训练的单个epoch（三项损失：原始空间预测 + 升维空间预测 + 一致性约束）"""
+    def _pretrain_epoch(self, train_loader, optimizer, train_dataset=None):
+        """预训练的单个epoch（含可选的H步自回归预测损失）。
+
+        当 ``config.training.edmd.pretrain.loss_weights.rollout > 0`` 且
+        ``rollout.horizon``  > 1 时，``L_pred`` 变为 H 步自回归预测 MSE。
+        H=1 时等价于原来的单步预测损失。
+        """
         self.model.train()
         total_loss = 0
         loss_pred_total = 0
         loss_latent_total = 0
         loss_consistency_total = 0
 
-        # 获取损失权重
+        # ── 获取损失权重 ────────────────────────────────────────────
         loss_weights = self.edmd_config['pretrain'].get('loss_weights',
                                                         {'prediction': 1.0,
                                                          'latent': 0.5,
                                                          'consistency': 0.5})
+
+        rollout_cfg = self.edmd_config.get('rollout', {})
+        horizon = int(rollout_cfg.get('horizon', 1))
+        gamma = float(rollout_cfg.get('gamma', 1.0))
+        use_rollout = (horizon > 1)
 
         for batch in tqdm(train_loader, desc="预训练"):
             x_history = self._to_device(batch['x_history'])
             u_t = self._to_device(batch['u_t'])
             x_next = self._to_device(batch['x_next'])
 
-            # 构造下一时刻的历史窗口
-            x_history_next = torch.cat([x_history[:, 1:, :],
-                                       x_next.unsqueeze(1)], dim=1)
+            optimizer.zero_grad(set_to_none=True)
 
-            # 前向传播
-            z_t = self.model.encoder(x_history)
-            z_pred = self.model.koopman(z_t, u_t)
-            x_pred = self.model.decoder(z_pred)
+            def _compute_losses():
+                x_history_next = torch.cat([x_history[:, 1:, :],
+                                           x_next.unsqueeze(1)], dim=1)
 
-            # ========== 计算三项损失 ==========
+                z_t = self.model.encoder(x_history)
+                z_pred = self.model.koopman(z_t, u_t)
+                x_pred = self.model.decoder(z_pred)
 
-            # 1. 原始空间预测损失
-            L_pred = F.mse_loss(x_pred, x_next)
+                if use_rollout and train_dataset is not None:
+                    raw_indices = batch['_raw_idx'].numpy()
+                    u_seq, x_seq, mask = self._gather_multi_step(
+                        train_dataset, raw_indices, horizon
+                    )
+                    u_seq = self._to_device(u_seq)
+                    x_seq = self._to_device(x_seq)
+                    mask = self._to_device(mask)
 
-            # 2. 升维空间预测损失
-            z_true = self.model.encoder(x_history_next)
-            L_latent = F.mse_loss(z_pred, z_true)
+                    x_pred_seq = self.model.predict_multi_step(x_history, u_seq)
+                    per_step_se = ((x_pred_seq - x_seq) ** 2).mean(dim=2)
+                    step_weights = gamma ** torch.arange(horizon, device=mask.device)
+                    weighted_se = per_step_se * step_weights
+                    masked_se = weighted_se * mask
+                    L_pred = masked_se.sum() / (mask.sum() + 1e-8)
+                else:
+                    L_pred = F.mse_loss(x_pred, x_next)
 
-            # 3. 一致性损失：用预测的x_pred构造窗口，再编码，与z_true比较
-            x_history_pred_next = torch.cat([x_history[:, 1:, :], x_pred.unsqueeze(1)], dim=1)
-            z_from_pred = self.model.encoder(x_history_pred_next)
-            L_consistency = F.mse_loss(z_from_pred, z_true)
+                z_true = self.model.encoder(x_history_next)
+                L_latent = F.mse_loss(z_pred, z_true)
 
-            # 总损失（加权组合）
-            loss = (loss_weights['prediction'] * L_pred +
-                    loss_weights['latent'] * L_latent +
-                    loss_weights['consistency'] * L_consistency)
+                x_history_pred_next = torch.cat(
+                    [x_history[:, 1:, :], x_pred.unsqueeze(1)], dim=1
+                )
+                z_from_pred = self.model.encoder(x_history_pred_next)
+                L_consistency = F.mse_loss(z_from_pred, z_true)
 
-            # 反向传播
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                loss = (loss_weights['prediction'] * L_pred +
+                        loss_weights['latent'] * L_latent +
+                        loss_weights['consistency'] * L_consistency)
+                return loss, L_pred, L_latent, L_consistency
+
+            if self.use_amp:
+                with torch.amp.autocast("cuda"):
+                    loss, L_pred, L_latent, L_consistency = _compute_losses()
+                self.scaler.scale(loss).backward()
+                self.scaler.step(optimizer)
+                self.scaler.update()
+            else:
+                loss, L_pred, L_latent, L_consistency = _compute_losses()
+                loss.backward()
+                optimizer.step()
 
             total_loss += loss.item()
             loss_pred_total += L_pred.item()
@@ -347,6 +403,50 @@ class EDMDTrainer:
         print(f"  [损失分解] Pred: {avg_pred:.6f}, Latent: {avg_latent:.6f}, Consistency: {avg_consistency:.6f}")
 
         return avg_loss
+
+    # ─────────────────────────────────────────────────────────────────
+    #  Helper: gather multi-step u / x targets from the raw dataset
+    # ─────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _gather_multi_step(dataset, raw_indices, horizon):
+        """For each raw position ``i``, collect ``horizon``-step targets.
+
+        Returns:
+            u_seq  ``[B, H, m]``
+            x_seq  ``[B, H, n]``
+            mask   ``[B, H]``  -- 1 = valid step, 0 = crossed trajectory boundary
+        """
+        raw_indices = np.asarray(raw_indices, dtype=np.int64)
+        n = dataset.n
+        m = dataset.m
+        x_raw = dataset.x
+        u_raw = dataset.u
+        traj_id = dataset.trajectory_id
+        n_samples = len(x_raw)
+
+        h_offsets_u = np.arange(horizon, dtype=np.int64)
+        h_offsets_x = np.arange(1, horizon + 1, dtype=np.int64)
+        pos_u = raw_indices[:, None] + h_offsets_u[None, :]
+        pos_x = raw_indices[:, None] + h_offsets_x[None, :]
+
+        pos_u_safe = np.clip(pos_u, 0, n_samples - 1)
+        pos_x_safe = np.clip(pos_x, 0, n_samples - 1)
+        ref_traj = traj_id[raw_indices][:, None]
+
+        valid_u = (pos_u < n_samples) & (traj_id[pos_u_safe] == ref_traj)
+        valid_x = (pos_x < n_samples) & (traj_id[pos_x_safe] == ref_traj)
+        step_mask = (valid_u & valid_x).astype(np.float32)
+        mask_seq = np.cumprod(step_mask, axis=1)
+
+        u_seq = u_raw[pos_u_safe]
+        x_seq = x_raw[pos_x_safe]
+
+        return (
+            torch.from_numpy(u_seq.astype(np.float32)),
+            torch.from_numpy(x_seq.astype(np.float32)),
+            torch.from_numpy(mask_seq.astype(np.float32)),
+        )
 
     def _compute_koopman_with_edmd(self, train_dataset):
         """
@@ -421,22 +521,25 @@ class EDMDTrainer:
                 u_t = self._to_device(batch['u_t'])
                 x_next = self._to_device(batch['x_next'])
 
-                # 编码当前状态
-                z_t = self.model.encoder(x_history)
+                x_history_next = torch.cat(
+                    [x_history[:, 1:, :], x_next.unsqueeze(1)], dim=1
+                )
 
-                # 编码下一时刻状态
-                # 需要构造下一时刻的历史窗口：去掉第一个，加上x_next
-                x_history_next = torch.cat([x_history[:, 1:, :],
-                                           x_next.unsqueeze(1)], dim=1)
-                z_next = self.model.encoder(x_history_next)
+                if self.use_amp:
+                    with torch.amp.autocast("cuda"):
+                        z_t = self.model.encoder(x_history)
+                        z_next = self.model.encoder(x_history_next)
+                else:
+                    z_t = self.model.encoder(x_history)
+                    z_next = self.model.encoder(x_history_next)
 
-                Z_list.append(z_t.cpu().numpy())
-                Z_next_list.append(z_next.cpu().numpy())
-                U_list.append(u_t.cpu().numpy())
+                Z_list.append(z_t)
+                Z_next_list.append(z_next)
+                U_list.append(u_t)
 
-        Z = np.concatenate(Z_list, axis=0)
-        Z_next = np.concatenate(Z_next_list, axis=0)
-        U = np.concatenate(U_list, axis=0)
+        Z = torch.cat(Z_list, dim=0).cpu().numpy()
+        Z_next = torch.cat(Z_next_list, dim=0).cpu().numpy()
+        U = torch.cat(U_list, dim=0).cpu().numpy()
 
         return Z, Z_next, U
 
@@ -486,8 +589,13 @@ class EDMDTrainer:
                 u_t = self._to_device(batch['u_t'])
                 x_next = self._to_device(batch['x_next'])
 
-                x_pred = self.model(x_history, u_t)
-                loss = F.mse_loss(x_pred, x_next)
+                if self.use_amp:
+                    with torch.amp.autocast("cuda"):
+                        x_pred = self.model(x_history, u_t)
+                        loss = F.mse_loss(x_pred, x_next)
+                else:
+                    x_pred = self.model(x_history, u_t)
+                    loss = F.mse_loss(x_pred, x_next)
                 total_loss += loss.item()
 
         return total_loss / len(val_loader)

@@ -14,6 +14,7 @@ from patchtst_koopman.data.dataset import KoopmanDataset
 from patchtst_koopman.models.full_model import PatchTSTKoopmanModel
 from patchtst_koopman.utils.config_loader import load_config
 from patchtst_koopman.utils.device import resolve_device
+from patchtst_koopman.utils.seed import configure_cuda_performance
 
 
 def find_latest_results_dir(platform, results_root):
@@ -137,6 +138,7 @@ def main():
     base_config = load_config(config_path)
     device = resolve_device(base_config["experiment"].get("device", "cuda"))
     base_config["experiment"]["device"] = device
+    configure_cuda_performance(base_config)
     base_config["data"]["platform"] = args.platform
 
     test_metrics = {}

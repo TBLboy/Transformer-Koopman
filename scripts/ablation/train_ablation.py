@@ -24,7 +24,8 @@ from patchtst_koopman.utils.config_loader import load_config
 from patchtst_koopman.utils.data_prep import prepare_datasets
 from patchtst_koopman.utils.device import resolve_device
 from patchtst_koopman.utils.evaluation import evaluate_on_first_trajectory
-from patchtst_koopman.utils.seed import set_seed
+from patchtst_koopman.training.performance import apply_gpu_training_defaults
+from patchtst_koopman.utils.seed import configure_cuda_performance, set_seed
 
 
 def build_ablation_variants(platform):
@@ -260,14 +261,23 @@ def main():
     if args.precision:
         config["experiment"]["precision"] = args.precision
 
-    set_seed(config["experiment"]["seed"])
-    precision = config["experiment"].get("precision", "float32")
-    torch.set_default_dtype(torch.float64 if precision == "float64" else torch.float32)
+    apply_gpu_training_defaults(config)
 
     device = resolve_device(args.device or config["experiment"]["device"])
     config["experiment"]["device"] = device
     config["data"]["platform"] = args.platform
+
+    set_seed(config["experiment"]["seed"])
+    configure_cuda_performance(config)
+    precision = config["experiment"].get("precision", "float32")
+    torch.set_default_dtype(torch.float64 if precision == "float64" else torch.float32)
+
     print(f"  Device:   {device}")
+    print(
+        f"  Training: batch={config['training']['edmd']['pretrain']['batch_size']}, "
+        f"workers={config['training'].get('num_workers', 0)}, "
+        f"amp={config['experiment'].get('amp', True)}"
+    )
 
     save_base_dir = args.save_dir or config["experiment"]["save_dir"]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -286,6 +296,8 @@ def main():
         all_results[variant_id] = train_variant(
             variant_id, variant_info, config, device, save_dir
         )
+        if device == "cuda":
+            torch.cuda.empty_cache()
 
     baseline_rmse = all_results.get("full_model", {}).get("rmse")
 
