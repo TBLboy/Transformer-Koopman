@@ -1,0 +1,106 @@
+# ============================================================
+# 消融实验配置 - Platform 2 (Soft Robot)
+# 独立于主实验配置，修改主实验配置不会影响消融实验
+# ============================================================
+
+# ============================================================
+# 实验基本设置
+# ============================================================
+experiment:
+  name: "ablation_platform2"
+  seed: 42
+  device: "cuda"
+  precision: "float64"
+  log_dir: "./results/logs/ablation_platform2"
+  save_dir: "./results/ablation/platform2"
+
+# ============================================================
+# 数据相关参数
+# ============================================================
+data:
+  data_dir: "./data/experiment_006"
+  train_file: "train.npz"
+  val_file: "val.npz"
+  test_file: "test.npz"
+  state_dim: 2
+  control_dim: 2
+  normalize_state: true
+  normalize_control: true
+  normalization_method: "standard"
+  add_noise: false
+  noise_level: 0.0
+  noise_type: "gaussian"
+
+# ============================================================
+# PatchTST编码器参数（基线模型）
+# ============================================================
+encoder:
+  history_length: 4       # P: 历史时刻数
+  patch_length: 2         # p: 每个patch的长度
+  latent_dim: 8           # d: 潜在空间维度
+  d_model: 16             # Transformer模型维度
+  n_layers: 3             # L: Transformer层数
+  n_heads: 2              # 多头注意力的头数
+  d_ff: 64                # 前馈网络维度
+  dropout: 0.1
+  positional_encoding: "sinusoidal"
+  readout_method: "mean"
+
+# ============================================================
+# Koopman动力学参数
+# ============================================================
+koopman:
+  enforce_stability: false
+  rho_max: 0.9999
+  model_type: "linear"
+
+# ============================================================
+# 线性降维参数
+# ============================================================
+decoder:
+  decoder_type: "linear"
+
+# ============================================================
+# 训练参数
+# ============================================================
+training:
+  method: "edmd"
+  num_workers: 4
+
+  edmd:
+    pretrain:
+      enabled: true
+      num_epochs: 500
+      batch_size: 128
+      learning_rate: 0.0010
+      optimizer: "adam"
+      early_stopping: true
+      patience: 100
+      min_delta: 0.00001
+      loss_weights:
+        prediction: 1.0
+        latent: 1.0
+        consistency: 1.0
+
+    compute:
+      regularization: 0.000001
+      svd_clipping: false
+      batch_encode: false
+      batch_size: 1024
+
+    decoder:
+      method: "least_squares"
+      regularization: 0.000001
+
+# ============================================================
+# 消融实验参数扫描范围
+# ============================================================
+ablation:
+  # 模块消融变体
+  module_variants: ["no_patch", "no_attention", "no_positional"]
+
+  # 参数扫描范围
+  patch_ablations: [1, 4]
+  history_ablations: [2, 4, 6, 8, 12, 16]
+  n_layers_ablations: [1, 2, 3, 4]
+  latent_dim_ablations: [4, 8, 16, 32, 64]

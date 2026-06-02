@@ -7,7 +7,6 @@ factory functions. This package replaces it with a regular
 
 from .positional_encoding import PositionalEncoding
 from .models import AblationModel
-from .platform_configs import PLATFORM_CONFIGS, get_platform_config
 from .models import (
     create_full_model,
     create_no_attention,
@@ -22,8 +21,6 @@ from .models import (
 __all__ = [
     "PositionalEncoding",
     "AblationModel",
-    "PLATFORM_CONFIGS",
-    "get_platform_config",
     "create_full_model",
     "create_no_attention",
     "create_no_patch",

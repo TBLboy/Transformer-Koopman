@@ -102,20 +102,12 @@ training:
         latent: 1.0            # λ₂: 升维空间预测损失
         consistency: 1.0       # λ₃: 一致性约束损失
 
-    # 多步预测视野（H=1 → 单步，与原版一致）
-    rollout:
-      horizon: 1               # 预测步数
-      gamma: 0.95              # 步间衰减因子（越远权重越低）
-
     # EDMD计算参数
     compute:
       regularization: 0.000001    # Tikhonov正则化
       svd_clipping: false     # 关闭SVD限制
       batch_encode: false      # 是否批量编码（节省内存）
       batch_size: 1024         # 编码时的batch size
-
-    # 阶段2：是否在预训练后用 EDMD 闭式解替换梯度训练得到的 A/B
-    refit_koopman_after_pretrain: true
 
     # 降维矩阵学习
     decoder:

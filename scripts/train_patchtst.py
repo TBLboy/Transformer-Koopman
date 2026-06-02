@@ -20,7 +20,6 @@ from patchtst_koopman.utils.evaluation import (
     evaluate_on_first_trajectory,
     plot_trajectory_comparison,
 )
-from patchtst_koopman.training.performance import apply_gpu_training_defaults
 from patchtst_koopman.utils.seed import configure_cuda_performance, set_seed
 
 
@@ -74,7 +73,6 @@ def main():
     config["experiment"]["device"] = resolve_device(config["experiment"]["device"])
     print(f"Using device: {config['experiment']['device']}")
 
-    apply_gpu_training_defaults(config)
     set_seed(config["experiment"]["seed"])
     configure_cuda_performance(config)
 

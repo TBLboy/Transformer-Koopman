@@ -18,7 +18,6 @@ import numpy as np
 import torch
 
 from patchtst_koopman.ablation.models import ABLATION_MODELS
-from patchtst_koopman.ablation.platform_configs import PLATFORM_CONFIGS, get_platform_config
 from patchtst_koopman.training.edmd_trainer import EDMDTrainer
 from patchtst_koopman.utils.config_loader import load_config
 from patchtst_koopman.utils.data_prep import prepare_datasets
@@ -28,9 +27,9 @@ from patchtst_koopman.training.performance import apply_gpu_training_defaults
 from patchtst_koopman.utils.seed import configure_cuda_performance, set_seed
 
 
-def build_ablation_variants(platform):
+def build_ablation_variants(config):
     """Build the dict of ``variant_id -> {name, create_model, config_updates}``."""
-    platform_config = get_platform_config(platform)
+    ablation_cfg = config.get("ablation", {})
 
     variants = {
         "full_model": {
@@ -55,28 +54,28 @@ def build_ablation_variants(platform):
         },
     }
 
-    for L in platform_config["patch_ablations"]:
+    for L in ablation_cfg.get("patch_ablations", []):
         variants[f"patch_L{L}"] = {
             "name": f"Patch Length L={L}",
             "create_model": lambda config, L=L: ABLATION_MODELS["patch_L"](config, L),
             "config_updates": {"encoder": {"patch_length": L}},
         }
 
-    for P in platform_config["history_ablations"]:
+    for P in ablation_cfg.get("history_ablations", []):
         variants[f"history_P{P}"] = {
             "name": f"History P={P}",
             "create_model": lambda config, P=P: ABLATION_MODELS["history_P"](config, P),
             "config_updates": {"encoder": {"history_length": P}},
         }
 
-    for L in platform_config["n_layers_ablations"]:
+    for L in ablation_cfg.get("n_layers_ablations", []):
         variants[f"n_layers_L{L}"] = {
             "name": f"Transformer L={L} layers",
             "create_model": lambda config, L=L: ABLATION_MODELS["n_layers"](config, L),
             "config_updates": {"encoder": {"n_layers": L}},
         }
 
-    for d in platform_config["latent_dim_ablations"]:
+    for d in ablation_cfg.get("latent_dim_ablations", []):
         variants[f"latent_dim_d{d}"] = {
             "name": f"Latent dim d={d}",
             "create_model": lambda config, d=d: ABLATION_MODELS["latent_dim"](config, d),
@@ -228,13 +227,13 @@ def main():
         "--platform",
         type=str,
         default="platform1",
-        choices=list(PLATFORM_CONFIGS.keys()),
+        choices=["platform1", "platform2"],
     )
     parser.add_argument(
         "--config",
         type=str,
         default=None,
-        help="YAML config path (defaults to configs/<platform>.yaml)",
+        help="YAML config path (defaults to scripts/ablation/ablation_<platform>.yaml)",
     )
     parser.add_argument(
         "--variants",
@@ -252,9 +251,9 @@ def main():
     print("=" * 60)
     print("Ablation training")
     print("=" * 60)
-    print(f"  Platform: {args.platform}  ({PLATFORM_CONFIGS[args.platform]['name']})")
+    print(f"  Platform: {args.platform}")
 
-    config_path = args.config or f"configs/{args.platform}.yaml"
+    config_path = args.config or f"scripts/ablation/ablation_{args.platform}.yaml"
     config = load_config(config_path)
     print(f"  Config:   {config_path}")
 
@@ -284,7 +283,7 @@ def main():
     save_dir = os.path.join(save_base_dir, f"ablation_{args.platform}", timestamp)
     os.makedirs(save_dir, exist_ok=True)
 
-    all_variants = build_ablation_variants(args.platform)
+    all_variants = build_ablation_variants(config)
     variants_to_run = select_variants(args.variants, all_variants)
 
     print(f"\nVariants to run: {len(variants_to_run)}")
@@ -317,20 +316,24 @@ def main():
         else:
             print(f"{result['name']:<40} {'FAILED':<12}")
 
-    platform_config = PLATFORM_CONFIGS[args.platform]
+    ablation_cfg = config.get("ablation", {})
     results_file = os.path.join(save_dir, "ablation_results.json")
     with open(results_file, "w", encoding="utf-8") as f:
         json.dump(
             {
                 "platform": args.platform,
-                "platform_name": platform_config["name"],
                 "timestamp": timestamp,
-                "baseline_params": platform_config["baseline"],
+                "baseline_params": {
+                    "history_length": config["encoder"]["history_length"],
+                    "patch_length": config["encoder"]["patch_length"],
+                    "latent_dim": config["encoder"]["latent_dim"],
+                    "d_model": config["encoder"].get("d_model", 0),
+                },
                 "ablation_ranges": {
-                    "patch_lengths": platform_config["patch_ablations"],
-                    "history_lengths": platform_config["history_ablations"],
-                    "n_layers": platform_config["n_layers_ablations"],
-                    "latent_dims": platform_config["latent_dim_ablations"],
+                    "patch_lengths": ablation_cfg.get("patch_ablations", []),
+                    "history_lengths": ablation_cfg.get("history_ablations", []),
+                    "n_layers": ablation_cfg.get("n_layers_ablations", []),
+                    "latent_dims": ablation_cfg.get("latent_dim_ablations", []),
                 },
                 "results": all_results,
                 "baseline_rmse": baseline_rmse,
