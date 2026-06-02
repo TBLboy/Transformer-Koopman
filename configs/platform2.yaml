@@ -4,12 +4,8 @@
 experiment:
   name: "platform2_patchtst"
   seed: 42
-  device: "cuda"
-  precision: "float32"  # float32 (单精度) / float64 (双精度)
-  deterministic: false
-  cudnn_benchmark: true
-  amp: true
-  allow_tf32: true
+  device: "cuda"  # 改为CPU
+  precision: "float64"  # float32 (单精度) / float64 (双精度)
   log_dir: "./results/logs/platform2"
   save_dir: "./results/models/platform2"
 
@@ -44,7 +40,7 @@ data:
 # ============================================================
 encoder:
   # 历史窗口
-  history_length: 8    # P: 历史时刻数
+  history_length: 4    # P: 历史时刻数
   patch_length: 2       # p: 每个patch的长度
 
   # 模型维度
@@ -52,7 +48,7 @@ encoder:
   d_model: 16          # Transformer模型维度
 
   # Transformer结构
-  n_layers: 1           # L: Transformer层数（增加）
+  n_layers: 3           # L: Transformer层数（增加）
   n_heads: 2            # 多头注意力的头数
   d_ff: 64             # 前馈网络维度
   dropout: 0.1
@@ -93,7 +89,7 @@ training:
     pretrain:
       enabled: true           # 是否预训练编码器
       num_epochs: 500         # 预训练轮数（再增加）
-      batch_size: 1024        # RTX 5060 Ti 16GB
+      batch_size: 128         # 再减小batch size
       learning_rate: 0.0010   # 再降低学习率
       optimizer: "adam"
       early_stopping: true
@@ -108,15 +104,18 @@ training:
 
     # 多步预测视野（H=1 → 单步，与原版一致）
     rollout:
-      horizon: 10               # 预测步数
+      horizon: 1               # 预测步数
       gamma: 0.95              # 步间衰减因子（越远权重越低）
 
     # EDMD计算参数
     compute:
-      regularization: 0.0001    # Tikhonov正则化
+      regularization: 0.000001    # Tikhonov正则化
       svd_clipping: false     # 关闭SVD限制
       batch_encode: false      # 是否批量编码（节省内存）
       batch_size: 1024         # 编码时的batch size
+
+    # 阶段2：是否在预训练后用 EDMD 闭式解替换梯度训练得到的 A/B
+    refit_koopman_after_pretrain: true
 
     # 降维矩阵学习
     decoder:
@@ -179,8 +178,7 @@ training:
   save_best_only: true
 
   # 设备和并行
-  num_workers: 4              # DataLoader worker 数量（Windows 需 if __name__ guard）
-  prefetch_factor: 4          # 每个 worker 预取 batch 数
+  num_workers: 4              # DataLoader的worker数量
 
 # ============================================================
 # 控制器参数
@@ -239,6 +237,51 @@ mlp_koopman:
 
   # ── 训练方式 ────────────────────────────────────────────────
   training_method: "end_to_end"   # edmd / end_to_end（与训练好的模型一致）
+
+  # ── EDMD 训练参数 ────────────────────────────────────────────
+  edmd:
+    pretrain:
+      enabled: true
+      num_epochs: 300
+      batch_size: 128
+      learning_rate: 0.0003
+      optimizer: "adam"
+      early_stopping: true
+      patience: 50
+      min_delta: 0.00001
+      loss_weights:
+        prediction: 1.0
+        latent: 0.5
+        consistency: 0.5
+
+    compute:
+      regularization: 0.000001
+      batch_size: 1024
+
+  # ── 端到端训练参数 ───────────────────────────────────────────
+  end_to_end:
+    num_epochs: 300
+    batch_size: 128
+    learning_rate: 0.0003
+    optimizer: "adam"
+    early_stopping: true
+    patience: 50
+    min_delta: 0.00001
+    grad_clip: 1.0
+
+# ============================================================
+# LSTM-Koopman 参数（时序对照基线）
+# ============================================================
+lstm_koopman:
+  # ── 编码器结构 ──────────────────────────────────────────────
+  latent_dim: 8             # d: 升维后的潜在空间维度
+  hidden_size: 32           # LSTM 隐藏层维度
+  n_layers: 2               # LSTM 层数
+  dropout: 0.1              # LSTM 层间 dropout
+  bidirectional: false      # 是否双向 LSTM
+
+  # ── 训练方式 ────────────────────────────────────────────────
+  training_method: "end_to_end"   # edmd / end_to_end
 
   # ── EDMD 训练参数 ────────────────────────────────────────────
   edmd:

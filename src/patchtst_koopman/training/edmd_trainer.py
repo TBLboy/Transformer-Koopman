@@ -14,8 +14,9 @@ class EDMDTrainer:
     EDMD训练方法
 
     流程：
-        阶段1：预训练编码器和降维矩阵（端到端）
-        阶段2：固定编码器，用EDMD计算Koopman矩阵
+        阶段0：随机编码器 + EDMD 初始化 Koopman 矩阵
+        阶段1：预训练编码器与 Koopman 矩阵（含多步预测损失）
+        阶段2（可选）：固定编码器，EDMD 闭式解重拟合 A/B
     """
 
     def __init__(self, model, config):
@@ -30,6 +31,7 @@ class EDMDTrainer:
             and exp.get('precision', 'float32') == 'float32'
         )
         self.scaler = torch.amp.GradScaler('cuda', enabled=self.use_amp)
+        self._rollout_cache = {}
 
     def _loader_kwargs(self, shuffle=False, batch_size=256):
         """Create DataLoader kwargs with CUDA-friendly defaults."""
@@ -49,6 +51,11 @@ class EDMDTrainer:
 
     def _to_device(self, tensor):
         return tensor.to(self.device, non_blocking=(self.device == 'cuda'))
+
+    def _accumulate_loss(self, total, value):
+        """Accumulate scalar losses without synchronising CUDA every batch."""
+        value = value.detach()  # 保留原始 dtype (float32/float64)
+        return value if total is None else total + value
 
     def train(self, train_dataset, val_dataset):
         """统一训练入口：根据 ``config.training.method`` 自动调度 EDMD 或 End-to-End。"""
@@ -79,6 +86,10 @@ class EDMDTrainer:
         val_loader = DataLoader(
             val_dataset,
             **self._loader_kwargs(batch_size=e2e["batch_size"]),
+        )
+
+        optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=e2e["learning_rate"]
         )
 
         scheduler_type = e2e.get("scheduler", "reduce_on_plateau")
@@ -112,7 +123,7 @@ class EDMDTrainer:
         for epoch in range(e2e["num_epochs"]):
             # ── 训练 ──────────────────────────────────────────────
             self.model.train()
-            total_loss = 0
+            total_loss = None
 
             for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}"):
                 x_history = self._to_device(batch["x_history"])
@@ -157,14 +168,14 @@ class EDMDTrainer:
                         )
                     optimizer.step()
 
-                total_loss += loss.item()
+                total_loss = self._accumulate_loss(total_loss, loss)
 
             # ── 可选的 SVD 投影 ──────────────────────────────────
             svd_proj = e2e.get("svd_projection", {})
             if svd_proj.get("enabled", False) and epoch % svd_proj.get("frequency", 1) == 0:
                 self.model.koopman.ensure_stability()
 
-            train_loss = total_loss / len(train_loader)
+            train_loss = (total_loss / len(train_loader)).item()
 
             # ── 验证 ──────────────────────────────────────────────
             val_loss = self._validate(val_loader)
@@ -196,6 +207,14 @@ class EDMDTrainer:
                     self._load_checkpoint("e2e_best.pth")
                     break
 
+        # 训练结束后，始终回载最佳检查点（即使早停未触发）
+        best_path = os.path.join(self.config['experiment']['save_dir'], "e2e_best.pth")
+        if os.path.exists(best_path):
+            self._load_checkpoint("e2e_best.pth")
+            print(f"  >>> 回载最佳检查点 e2e_best.pth (val_loss={best_val_loss:.6f})")
+        else:
+            print("  >>> 未找到最佳检查点，使用最后一轮模型权重")
+
         print(f"端到端训练完成，最佳验证损失: {best_val_loss:.6f}")
 
     def _train_edmd(self, train_dataset, val_dataset):
@@ -219,12 +238,21 @@ class EDMDTrainer:
         else:
             print("\n跳过预训练阶段")
 
-        # ========== 阶段2：最终EDMD优化Koopman矩阵 ==========
-        print("\n" + "=" * 60)
-        print("阶段2：最终EDMD优化Koopman矩阵")
-        print("=" * 60)
-        print("固定编码器，重新计算最优Koopman矩阵...")
-        self._compute_koopman_with_edmd(train_dataset)
+        # ========== 阶段2（可选）：EDMD 重拟合 Koopman 矩阵 ==========
+        refit_after_pretrain = self.edmd_config.get(
+            "refit_koopman_after_pretrain", False
+        )
+        if refit_after_pretrain:
+            print("\n" + "=" * 60)
+            print("阶段2：最终EDMD优化Koopman矩阵")
+            print("=" * 60)
+            print("固定编码器，重新计算最优Koopman矩阵...")
+            self._compute_koopman_with_edmd(train_dataset)
+        else:
+            print("\n" + "=" * 60)
+            print("阶段2：跳过EDMD重拟合")
+            print("=" * 60)
+            print("保留阶段1梯度训练得到的 Koopman 矩阵 (A, B)")
 
         print("\nEDMD训练完成！")
 
@@ -305,6 +333,12 @@ class EDMDTrainer:
                     self._load_checkpoint('pretrain_best.pth')
                     break
 
+        # 训练结束后，始终回载最佳检查点（即使早停未触发）
+        best_path = os.path.join(self.config['experiment']['save_dir'], "pretrain_best.pth")
+        if os.path.exists(best_path):
+            self._load_checkpoint('pretrain_best.pth')
+            print(f"  >>> 回载最佳检查点 pretrain_best.pth (val_loss={best_val_loss:.6f})")
+
         print(f"预训练完成，最佳验证损失: {best_val_loss:.6f}")
 
     def _pretrain_epoch(self, train_loader, optimizer, train_dataset=None):
@@ -315,10 +349,10 @@ class EDMDTrainer:
         H=1 时等价于原来的单步预测损失。
         """
         self.model.train()
-        total_loss = 0
-        loss_pred_total = 0
-        loss_latent_total = 0
-        loss_consistency_total = 0
+        total_loss = None
+        loss_pred_total = None
+        loss_latent_total = None
+        loss_consistency_total = None
 
         # ── 获取损失权重 ────────────────────────────────────────────
         loss_weights = self.edmd_config['pretrain'].get('loss_weights',
@@ -330,6 +364,7 @@ class EDMDTrainer:
         horizon = int(rollout_cfg.get('horizon', 1))
         gamma = float(rollout_cfg.get('gamma', 1.0))
         use_rollout = (horizon > 1)
+        rollout_cache = self._get_rollout_cache(train_dataset, horizon) if use_rollout and train_dataset is not None else None
 
         for batch in tqdm(train_loader, desc="预训练"):
             x_history = self._to_device(batch['x_history'])
@@ -347,9 +382,9 @@ class EDMDTrainer:
                 x_pred = self.model.decoder(z_pred)
 
                 if use_rollout and train_dataset is not None:
-                    raw_indices = batch['_raw_idx'].numpy()
-                    u_seq, x_seq, mask = self._gather_multi_step(
-                        train_dataset, raw_indices, horizon
+                    raw_indices = batch['_raw_idx']
+                    u_seq, x_seq, mask = self._gather_multi_step_from_cache(
+                        rollout_cache, raw_indices
                     )
                     u_seq = self._to_device(u_seq)
                     x_seq = self._to_device(x_seq)
@@ -357,7 +392,9 @@ class EDMDTrainer:
 
                     x_pred_seq = self.model.predict_multi_step(x_history, u_seq)
                     per_step_se = ((x_pred_seq - x_seq) ** 2).mean(dim=2)
-                    step_weights = gamma ** torch.arange(horizon, device=mask.device)
+                    step_weights = gamma ** torch.arange(
+                        horizon, device=mask.device, dtype=per_step_se.dtype
+                    )
                     weighted_se = per_step_se * step_weights
                     masked_se = weighted_se * mask
                     L_pred = masked_se.sum() / (mask.sum() + 1e-8)
@@ -389,15 +426,15 @@ class EDMDTrainer:
                 loss.backward()
                 optimizer.step()
 
-            total_loss += loss.item()
-            loss_pred_total += L_pred.item()
-            loss_latent_total += L_latent.item()
-            loss_consistency_total += L_consistency.item()
+            total_loss = self._accumulate_loss(total_loss, loss)
+            loss_pred_total = self._accumulate_loss(loss_pred_total, L_pred)
+            loss_latent_total = self._accumulate_loss(loss_latent_total, L_latent)
+            loss_consistency_total = self._accumulate_loss(loss_consistency_total, L_consistency)
 
-        avg_loss = total_loss / len(train_loader)
-        avg_pred = loss_pred_total / len(train_loader)
-        avg_latent = loss_latent_total / len(train_loader)
-        avg_consistency = loss_consistency_total / len(train_loader)
+        avg_loss = (total_loss / len(train_loader)).item()
+        avg_pred = (loss_pred_total / len(train_loader)).item()
+        avg_latent = (loss_latent_total / len(train_loader)).item()
+        avg_consistency = (loss_consistency_total / len(train_loader)).item()
 
         # 打印各项损失
         print(f"  [损失分解] Pred: {avg_pred:.6f}, Latent: {avg_latent:.6f}, Consistency: {avg_consistency:.6f}")
@@ -443,9 +480,44 @@ class EDMDTrainer:
         x_seq = x_raw[pos_x_safe]
 
         return (
-            torch.from_numpy(u_seq.astype(np.float32)),
-            torch.from_numpy(x_seq.astype(np.float32)),
-            torch.from_numpy(mask_seq.astype(np.float32)),
+            torch.from_numpy(u_seq),  # 保留 dataset 的原始 dtype (float32/float64)
+            torch.from_numpy(x_seq),  # 保留 dataset 的原始 dtype (float32/float64)
+            torch.from_numpy(mask_seq.astype(np.float32)),  # mask 保持 float32（0/1 值）
+        )
+
+    def _get_rollout_cache(self, dataset, horizon):
+        """Precompute multi-step rollout targets once per dataset/horizon.
+
+        The previous implementation rebuilt these NumPy arrays for every batch,
+        which made CPU preprocessing the bottleneck when the Transformer was
+        already on the GPU.
+        """
+        key = (id(dataset), horizon)
+        if key in self._rollout_cache:
+            return self._rollout_cache[key]
+
+        n_samples = len(dataset.x)
+        raw_indices = np.arange(n_samples, dtype=np.int64)
+        u_seq, x_seq, mask = self._gather_multi_step(dataset, raw_indices, horizon)
+
+        if self.device == 'cuda':
+            u_seq = u_seq.to(self.device, non_blocking=True)
+            x_seq = x_seq.to(self.device, non_blocking=True)
+            mask = mask.to(self.device, non_blocking=True)
+
+        cache = {'u_seq': u_seq, 'x_seq': x_seq, 'mask': mask}
+        self._rollout_cache[key] = cache
+        return cache
+
+    @staticmethod
+    def _gather_multi_step_from_cache(cache, raw_indices):
+        if not torch.is_tensor(raw_indices):
+            raw_indices = torch.as_tensor(raw_indices, dtype=torch.long)
+        raw_indices = raw_indices.to(cache['u_seq'].device, dtype=torch.long, non_blocking=True)
+        return (
+            cache['u_seq'].index_select(0, raw_indices),
+            cache['x_seq'].index_select(0, raw_indices),
+            cache['mask'].index_select(0, raw_indices),
         )
 
     def _compute_koopman_with_edmd(self, train_dataset):
@@ -515,7 +587,7 @@ class EDMDTrainer:
         batch_size = self.edmd_config['compute'].get('batch_size', 256)
         dataloader = DataLoader(dataset, **self._loader_kwargs(batch_size=batch_size))
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for batch in tqdm(dataloader, desc="编码数据"):
                 x_history = self._to_device(batch['x_history'])
                 u_t = self._to_device(batch['u_t'])
@@ -555,7 +627,7 @@ class EDMDTrainer:
 
         # 求解最小二乘问题
         ZU_T_ZU = ZU.T @ ZU
-        reg_matrix = reg * np.eye(ZU_T_ZU.shape[0])
+        reg_matrix = reg * np.eye(ZU_T_ZU.shape[0], dtype=ZU_T_ZU.dtype)
         K = Z_next.T @ ZU @ np.linalg.inv(ZU_T_ZU + reg_matrix)
 
         # 分离A和B
@@ -581,9 +653,9 @@ class EDMDTrainer:
     def _validate(self, val_loader):
         """验证"""
         self.model.eval()
-        total_loss = 0
+        total_loss = None
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for batch in val_loader:
                 x_history = self._to_device(batch['x_history'])
                 u_t = self._to_device(batch['u_t'])
@@ -596,9 +668,9 @@ class EDMDTrainer:
                 else:
                     x_pred = self.model(x_history, u_t)
                     loss = F.mse_loss(x_pred, x_next)
-                total_loss += loss.item()
+                total_loss = self._accumulate_loss(total_loss, loss)
 
-        return total_loss / len(val_loader)
+        return (total_loss / len(val_loader)).item()
 
     def _save_checkpoint(self, filename):
         """保存检查点"""

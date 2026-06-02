@@ -8,6 +8,7 @@ def apply_gpu_training_defaults(config):
     exp.setdefault("cudnn_benchmark", True)
     exp.setdefault("amp", True)
     exp.setdefault("allow_tf32", True)
+    exp.setdefault("float32_matmul_precision", "high")
 
     training = config.setdefault("training", {})
     training.setdefault("num_workers", 4)

@@ -30,8 +30,8 @@ class NoPatchEncoder(nn.Module):
 
         self.d_history = self.latent_dim - self.state_dim
 
-        self.input_embedding = nn.Linear(self.state_dim, self.d_model)
-        self.pos_encoder = PositionalEncoding(d_model=self.d_model)
+        self.patch_embedding = nn.Linear(self.state_dim, self.d_model)
+        self.positional_encoding = PositionalEncoding(d_model=self.d_model)
 
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=self.d_model,
@@ -40,17 +40,17 @@ class NoPatchEncoder(nn.Module):
             dropout=self.dropout,
             batch_first=True,
         )
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=self.n_layers)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=self.n_layers)
 
         self.readout_method = config["encoder"].get("readout_method", "mean")
-        self.output_projection = nn.Linear(self.d_model, self.d_history)
+        self.projection = nn.Linear(self.d_model, self.d_history)
 
     def forward(self, x):
         x_t = x[:, -1, :]
 
-        x = self.input_embedding(x)
-        x = self.pos_encoder(x)
-        x = self.transformer_encoder(x)
+        x = self.patch_embedding(x)
+        x = self.positional_encoding(x)
+        x = self.transformer(x)
 
         if self.readout_method == "mean":
             x = x.mean(dim=1)
@@ -59,5 +59,5 @@ class NoPatchEncoder(nn.Module):
         elif self.readout_method == "last":
             x = x[:, -1, :]
 
-        h_t = self.output_projection(x)
+        h_t = self.projection(x)
         return torch.cat([x_t, h_t], dim=1)

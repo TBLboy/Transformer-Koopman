@@ -151,7 +151,7 @@ class TraditionalEDMDTrainer:
 
         ZU = np.concatenate([Z, U], axis=1)          # [N, d+m]
         ZU_T_ZU = ZU.T @ ZU                           # [d+m, d+m]
-        reg_mat = reg * np.eye(ZU_T_ZU.shape[0])
+        reg_mat = reg * np.eye(ZU_T_ZU.shape[0], dtype=ZU_T_ZU.dtype)
         K = Z_next.T @ ZU @ np.linalg.inv(ZU_T_ZU + reg_mat)  # [d, d+m]
 
         d = Z.shape[1]

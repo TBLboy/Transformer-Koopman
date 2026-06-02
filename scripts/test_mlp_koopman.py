@@ -43,7 +43,10 @@ def main():
     checkpoint = torch.load(args.model_path, map_location=device, weights_only=False)
     model = MLPKoopmanModel(checkpoint["config"])
     model.load_state_dict(checkpoint["model_state_dict"])
-    model = model.to(device).float()
+    
+    precision = checkpoint["config"]["experiment"].get("precision", "float32")
+    model = model.double() if precision == "float64" else model.float()
+    model = model.to(device)
     model.eval()
 
     norm_stats = checkpoint.get("normalization")

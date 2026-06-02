@@ -10,10 +10,10 @@ from matplotlib import font_manager, rcParams
 
 
 # ==============================
-# Adjustable parameters — paths default to the new project layout.
-# Override ROOT_DIR / OUTPUT_DIR to point at a different code-projectv2 checkout.
+# Adjustable parameters
 # ==============================
 ROOT_DIR = Path(__file__).resolve().parents[2]
+RESULTS_ROOT = ROOT_DIR / "results"
 OUTPUT_DIR = ROOT_DIR / "figures" / "ablation"
 
 FIGSIZE = (3.45, 2.4)
@@ -46,13 +46,9 @@ class VariantSpec:
     group: str
 
 
-PLATFORMS = {
+PLATFORM_VARIANTS = {
     "platform1": {
-        "baseline_rmse": 0.19248,
-        "json_path": ROOT_DIR / "results" / "models" / "ablation_platform1" / "20260512_230907" / "test_results.json",
-        "table_caption": "Ablation results on the flexible manipulator platform.",
-        "table_label": "tab:ablation_flexible",
-        "table_file": "table_ablation_flexible.tex",
+        "name": "Platform 1 (Flexible Manipulator)",
         "figure_label": "fig:ablation_flexible",
         "figure_pdf": "fig_ablation_flexible.pdf",
         "figure_png": "fig_ablation_flexible.png",
@@ -61,6 +57,9 @@ PLATFORMS = {
             "The results show that attention removal and excessive latent lifting cause the most severe degradation, "
             "while positional encoding has only a marginal effect."
         ),
+        "table_caption": "Ablation results on the flexible manipulator platform.",
+        "table_label": "tab:ablation_flexible",
+        "table_file": "table_ablation_flexible.tex",
         "xlim": FLEX_XLIM,
         "plot_order": [
             "latent_dim_d128",
@@ -89,11 +88,7 @@ PLATFORMS = {
         ],
     },
     "platform2": {
-        "baseline_rmse": 0.78149,
-        "json_path": ROOT_DIR / "results" / "models" / "ablation_platform2" / "20260514_084213" / "test_results.json",
-        "table_caption": "Ablation results on the soft robot platform.",
-        "table_label": "tab:ablation_soft",
-        "table_file": "table_ablation_soft.tex",
+        "name": "Platform 2 (Soft Robot)",
         "figure_label": "fig:ablation_soft",
         "figure_pdf": "fig_ablation_soft.pdf",
         "figure_png": "fig_ablation_soft.png",
@@ -102,6 +97,9 @@ PLATFORMS = {
             "Unlike the flexible manipulator, the soft robot is highly sensitive to positional encoding and history length, "
             "indicating stronger dependence on temporal ordering and longer memory."
         ),
+        "table_caption": "Ablation results on the soft robot platform.",
+        "table_label": "tab:ablation_soft",
+        "table_file": "table_ablation_soft.tex",
         "xlim": SOFT_XLIM,
         "plot_order": [
             "n_layers_L2",
@@ -134,6 +132,26 @@ PLATFORMS = {
 }
 
 
+def _load_latest_metrics(platform):
+    """Find the latest run for a platform and load metrics."""
+    base = RESULTS_ROOT / f"ablation_{platform}"
+    if not base.exists():
+        return None, None
+    dirs = sorted([d for d in base.iterdir() if d.is_dir()], reverse=True)
+    if not dirs:
+        return None, None
+    for name in ("test_results.json", "ablation_results.json"):
+        p = dirs[0] / name
+        if p.exists():
+            with p.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+            metrics = data.get("test_metrics", data.get("results", None))
+            if metrics is None:
+                metrics = data
+            return metrics, p
+    return None, None
+
+
 def configure_fonts() -> None:
     candidates = ["Times New Roman", "Times", "Nimbus Roman", "DejaVu Serif"]
     installed = {font.name for font in font_manager.fontManager.ttflist}
@@ -157,23 +175,32 @@ def escape_latex(text: str) -> str:
     return text.replace("%", "\\%").replace("_", "\\_")
 
 
-def load_metrics(json_path: Path) -> dict:
-    with json_path.open("r", encoding="utf-8") as f:
-        return json.load(f)["test_metrics"]
-
-
 def build_rows(platform_key: str) -> list[dict]:
-    cfg = PLATFORMS[platform_key]
-    metrics = load_metrics(cfg["json_path"])
-    baseline = cfg["baseline_rmse"]
-    best_variant_id = min(metrics.items(), key=lambda item: item[1]["rmse"])[0]
+    cfg = PLATFORM_VARIANTS[platform_key]
+    metrics, src_path = _load_latest_metrics(platform_key)
+    if metrics is None:
+        raise FileNotFoundError(
+            f"No ablation results found for {platform_key} under {RESULTS_ROOT}"
+        )
+
+    baseline_entry = metrics.get("full_model")
+    baseline = float(baseline_entry["rmse"]) if baseline_entry else None
+    if baseline is None:
+        raise ValueError(f"No full_model (baseline) found for {platform_key}")
+
+    best_variant_id = min(metrics.items(), key=lambda item: float(item[1]["rmse"]))[0]
     rows: list[dict] = []
 
     for spec in cfg["variants"]:
-        metric = metrics[spec.variant_id]
+        metric = metrics.get(spec.variant_id)
+        if metric is None or metric.get("rmse") is None:
+            print(f"  WARNING: {spec.variant_id} not found or failed in {src_path}, skipping")
+            continue
         rmse = round(float(metric["rmse"]), 5)
         mae = round(float(metric["mae"]), 5)
         delta = round((rmse - baseline) / baseline * 100.0, 1)
+        raw_params = metric.get("params")
+        params_val = int(raw_params) if raw_params is not None else 0
         rows.append(
             {
                 "platform": platform_key,
@@ -183,7 +210,7 @@ def build_rows(platform_key: str) -> list[dict]:
                 "short_label": spec.short_label,
                 "rmse": rmse,
                 "mae": mae,
-                "params": int(metric["params"]),
+                "params": params_val,
                 "delta_rmse_percent": delta,
                 "is_baseline": spec.variant_id == "full_model",
                 "is_best": spec.variant_id == best_variant_id,
@@ -231,7 +258,7 @@ def delta_text(row: dict) -> str:
 
 
 def write_table(platform_key: str, rows: list[dict], output_path: Path) -> None:
-    cfg = PLATFORMS[platform_key]
+    cfg = PLATFORM_VARIANTS[platform_key]
     lines = [
         "\\begin{table}[t]",
         "\\centering",
@@ -267,7 +294,7 @@ def write_table(platform_key: str, rows: list[dict], output_path: Path) -> None:
 
 
 def write_plot(platform_key: str, rows: list[dict], pdf_path: Path, png_path: Path) -> None:
-    cfg = PLATFORMS[platform_key]
+    cfg = PLATFORM_VARIANTS[platform_key]
     row_map = {row["variant_id"]: row for row in rows}
     selected = [row_map[variant_id] for variant_id in cfg["plot_order"]]
 
@@ -382,7 +409,7 @@ def main() -> None:
     write_csv(all_rows, OUTPUT_DIR / "ablation_data_clean.csv")
 
     for platform_key, rows in rows_by_platform.items():
-        cfg = PLATFORMS[platform_key]
+        cfg = PLATFORM_VARIANTS[platform_key]
         write_table(platform_key, rows, OUTPUT_DIR / cfg["table_file"])
         write_plot(platform_key, rows, OUTPUT_DIR / cfg["figure_pdf"], OUTPUT_DIR / cfg["figure_png"])
 

@@ -41,11 +41,13 @@ def configure_cuda_performance(config):
     torch.backends.cudnn.benchmark = cudnn_benchmark and not deterministic
     torch.backends.cuda.matmul.allow_tf32 = exp.get("allow_tf32", True)
     torch.backends.cudnn.allow_tf32 = exp.get("allow_tf32", True)
+    torch.set_float32_matmul_precision(exp.get("float32_matmul_precision", "high"))
 
     print(
         "CUDA performance: "
         f"deterministic={deterministic}, "
         f"cudnn.benchmark={torch.backends.cudnn.benchmark}, "
         f"amp={use_amp}, "
-        f"tf32={exp.get('allow_tf32', True)}"
+        f"tf32={exp.get('allow_tf32', True)}, "
+        f"matmul_precision={exp.get('float32_matmul_precision', 'high')}"
     )

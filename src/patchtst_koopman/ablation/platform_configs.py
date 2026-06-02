@@ -18,9 +18,9 @@ PLATFORM_CONFIGS = {
             "d_model": 128,
         },
         "patch_ablations": [2, 8],
-        "history_ablations": [8, 32],
+        "history_ablations": [4, 8, 32],
         "n_layers_ablations": [1, 2, 4],
-        "latent_dim_ablations": [32, 128],
+        "latent_dim_ablations": [12, 32, 128],
     },
     "platform2": {
         "name": "Platform 2 (Soft Robot)",
@@ -33,9 +33,9 @@ PLATFORM_CONFIGS = {
             "d_model": 16,
         },
         "patch_ablations": [1, 4],
-        "history_ablations": [2, 8],
+        "history_ablations": [2, 6, 8],
         "n_layers_ablations": [1, 2],
-        "latent_dim_ablations": [4, 32],
+        "latent_dim_ablations": [4, 8, 32],
     },
 }
 

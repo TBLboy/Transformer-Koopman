@@ -54,8 +54,10 @@ u_traj = u_norm[mask]
 print(f"  Trajectory length: {len(x_traj)} points")
 
 # ── 10-step rollout ──────────────────────────────────────────────────────
-history = torch.tensor(x_traj[:P], dtype=torch.float32, device=device).unsqueeze(0)
-u_seq = torch.tensor(u_traj[P:P+10], dtype=torch.float32, device=device).unsqueeze(0)
+precision = config["experiment"].get("precision", "float32")
+dtype = torch.float64 if precision == "float64" else torch.float32
+history = torch.tensor(x_traj[:P], dtype=dtype, device=device).unsqueeze(0)
+u_seq = torch.tensor(u_traj[P:P+10], dtype=dtype, device=device).unsqueeze(0)
 
 predictions = []
 current_history = history.clone()

@@ -14,11 +14,12 @@ class PositionalEncoding(nn.Module):
 
     def __init__(self, d_model, max_len=5000):
         super().__init__()
+        dtype = torch.get_default_dtype()
 
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        pe = torch.zeros(max_len, d_model, dtype=dtype)
+        position = torch.arange(0, max_len, dtype=dtype).unsqueeze(1)
         div_term = torch.exp(
-            torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
+            torch.arange(0, d_model, 2, dtype=dtype) * (-math.log(10000.0) / d_model)
         )
 
         pe[:, 0::2] = torch.sin(position * div_term)

@@ -2,6 +2,7 @@
 
 Usage:
     python scripts/train_patchtst.py --config configs/platform2.yaml
+    python scripts/train_patchtst.py --config configs/platform2.yaml --save_dir ./results/platform2/Models/patchtst_koopman
 """
 import argparse
 import os
@@ -32,6 +33,12 @@ def parse_args():
         help="Path to a platform YAML config (e.g. configs/platform2.yaml)",
     )
     parser.add_argument(
+        "--save_dir",
+        type=str,
+        default=None,
+        help="Override config experiment.save_dir (e.g. ./results/platform2/Models/patchtst_koopman)",
+    )
+    parser.add_argument(
         "--device",
         type=str,
         default=None,
@@ -57,6 +64,8 @@ def main():
     config = load_config(args.config)
     print(f"Loaded config: {args.config}")
 
+    if args.save_dir:
+        config["experiment"]["save_dir"] = args.save_dir
     if args.precision:
         config["experiment"]["precision"] = args.precision
     if args.device:
@@ -118,6 +127,7 @@ def main():
 
     print("\nSaving model and results...")
     model_path = save_model(model, config, norm_stats=norm_stats)
+    best_path = save_model(model, config, norm_stats=norm_stats, filename="model_best.pth")
 
     rollout = evaluate_on_first_trajectory(model, test_dataset, config, norm_stats)
     plot_path = os.path.join(

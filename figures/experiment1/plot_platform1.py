@@ -1,9 +1,10 @@
 """
-实验1 - 平台2轨迹预测对比绘图 (IEEE风格)
-软体机械臂: 2个状态 (x1, x2)
-生成一张图: 状态对比图
+实验1 - 平台1轨迹预测对比绘图 (IEEE风格)
+3-DOF机械臂: 6个状态 (q1, dq1, q2, dq2, q3, dq3)
+生成两张图: 关节位置对比图 + 关节速度对比图
 """
 import os
+import json
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
@@ -23,11 +24,12 @@ from patchtst_koopman.utils.config_loader import load_config
 # Path configuration — edit these to point at your own checkpoints.
 # Defaults assume you run the script from the project root.
 # ============================================================================
-CONFIG_PATH = 'configs/platform2.yaml'
-MLP_MODEL_PATH = 'results/mlp_koopman/platform2/model.pth'
-TRANSFORMER_MODEL_PATH = 'results/models/ablation_platform2/<run_id>/full_model/full_model_model.pth'
-EDMD_MODEL_PATH = 'results/traditional_edmd/platform2'
-SAVE_DIR = 'figures/platform1/output'
+CONFIG_PATH = 'configs/platform1.yaml'
+TRANSFORMER_MODEL_PATH = 'experiment1/Transformer-Koopman/platform1/model.pth'
+LSTM_MODEL_PATH = 'experiment1/LSTM-Koopman/platform1/model.pth'
+MLP_MODEL_PATH = 'experiment1/MLP-Koopman/platform1/model.pth'
+EDMD_MODEL_PATH = 'experiment1/EDMD-Koopman/platform1'
+SAVE_DIR = 'figures/experiment1/output'
 # ============================================================================
 
 # ============================================================================
@@ -38,7 +40,7 @@ PLOT_CONFIG = {
     # 图片尺寸
     # --------------------------------------------------------------------------
     'figure_width': 7.0,              # 图片宽度 (英寸), IEEE双栏标准约7.0
-    'figure_height': 5.0,             # 图片高度 (英寸), 2个子图建议5.0
+    'figure_height': 8.0,             # 图片高度 (英寸), 3个子图建议8.0
     'dpi': 300,                       # 输出分辨率
 
     # --------------------------------------------------------------------------
@@ -68,6 +70,7 @@ PLOT_CONFIG = {
     'color_truth': '#D62728',         # 红色 - Ground Truth
     'color_transformer': '#000000',   # 黑色 - Proposed Method
     'color_mlp': '#FF7F0E',           # 橙色 - MLP-Koopman
+    'color_lstm': '#1F77B4',          # 蓝色 - LSTM-Koopman
     'color_edmd': '#2CA02C',          # 绿色 - EDMD-Koopman
 
     # --------------------------------------------------------------------------
@@ -76,6 +79,7 @@ PLOT_CONFIG = {
     'linestyle_truth': '-',           # 实线 - Ground Truth
     'linestyle_transformer': '-',     # 实线 - Proposed Method
     'linestyle_mlp': '--',            # 虚线 - MLP-Koopman
+    'linestyle_lstm': ':',            # 点线 - LSTM-Koopman
     'linestyle_edmd': '-.',           # 点划线 - EDMD-Koopman
 
     # --------------------------------------------------------------------------
@@ -92,10 +96,10 @@ PLOT_CONFIG = {
     'grid_linewidth': 0.8,            # 网格线宽
     'grid_color': '#CCCCCC',          # 网格颜色 (浅灰色)
 
-     # --------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # 图例参数（重点调节区域）
     # --------------------------------------------------------------------------
-    'legend_ncol': 4,                 # 图例列数 (4个方法用4列)
+    'legend_ncol': 5,                 # 图例列数 (5个方法用5列)
     'legend_framealpha': 0.95,        # 图例背景透明度 (0-1)
     'legend_frameon': False,          # 是否显示图例边框
     'legend_loc': 'upper left',       # 图例锚点位置 (upper left/center/right)
@@ -126,14 +130,15 @@ LABELS = {
     'truth': 'Ground Truth',
     'transformer': 'Proposed Method',
     'mlp': 'MLP-Koopman',
+    'lstm': 'LSTM-Koopman',
     'edmd': 'EDMD-Koopman',
 }
 
 # 绘制顺序 (底层到顶层)
-PLOT_ORDER = ['truth', 'edmd', 'mlp', 'transformer']
+PLOT_ORDER = ['truth', 'edmd', 'lstm', 'mlp', 'transformer']
 
 # 图例显示顺序
-LEGEND_ORDER = ['truth', 'transformer', 'mlp', 'edmd']
+LEGEND_ORDER = ['truth', 'transformer', 'mlp', 'lstm', 'edmd']
 
 
 def setup_plot_style():
@@ -237,6 +242,9 @@ def predict_mlp(model_path, config_path):
     precision = model_config['experiment'].get('precision', 'float32')
     if precision == 'float64':
         torch.set_default_dtype(torch.float64)
+    else:
+        torch.set_default_dtype(torch.float32)
+    dtype = torch.float64 if precision == 'float64' else torch.float32
     model = MLPKoopmanModel(model_config)
     if precision == 'float64':
         model = model.double()
@@ -265,8 +273,72 @@ def predict_mlp(model_path, config_path):
     t_traj = test_dataset.t[mask]
 
     P = model_config['encoder']['history_length']
-    x_history = torch.tensor(x_traj[:P], dtype=torch.float64).to(model_config['experiment']['device'])
-    u_sequence = torch.tensor(u_traj[P-1:-1], dtype=torch.float64).to(model_config['experiment']['device'])
+    x_history = torch.tensor(x_traj[:P], dtype=dtype).to(model_config['experiment']['device'])
+    u_sequence = torch.tensor(u_traj[P-1:-1], dtype=dtype).to(model_config['experiment']['device'])
+    x_true_norm = x_traj[P:]
+
+    x_pred_list = []
+    with torch.no_grad():
+        for h in range(len(u_sequence)):
+            z_t = model.encoder(x_history.unsqueeze(0))
+            z_next = model.koopman(z_t, u_sequence[h:h+1])
+            x_next = model.decoder(z_next)
+            x_pred_list.append(x_next.squeeze(0).cpu().numpy())
+            x_history = torch.cat([x_history[1:], x_next], dim=0)
+
+    x_pred_norm = np.array(x_pred_list)
+
+    if norm_stats['x_mean'] is not None:
+        x_pred = x_pred_norm * norm_stats['x_std'] + norm_stats['x_mean']
+        x_true = x_true_norm * norm_stats['x_std'] + norm_stats['x_mean']
+    else:
+        x_pred = x_pred_norm
+        x_true = x_true_norm
+
+    return x_true, x_pred, t_traj[P:]
+
+
+def predict_lstm(model_path, config_path):
+    """LSTM-Koopman预测"""
+    from patchtst_koopman.models.lstm_koopman_model import LSTMKoopmanModel
+
+    ext_config = load_config(config_path)
+    checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
+    model_config = checkpoint['config']
+    precision = model_config['experiment'].get('precision', 'float32')
+    if precision == 'float64':
+        torch.set_default_dtype(torch.float64)
+    model = LSTMKoopmanModel(model_config)
+    if precision == 'float64':
+        model = model.double()
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model = model.to(model_config['experiment']['device'])
+    model.eval()
+
+    if 'normalization' in checkpoint:
+        norm_stats = checkpoint['normalization']
+    else:
+        data_dir = ext_config['data']['data_dir']
+        if not os.path.isabs(data_dir):
+            data_dir = os.path.join(str(Path(__file__).resolve().parents[2]), data_dir)
+        train_dataset = KoopmanDataset(data_dir, ext_config, 'train')
+        norm_stats = train_dataset.get_norm_stats()
+
+    data_dir = ext_config['data']['data_dir']
+    if not os.path.isabs(data_dir):
+        data_dir = os.path.join(str(Path(__file__).resolve().parents[2]), data_dir)
+    test_dataset = KoopmanDataset(data_dir, ext_config, 'test', norm_stats=norm_stats)
+
+    unique_traj_ids = np.unique(test_dataset.trajectory_id)
+    mask = test_dataset.trajectory_id == unique_traj_ids[0]
+    x_traj = test_dataset.x[mask]
+    u_traj = test_dataset.u[mask]
+    t_traj = test_dataset.t[mask]
+
+    P = model_config['encoder']['history_length']
+    dtype = torch.float64 if precision == 'float64' else torch.float32
+    x_history = torch.tensor(x_traj[:P], dtype=dtype).to(model_config['experiment']['device'])
+    u_sequence = torch.tensor(u_traj[P-1:-1], dtype=dtype).to(model_config['experiment']['device'])
     x_true_norm = x_traj[P:]
 
     x_pred_list = []
@@ -293,7 +365,7 @@ def predict_mlp(model_path, config_path):
 def predict_edmd(model_dir, config_path):
     """EDMD-Koopman预测"""
     from patchtst_koopman.training.traditional_edmd_trainer import TraditionalEDMDTrainer
-    from patchtst_koopman.lifting.polynomial import PolynomialLifting
+    from patchtst_koopman.lifting.robot_lifting import RobotLifting
 
     config = load_config(config_path)
     data_dir = config['data']['data_dir']
@@ -310,9 +382,9 @@ def predict_edmd(model_dir, config_path):
     # 修复lifting function
     lifting_meta = np.load(os.path.join(model_dir, 'lifting_meta.npz'), allow_pickle=True)
     lifting_type = str(lifting_meta['lifting_type'])
-    if lifting_type == 'polynomial':
-        degree = int(lifting_meta['degree'])
-        trainer.lifting_fn = PolynomialLifting(degree=degree)
+    n_features = trainer.lifting_fn.n_features
+    if lifting_type == 'threelink' and n_features == 28:
+        trainer.lifting_fn = RobotLifting()
 
     unique_traj_ids = np.unique(test_dataset.trajectory_id)
     mask = test_dataset.trajectory_id == unique_traj_ids[0]
@@ -361,24 +433,28 @@ def _draw_subplot(ax, t, all_data, idx, scale, linewidth_scale):
         'truth': PLOT_CONFIG['color_truth'],
         'transformer': PLOT_CONFIG['color_transformer'],
         'mlp': PLOT_CONFIG['color_mlp'],
+        'lstm': PLOT_CONFIG['color_lstm'],
         'edmd': PLOT_CONFIG['color_edmd'],
     }
     linestyles = {
         'truth': PLOT_CONFIG['linestyle_truth'],
         'transformer': PLOT_CONFIG['linestyle_transformer'],
         'mlp': PLOT_CONFIG['linestyle_mlp'],
+        'lstm': PLOT_CONFIG['linestyle_lstm'],
         'edmd': PLOT_CONFIG['linestyle_edmd'],
     }
     linewidths = {
         'truth': PLOT_CONFIG['linewidth_truth'] * linewidth_scale,
         'transformer': PLOT_CONFIG['linewidth_prediction'] * linewidth_scale,
         'mlp': PLOT_CONFIG['linewidth_prediction'] * linewidth_scale,
+        'lstm': PLOT_CONFIG['linewidth_prediction'] * linewidth_scale,
         'edmd': PLOT_CONFIG['linewidth_prediction'] * linewidth_scale,
     }
     alphas = {
         'truth': PLOT_CONFIG['alpha_truth'],
         'transformer': PLOT_CONFIG['alpha_prediction'],
         'mlp': PLOT_CONFIG['alpha_prediction'],
+        'lstm': PLOT_CONFIG['alpha_prediction'],
         'edmd': PLOT_CONFIG['alpha_prediction'],
     }
 
@@ -394,7 +470,7 @@ def _draw_subplot(ax, t, all_data, idx, scale, linewidth_scale):
     return line_handles
 
 
-def _finalize_subplot(ax, i, ylabel_str, is_last, line_handles, n_states):
+def _finalize_subplot(ax, i, ylabel_str, is_last, line_handles):
     """子图公共配置"""
     scale = PLOT_CONFIG['global_font_scale']
 
@@ -440,7 +516,7 @@ def _finalize_subplot(ax, i, ylabel_str, is_last, line_handles, n_states):
 
 
 def plot_comparison(x_true, predictions, t, save_dir):
-    """绘制状态对比图"""
+    """绘制位置和速度对比图"""
     setup_plot_style()
     scale = PLOT_CONFIG['global_font_scale']
     linewidth_scale = PLOT_CONFIG['global_linewidth_scale']
@@ -453,20 +529,17 @@ def plot_comparison(x_true, predictions, t, save_dir):
     all_data = {'truth': x_true}
     all_data.update(predictions)
 
-    n_states = x_true.shape[1]
-    state_names = [f'$x_{i+1}$' for i in range(n_states)]
-    state_units = ['cm'] * n_states
+    joint_names = ['Joint 1', 'Joint 2', 'Joint 3']
 
-    fig, axes = plt.subplots(n_states, 1,
-                              figsize=(PLOT_CONFIG['figure_width'],
-                                       PLOT_CONFIG['figure_height']))
-    if n_states == 1:
-        axes = [axes]
+    # ========== 图1: 关节位置对比 (索引0,2,4) ==========
+    fig1, axes1 = plt.subplots(3, 1, figsize=(PLOT_CONFIG['figure_width'],
+                                               PLOT_CONFIG['figure_height']))
+    pos_indices = [0, 2, 4]
 
-    for i in range(n_states):
-        ax = axes[i]
-        handles = _draw_subplot(ax, t, all_data, i, scale, linewidth_scale)
-        _finalize_subplot(ax, i, f'{state_names[i]} ({state_units[i]})', i == n_states - 1, handles, n_states)
+    for i, idx in enumerate(pos_indices):
+        ax = axes1[i]
+        handles = _draw_subplot(ax, t, all_data, idx, scale, linewidth_scale)
+        _finalize_subplot(ax, i, f'{joint_names[i]} (rad)', i == 2, handles)
 
     plt.subplots_adjust(hspace=PLOT_CONFIG['subplot_hspace'],
                         top=PLOT_CONFIG['subplot_top'],
@@ -476,55 +549,98 @@ def plot_comparison(x_true, predictions, t, save_dir):
 
     Path(save_dir).mkdir(parents=True, exist_ok=True)
     for fmt in ('png', 'pdf'):
-        plt.savefig(os.path.join(save_dir, f'platform2_state_comparison.{fmt}'),
+        plt.savefig(os.path.join(save_dir, f'platform1_position_comparison.{fmt}'),
                     dpi=PLOT_CONFIG['dpi'], bbox_inches='tight', pad_inches=0.05)
     plt.close()
-    print(f'[状态对比图] 已保存到 {save_dir}')
+    print(f'[位置对比图] 已保存到 {save_dir}')
+
+    # ========== 图2: 关节速度对比 (索引1,3,5) ==========
+    fig2, axes2 = plt.subplots(3, 1, figsize=(PLOT_CONFIG['figure_width'],
+                                               PLOT_CONFIG['figure_height']))
+    vel_indices = [1, 3, 5]
+
+    for i, idx in enumerate(vel_indices):
+        ax = axes2[i]
+        handles = _draw_subplot(ax, t, all_data, idx, scale, linewidth_scale)
+        _finalize_subplot(ax, i, f'{joint_names[i]} (rad/s)', i == 2, handles)
+
+    plt.subplots_adjust(hspace=PLOT_CONFIG['subplot_hspace'],
+                        top=PLOT_CONFIG['subplot_top'],
+                        bottom=PLOT_CONFIG['subplot_bottom'],
+                        left=PLOT_CONFIG['subplot_left'],
+                        right=PLOT_CONFIG['subplot_right'])
+
+    for fmt in ('png', 'pdf'):
+        plt.savefig(os.path.join(save_dir, f'platform1_velocity_comparison.{fmt}'),
+                    dpi=PLOT_CONFIG['dpi'], bbox_inches='tight', pad_inches=0.05)
+    plt.close()
+    print(f'[速度对比图] 已保存到 {save_dir}')
 
 
-def print_metrics(x_true, predictions, state_names):
-    """打印RMSE指标"""
-    print(f"\n{'='*70}")
-    print(f"  平台2 (软体机械臂) - RMSE指标")
-    print(f"{'='*70}")
+def print_metrics(x_true, predictions, state_names, save_dir=None):
+    """打印并保存RMSE/MAE指标"""
+    methods = ['transformer', 'mlp', 'lstm', 'edmd']
+    results = {}
+
+    print(f"\n{'='*80}")
+    print(f"  平台1 (3-DOF机械臂) - RMSE指标")
+    print(f"{'='*80}")
     header = f"{'State':<12}"
-    for method in ['transformer', 'mlp', 'edmd']:
+    for method in methods:
         header += f"  {LABELS[method]:<18}"
     print(header)
-    print('-' * 70)
+    print('-' * 80)
+
     for i, name in enumerate(state_names):
         row = f"{name:<12}"
-        for method in ['transformer', 'mlp', 'edmd']:
-            rmse, _ = compute_metrics(x_true[:, i], predictions[method][:, i])
+        results[name] = {}
+        for method in methods:
+            rmse, mae = compute_metrics(x_true[:, i], predictions[method][:, i])
+            results[name][method] = {"rmse": float(rmse), "mae": float(mae)}
             row += f"  {rmse:<18.6f}"
         print(row)
-    print('-' * 70)
+    print('-' * 80)
+
     row = f"{'Overall':<12}"
-    for method in ['transformer', 'mlp', 'edmd']:
-        rmse, _ = compute_metrics(x_true, predictions[method])
+    results['Overall'] = {}
+    for method in methods:
+        rmse, mae = compute_metrics(x_true, predictions[method])
+        results['Overall'][method] = {"rmse": float(rmse), "mae": float(mae)}
         row += f"  {rmse:<18.6f}"
     print(row)
-    print(f"{'='*70}\n")
+    print(f"{'='*80}\n")
+
+    if save_dir:
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, 'metrics_platform1.json')
+        with open(save_path, 'w', encoding='utf-8') as f:
+            json.dump({"platform": "platform1", "results": results}, f, indent=2, ensure_ascii=False)
+        print(f"指标已保存到 {save_path}")
 
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("  实验1 - 平台2轨迹预测对比 (软体机械臂)")
+    print("  实验1 - 平台1轨迹预测对比 (3-DOF机械臂)")
     print("=" * 70)
 
     predictions = {}
 
-    print("\n[1/3] Transformer-Koopman 预测...")
+    print("\n[1/4] Transformer-Koopman 预测...")
     x_true, x_pred, t = predict_transformer(TRANSFORMER_MODEL_PATH, CONFIG_PATH)
     predictions['transformer'] = x_pred
     print(f"  Shape: {x_pred.shape}, Time: [{t[0]:.3f}, {t[-1]:.3f}]s")
 
-    print("\n[2/3] MLP-Koopman 预测...")
+    print("\n[2/4] MLP-Koopman 预测...")
     _, x_pred, _ = predict_mlp(MLP_MODEL_PATH, CONFIG_PATH)
     predictions['mlp'] = x_pred
     print(f"  Shape: {x_pred.shape}")
 
-    print("\n[3/3] EDMD-Koopman 预测...")
+    print("\n[3/4] LSTM-Koopman 预测...")
+    _, x_pred, _ = predict_lstm(LSTM_MODEL_PATH, CONFIG_PATH)
+    predictions['lstm'] = x_pred
+    print(f"  Shape: {x_pred.shape}")
+
+    print("\n[4/4] EDMD-Koopman 预测...")
     _, x_pred, _ = predict_edmd(EDMD_MODEL_PATH, CONFIG_PATH)
     predictions['edmd'] = x_pred
     print(f"  Shape: {x_pred.shape}")
@@ -534,8 +650,8 @@ if __name__ == '__main__':
     predictions = {k: v[:min_len] for k, v in predictions.items()}
     t = t[:min_len]
 
-    state_names = ['$x_1$', '$x_2$']
-    print_metrics(x_true, predictions, state_names)
+    state_names = ['$q_1$', '$\\dot{q}_1$', '$q_2$', '$\\dot{q}_2$', '$q_3$', '$\\dot{q}_3$']
+    print_metrics(x_true, predictions, state_names, save_dir=SAVE_DIR)
 
     print("绘制图表...")
     plot_comparison(x_true, predictions, t, SAVE_DIR)

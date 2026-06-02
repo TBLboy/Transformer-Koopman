@@ -51,7 +51,7 @@ class MLPKoopmanTrainer:
         # 阶段1：预训练编码器
         if edmd_cfg['pretrain']['enabled']:
             print("\n" + "=" * 60)
-            print("阶段1：预训练MLP编码器")
+            print("阶段1：预训练编码器")
             print("=" * 60)
             self._pretrain(train_dataset, val_dataset, edmd_cfg['pretrain'])
 
@@ -68,9 +68,11 @@ class MLPKoopmanTrainer:
             train_dataset,
             batch_size=pretrain_cfg['batch_size'],
             shuffle=True,
-            num_workers=self.config['training'].get('num_workers', 0)
+            num_workers=0,
+            pin_memory=True,
         )
-        val_loader = DataLoader(val_dataset, batch_size=256, shuffle=False)
+        val_loader = DataLoader(val_dataset, batch_size=512, shuffle=False,
+                                num_workers=0, pin_memory=True)
 
         optimizer = torch.optim.Adam(
             list(self.model.encoder.parameters()) +
@@ -112,16 +114,22 @@ class MLPKoopmanTrainer:
                     self._load_checkpoint('mlp_pretrain_best.pth')
                     break
 
+        # 训练结束后，始终回载最佳检查点（即使早停未触发）
+        best_path = os.path.join(self.config['experiment']['save_dir'], "mlp_pretrain_best.pth")
+        if os.path.exists(best_path):
+            self._load_checkpoint('mlp_pretrain_best.pth')
+            print(f"  >>> 回载最佳检查点 mlp_pretrain_best.pth (val_loss={best_val_loss:.6f})")
+
         print(f"预训练完成，最佳验证损失: {best_val_loss:.6f}")
 
     def _pretrain_epoch(self, train_loader, optimizer, loss_weights):
         self.model.train()
-        total_loss = 0
+        total_loss = torch.tensor(0.0, device=self.device)
 
-        for batch in tqdm(train_loader, desc="预训练"):
-            x_history = batch['x_history'].to(self.device)
-            u_t       = batch['u_t'].to(self.device)
-            x_next    = batch['x_next'].to(self.device)
+        for batch in tqdm(train_loader, desc="预训练", mininterval=2.0):
+            x_history = batch['x_history'].to(self.device, non_blocking=True)
+            u_t       = batch['u_t'].to(self.device, non_blocking=True)
+            x_next    = batch['x_next'].to(self.device, non_blocking=True)
 
             x_history_next = torch.cat(
                 [x_history[:, 1:, :], x_next.unsqueeze(1)], dim=1
@@ -130,11 +138,12 @@ class MLPKoopmanTrainer:
             z_t    = self.model.encoder(x_history)
             z_pred = self.model.koopman(z_t, u_t)
             x_pred = self.model.decoder(z_pred)
+            z_true = self.model.encoder(x_history_next)
 
-            L_pred        = F.mse_loss(x_pred, x_next)
-            z_true        = self.model.encoder(x_history_next)
-            L_latent      = F.mse_loss(z_pred, z_true)
-            L_consistency = F.mse_loss(self.model.encoder(x_history_next), z_true)
+            L_pred    = F.mse_loss(x_pred, x_next)
+            L_latent  = F.mse_loss(z_pred, z_true)
+            # L_consistency: penalise encoder inconsistency via detached target
+            L_consistency = F.mse_loss(z_pred.detach(), z_true)
 
             loss = (loss_weights['prediction']  * L_pred +
                     loss_weights['latent']       * L_latent +
@@ -143,9 +152,9 @@ class MLPKoopmanTrainer:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            total_loss += loss.item()
+            total_loss += loss.detach()
 
-        return total_loss / len(train_loader)
+        return (total_loss / len(train_loader)).item()
 
     def _compute_koopman_edmd(self, train_dataset):
         precision = self.config['experiment'].get('precision', 'float32')
@@ -161,7 +170,7 @@ class MLPKoopmanTrainer:
         reg = self.mlp_cfg['edmd']['compute']['regularization']
         ZU      = np.concatenate([Z, U], axis=1)
         ZU_T_ZU = ZU.T @ ZU
-        K = Z_next.T @ ZU @ np.linalg.inv(ZU_T_ZU + reg * np.eye(ZU_T_ZU.shape[0]))
+        K = Z_next.T @ ZU @ np.linalg.inv(ZU_T_ZU + reg * np.eye(ZU_T_ZU.shape[0], dtype=ZU_T_ZU.dtype))
         d = Z.shape[1]
         A, B = K[:, :d], K[:, d:]
 
@@ -175,25 +184,29 @@ class MLPKoopmanTrainer:
 
     def _encode_dataset(self, dataset):
         batch_size = self.mlp_cfg['edmd']['compute']['batch_size']
-        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+                            num_workers=0, pin_memory=True)
         Z_list, Z_next_list, U_list = [], [], []
 
         self.model.eval()
         with torch.no_grad():
-            for batch in tqdm(loader, desc="编码数据"):
-                x_history = batch['x_history'].to(self.device)
-                u_t       = batch['u_t'].to(self.device)
-                x_next    = batch['x_next'].to(self.device)
+            for batch in tqdm(loader, desc="编码数据", mininterval=2.0):
+                x_history = batch['x_history'].to(self.device, non_blocking=True)
+                u_t       = batch['u_t'].to(self.device, non_blocking=True)
+                x_next    = batch['x_next'].to(self.device, non_blocking=True)
 
                 x_history_next = torch.cat(
                     [x_history[:, 1:, :], x_next.unsqueeze(1)], dim=1
                 )
 
-                Z_list.append(self.model.encoder(x_history).cpu().numpy())
-                Z_next_list.append(self.model.encoder(x_history_next).cpu().numpy())
-                U_list.append(u_t.cpu().numpy())
+                Z_list.append(self.model.encoder(x_history))
+                Z_next_list.append(self.model.encoder(x_history_next))
+                U_list.append(u_t)
 
-        return np.vstack(Z_list), np.vstack(Z_next_list), np.vstack(U_list)
+        Z      = torch.cat(Z_list,      dim=0).cpu().numpy()
+        Z_next = torch.cat(Z_next_list, dim=0).cpu().numpy()
+        U      = torch.cat(U_list,      dim=0).cpu().numpy()
+        return Z, Z_next, U
 
     # ════════════════════════════════════════════════════════════
     # 端到端训练流程
@@ -206,9 +219,11 @@ class MLPKoopmanTrainer:
             train_dataset,
             batch_size=e2e_cfg['batch_size'],
             shuffle=True,
-            num_workers=self.config['training'].get('num_workers', 0)
+            num_workers=0,
+            pin_memory=True,
         )
-        val_loader = DataLoader(val_dataset, batch_size=256, shuffle=False)
+        val_loader = DataLoader(val_dataset, batch_size=512, shuffle=False,
+                                num_workers=0, pin_memory=True)
 
         optimizer = torch.optim.Adam(
             self.model.parameters(), lr=e2e_cfg['learning_rate']
@@ -222,17 +237,17 @@ class MLPKoopmanTrainer:
         prev_lr = e2e_cfg['learning_rate']
 
         print("\n" + "=" * 60)
-        print("端到端训练 MLP-Koopman")
+        print("端到端训练")
         print("=" * 60)
 
         for epoch in range(e2e_cfg['num_epochs']):
             self.model.train()
-            total_loss = 0
+            total_loss = torch.tensor(0.0, device=self.device)
 
-            for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}"):
-                x_history = batch['x_history'].to(self.device)
-                u_t       = batch['u_t'].to(self.device)
-                x_next    = batch['x_next'].to(self.device)
+            for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}", mininterval=2.0):
+                x_history = batch['x_history'].to(self.device, non_blocking=True)
+                u_t       = batch['u_t'].to(self.device, non_blocking=True)
+                x_next    = batch['x_next'].to(self.device, non_blocking=True)
 
                 x_pred = self.model(x_history, u_t)
                 loss   = F.mse_loss(x_pred, x_next)
@@ -244,9 +259,9 @@ class MLPKoopmanTrainer:
                         self.model.parameters(), e2e_cfg['grad_clip']
                     )
                 optimizer.step()
-                total_loss += loss.item()
+                total_loss += loss.detach()
 
-            train_loss = total_loss / len(train_loader)
+            train_loss = (total_loss / len(train_loader)).item()
             val_loss   = self._validate(val_loader)
             scheduler.step(val_loss)
 
@@ -270,6 +285,12 @@ class MLPKoopmanTrainer:
                     self._load_checkpoint('mlp_e2e_best.pth')
                     break
 
+        # 训练结束后，始终回载最佳检查点（即使早停未触发）
+        best_path = os.path.join(self.config['experiment']['save_dir'], "mlp_e2e_best.pth")
+        if os.path.exists(best_path):
+            self._load_checkpoint('mlp_e2e_best.pth')
+            print(f"  >>> 回载最佳检查点 mlp_e2e_best.pth (val_loss={best_val_loss:.6f})")
+
         print(f"\n端到端训练完成，最佳验证损失: {best_val_loss:.6f}")
 
     # ════════════════════════════════════════════════════════════
@@ -278,15 +299,15 @@ class MLPKoopmanTrainer:
 
     def _validate(self, val_loader):
         self.model.eval()
-        total_loss = 0
+        total_loss = torch.tensor(0.0, device=self.device)
         with torch.no_grad():
             for batch in val_loader:
-                x_history = batch['x_history'].to(self.device)
-                u_t       = batch['u_t'].to(self.device)
-                x_next    = batch['x_next'].to(self.device)
+                x_history = batch['x_history'].to(self.device, non_blocking=True)
+                u_t       = batch['u_t'].to(self.device, non_blocking=True)
+                x_next    = batch['x_next'].to(self.device, non_blocking=True)
                 x_pred    = self.model(x_history, u_t)
-                total_loss += F.mse_loss(x_pred, x_next).item()
-        return total_loss / len(val_loader)
+                total_loss += F.mse_loss(x_pred, x_next).detach()
+        return (total_loss / len(val_loader)).item()
 
     def _save_checkpoint(self, filename):
         save_dir = self.config['experiment']['save_dir']

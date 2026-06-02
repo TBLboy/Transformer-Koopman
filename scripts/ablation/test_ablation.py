@@ -61,7 +61,7 @@ def load_variant_checkpoint(variant_id, model_path, device, fallback_config):
     precision = saved_config["experiment"].get("precision", "float32")
     model = model.double() if precision == "float64" else model.float()
     model = model.to(device)
-    model.load_state_dict(checkpoint.get("model_state_dict", checkpoint), strict=False)
+    model.load_state_dict(checkpoint.get("model_state_dict", checkpoint), strict=True)
     model.eval()
 
     return model, checkpoint.get("normalization", {}), saved_config
@@ -115,7 +115,7 @@ def main():
     parser = argparse.ArgumentParser(description="Test ablation variants")
     parser.add_argument("--platform", type=str, default="platform1", choices=["platform1", "platform2"])
     parser.add_argument("--results_dir", type=str, default=None, help="Timestamped run dir")
-    parser.add_argument("--results_root", type=str, default="./results/models", help="Where ablation runs live")
+    parser.add_argument("--results_root", type=str, default="./results", help="Where ablation runs live")
     parser.add_argument("--config", type=str, default=None)
     args = parser.parse_args()
 

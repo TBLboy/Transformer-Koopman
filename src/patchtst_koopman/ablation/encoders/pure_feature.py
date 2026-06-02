@@ -36,7 +36,7 @@ class PureFeatureEncoder(nn.Module):
             self.patch_length * self.state_dim,
             self.d_model,
         )
-        self.pos_encoder = PositionalEncoding(d_model=self.d_model)
+        self.positional_encoding = PositionalEncoding(d_model=self.d_model)
 
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=self.d_model,
@@ -45,10 +45,10 @@ class PureFeatureEncoder(nn.Module):
             dropout=self.dropout,
             batch_first=True,
         )
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=self.n_layers)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=self.n_layers)
 
         self.readout_method = config["encoder"].get("readout_method", "mean")
-        self.output_projection = nn.Linear(self.d_model, self.latent_dim)
+        self.projection = nn.Linear(self.d_model, self.latent_dim)
 
         # Signal to AblationModel that we need a learnable decoder.
         self.use_state_embedding = False
@@ -58,8 +58,8 @@ class PureFeatureEncoder(nn.Module):
 
         x = x.reshape(batch_size, self.n_patches, -1)
         x = self.patch_embedding(x)
-        x = self.pos_encoder(x)
-        x = self.transformer_encoder(x)
+        x = self.positional_encoding(x)
+        x = self.transformer(x)
 
         if self.readout_method == "mean":
             x = x.mean(dim=1)
@@ -68,4 +68,4 @@ class PureFeatureEncoder(nn.Module):
         elif self.readout_method == "last":
             x = x[:, -1, :]
 
-        return self.output_projection(x)
+        return self.projection(x)

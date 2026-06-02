@@ -25,31 +25,34 @@ VARIANT_ORDER = [
     "history_P16",
     "history_P32",
     "history_P128",
-    "readout_max",
-    "readout_last",
 ]
 
 
 def load_results(results_dir):
-    """Load the latest ``ablation_platform{1,2}_*.json`` files in the directory."""
+    """Find the latest ablation run for each platform and load its results."""
     path = Path(results_dir)
     if not path.exists():
         raise FileNotFoundError(f"Results dir not found: {path}")
 
-    platform1_files = sorted(path.glob("ablation_platform1_*.json"))
-    platform2_files = sorted(path.glob("ablation_platform2_*.json"))
-    if not platform1_files:
-        raise FileNotFoundError("No ablation_platform1_*.json found")
-    if not platform2_files:
-        raise FileNotFoundError("No ablation_platform2_*.json found")
+    def find_latest(platform):
+        base = path / f"ablation_{platform}"
+        if not base.exists():
+            raise FileNotFoundError(f"No ablation_{platform} results under {path}")
+        dirs = sorted([d for d in base.iterdir() if d.is_dir()], reverse=True)
+        if not dirs:
+            raise FileNotFoundError(f"No timestamped runs under {base}")
+        return dirs[0] / "ablation_results.json"
 
-    with open(platform1_files[-1], "r", encoding="utf-8") as f:
+    p1_path = find_latest("platform1")
+    p2_path = find_latest("platform2")
+
+    with p1_path.open("r", encoding="utf-8") as f:
         p1 = json.load(f)
-    with open(platform2_files[-1], "r", encoding="utf-8") as f:
+    with p2_path.open("r", encoding="utf-8") as f:
         p2 = json.load(f)
 
-    print(f"Loaded platform 1 results: {platform1_files[-1].name}")
-    print(f"Loaded platform 2 results: {platform2_files[-1].name}")
+    print(f"Loaded platform 1: {p1_path.name} from {p1_path.parent}")
+    print(f"Loaded platform 2: {p2_path.name} from {p2_path.parent}")
     return p1, p2
 
 
