@@ -1,0 +1,16 @@
+{
+    "algorithm": "Transformer-Koopman LQR",
+    "config": {
+        "model_path": "./tk_assets/platform2_full_model.pth",
+        "Q_x1": 10.0,
+        "Q_x2": 10.0,
+        "alpha": 0.01,
+        "R_control": 0.4,
+        "ff_gain": 0.5,
+        "u_limit": 100.0,
+        "device": "cpu",
+        "output_sign_x": -1.0,
+        "output_sign_y": 1.0
+    },
+    "date": "2026-05-29 16:49:25"
+}

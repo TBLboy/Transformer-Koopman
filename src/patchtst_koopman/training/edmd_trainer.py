@@ -465,11 +465,20 @@ class EDMDTrainer:
 
         ZU_T_ZU = ZU.T @ ZU
         reg_matrix = reg * np.eye(ZU_T_ZU.shape[0], dtype=ZU_T_ZU.dtype)
-        K = Z_next.T @ ZU @ np.linalg.inv(ZU_T_ZU + reg_matrix)
+        M = ZU_T_ZU + reg_matrix
+        K = np.linalg.solve(M, ZU.T @ Z_next).T
 
         d = Z.shape[1]
         A = K[:, :d]
         B = K[:, d:]
+
+        if np.any(np.isnan(A)) or np.any(np.isnan(B)) or np.any(np.isinf(A)) or np.any(np.isinf(B)):
+            raise RuntimeError(
+                "EDMD computed NaN/Inf in Koopman matrices. "
+                f"Z stats: mean={Z.mean():.6f} std={Z.std():.6f} "
+                f"min={Z.min():.6f} max={Z.max():.6f}. "
+                "Try increasing edmd.compute.regularization."
+            )
 
         return A, B
 

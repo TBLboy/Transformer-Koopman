@@ -1,0 +1,42 @@
+\begin{table}[t]
+\centering
+\caption{Ablation results for platform1.}
+\label{tab:ablation_platform1}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+Variant & RMSE$\downarrow$ & $\Delta$RMSE & Params \\
+\midrule
+Full Model & 0.34017 & -- & 313.7K \\
+\addlinespace[1pt]
+w/o Patch & 0.24778 & -27.2\% & 311.4K \\
+w/o Attention & 0.34537 & +1.5\% & 48.0K \\
+w/o Positional Enc. & \textbf{0.19311}$^\dagger$ & -43.2\% & 313.7K \\
+\addlinespace[1pt]
+Patch L=2 & 0.32684 & -3.9\% & 312.2K \\
+Patch L=4 & 0.44131 & +29.7\% & 313.7K \\
+Patch L=8 & 0.25525 & -25.0\% & 316.8K \\
+Patch L=16 & 0.45547 & +33.9\% & 322.9K \\
+\addlinespace[1pt]
+P=4 & 1.33270 & +291.8\% & 313.7K \\
+P=8 & 0.27941 & -17.9\% & 313.7K \\
+P=16 & 0.27875 & -18.1\% & 313.7K \\
+P=32 & 0.25368 & -25.4\% & 313.7K \\
+P=64 & 0.22850 & -32.8\% & 313.7K \\
+\addlinespace[1pt]
+L=1 & 0.64040 & +88.3\% & 114.6K \\
+L=2 & 0.41294 & +21.4\% & 214.1K \\
+L=3 & 0.25527 & -25.0\% & 313.7K \\
+L=4 & 0.24332 & -28.5\% & 413.3K \\
+L=6 & 0.22859 & -32.8\% & 612.5K \\
+\addlinespace[1pt]
+d=12 & 0.27630 & -18.8\% & 302.9K \\
+d=32 & 0.21205 & -37.7\% & 306.4K \\
+d=64 & 0.23359 & -31.3\% & 313.7K \\
+d=128 & 1.49179 & +338.5\% & 334.5K \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\raggedright\footnotesize $^\dagger$ Best non-baseline configuration.
+\end{table}

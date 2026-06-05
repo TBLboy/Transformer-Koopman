@@ -24,6 +24,11 @@ class PureFeatureEncoder(nn.Module):
         self.history_length = config["encoder"]["history_length"]
         self.state_dim = config["data"]["state_dim"]
         self.patch_length = config["encoder"]["patch_length"]
+        if self.history_length % self.patch_length != 0:
+            raise ValueError(
+                f"history_length ({self.history_length}) must be divisible "
+                f"by patch_length ({self.patch_length})"
+            )
         self.n_patches = self.history_length // self.patch_length
         self.latent_dim = config["encoder"]["latent_dim"]
         self.d_model = config["encoder"]["d_model"]

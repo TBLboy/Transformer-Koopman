@@ -1,4 +1,4 @@
-"""Ablation variant: encoder without self-attention.
+﻿"""Ablation variant: encoder without self-attention.
 
 Replaces the Transformer encoder with a stack of fully-connected layers.
 Used to expose the contribution of self-attention to temporal modelling.
@@ -18,9 +18,15 @@ class NoAttentionEncoder(nn.Module):
         self.history_length = config["encoder"]["history_length"]
         self.state_dim = config["data"]["state_dim"]
         self.patch_length = config["encoder"]["patch_length"]
+        if self.history_length % self.patch_length != 0:
+            raise ValueError(
+                f"history_length ({self.history_length}) must be divisible "
+                f"by patch_length ({self.patch_length})"
+            )
         self.n_patches = self.history_length // self.patch_length
         self.latent_dim = config["encoder"]["latent_dim"]
         self.d_model = config["encoder"]["d_model"]
+        self.dropout = config["encoder"]["dropout"]
 
         self.d_history = self.latent_dim - self.state_dim
 
@@ -33,10 +39,10 @@ class NoAttentionEncoder(nn.Module):
         self.fc_layers = nn.Sequential(
             nn.Linear(self.d_model, self.d_model),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Dropout(self.dropout),
             nn.Linear(self.d_model, self.d_model),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Dropout(self.dropout),
         )
 
         self.readout_method = config["encoder"].get("readout_method", "mean")
@@ -60,3 +66,4 @@ class NoAttentionEncoder(nn.Module):
 
         h_t = self.projection(x)
         return torch.cat([x_t, h_t], dim=1)
+

@@ -1,4 +1,4 @@
-"""Run ablation training for a platform.
+﻿"""Run ablation training for a platform.
 
 Usage:
     python scripts/ablation/train_ablation.py --platform platform2 --variants all
@@ -98,6 +98,72 @@ def apply_config_updates(config, updates):
     return updated
 
 
+def summarize_effective_config(config, device):
+    pretrain_cfg = config["training"]["edmd"]["pretrain"]
+    return {
+        "history_length": config["encoder"]["history_length"],
+        "patch_length": config["encoder"]["patch_length"],
+        "latent_dim": config["encoder"]["latent_dim"],
+        "n_layers": config["encoder"]["n_layers"],
+        "koopman_lifted_dim": config["koopman"].get("lifted_dim", config["encoder"]["latent_dim"]),
+        "precision": config["experiment"].get("precision", "float32"),
+        "device": device,
+        "seed": config["experiment"]["seed"],
+        "deterministic": config["experiment"].get("deterministic", False),
+        "cudnn_benchmark": config["experiment"].get("cudnn_benchmark", False),
+        "batch_size": pretrain_cfg["batch_size"],
+        "num_epochs": pretrain_cfg["num_epochs"],
+        "patience": pretrain_cfg.get("patience"),
+        "learning_rate": pretrain_cfg["learning_rate"],
+    }
+
+
+def diff_against_baseline(baseline_cfg, variant_cfg):
+    keys = ("history_length", "patch_length", "latent_dim", "n_layers")
+    return [key for key in keys if baseline_cfg[key] != variant_cfg[key]]
+
+
+def validate_variant_configuration(variant_id, variant_cfg, baseline_cfg):
+    hyper_prefixes = ("patch_", "history_", "n_layers_", "latent_dim_")
+    module_variants = {"no_patch", "no_attention", "no_positional"}
+
+    if variant_id == "full_model":
+        return []
+
+    diffs = diff_against_baseline(baseline_cfg, variant_cfg)
+    if variant_id in module_variants:
+        if diffs:
+            raise ValueError(
+                f"Module ablation {variant_id} must preserve baseline hyperparameters, but changed {diffs}."
+            )
+        return []
+
+    if not any(variant_id.startswith(prefix) for prefix in hyper_prefixes):
+        return []
+
+    if len(diffs) == 0:
+        raise ValueError(
+            f"Variant {variant_id} matches full_model exactly; remove the baseline value from the ablation sweep."
+        )
+    if len(diffs) > 1:
+        raise ValueError(
+            f"Variant {variant_id} changes multiple encoder factors {diffs}; each hyperparameter ablation must change exactly one factor."
+        )
+
+    expected = {
+        "patch_": "patch_length",
+        "history_": "history_length",
+        "n_layers_": "n_layers",
+        "latent_dim_": "latent_dim",
+    }
+    for prefix, expected_key in expected.items():
+        if variant_id.startswith(prefix) and diffs[0] != expected_key:
+            raise ValueError(
+                f"Variant {variant_id} should only change {expected_key}, but changed {diffs[0]}."
+            )
+    return diffs
+
+
 def save_ablation_checkpoint(model, save_dir, filename, config, norm_stats):
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, filename)
@@ -131,7 +197,7 @@ def save_ablation_checkpoint(model, save_dir, filename, config, norm_stats):
     return save_path
 
 
-def train_variant(variant_id, variant_info, base_config, device, save_dir):
+def train_variant(variant_id, variant_info, base_config, baseline_summary, device, save_dir):
     print("\n" + "=" * 60)
     print(f"Training variant: {variant_info['name']}")
     print("=" * 60)
@@ -139,12 +205,22 @@ def train_variant(variant_id, variant_info, base_config, device, save_dir):
     try:
         config = apply_config_updates(base_config, variant_info.get("config_updates", {}))
         config["experiment"]["device"] = device
+        set_seed(
+            config["experiment"]["seed"],
+            deterministic=config["experiment"].get("deterministic", False),
+        )
+        effective_summary = summarize_effective_config(config, device)
+        diff_fields = validate_variant_configuration(variant_id, effective_summary, baseline_summary)
 
         print(
             f"  P={config['encoder']['history_length']}, p={config['encoder']['patch_length']}, "
             f"d={config['encoder']['latent_dim']}, L={config['encoder']['n_layers']}, "
             f"precision={config['experiment'].get('precision', 'float32')}"
         )
+        if diff_fields:
+            print(f"  Diff vs full_model: {', '.join(diff_fields)}")
+        else:
+            print("  Diff vs full_model: none (baseline/module ablation)")
 
         variant_save_dir = os.path.join(save_dir, variant_id)
         os.makedirs(variant_save_dir, exist_ok=True)
@@ -179,14 +255,8 @@ def train_variant(variant_id, variant_info, base_config, device, save_dir):
             "params": total_params,
             "status": "success",
             "model_path": model_path,
-            "config": {
-                "history_length": config["encoder"]["history_length"],
-                "patch_length": config["encoder"]["patch_length"],
-                "latent_dim": config["encoder"]["latent_dim"],
-                "n_layers": config["encoder"]["n_layers"],
-                "precision": config["experiment"].get("precision", "float32"),
-                "device": device,
-            },
+            "config": effective_summary,
+            "diff_vs_full_model": diff_fields,
         }
 
     except Exception as exc:
@@ -283,6 +353,7 @@ def main():
     save_dir = os.path.join(save_base_dir, f"ablation_{args.platform}", timestamp)
     os.makedirs(save_dir, exist_ok=True)
 
+    baseline_summary = summarize_effective_config(config, device)
     all_variants = build_ablation_variants(config)
     variants_to_run = select_variants(args.variants, all_variants)
 
@@ -293,7 +364,7 @@ def main():
     all_results = {}
     for variant_id, variant_info in variants_to_run.items():
         all_results[variant_id] = train_variant(
-            variant_id, variant_info, config, device, save_dir
+            variant_id, variant_info, config, baseline_summary, device, save_dir
         )
         if device == "cuda":
             torch.cuda.empty_cache()
@@ -327,7 +398,18 @@ def main():
                     "history_length": config["encoder"]["history_length"],
                     "patch_length": config["encoder"]["patch_length"],
                     "latent_dim": config["encoder"]["latent_dim"],
+                    "n_layers": config["encoder"]["n_layers"],
                     "d_model": config["encoder"].get("d_model", 0),
+                },
+                "control_variables": {
+                    "seed": config["experiment"]["seed"],
+                    "deterministic": config["experiment"].get("deterministic", False),
+                    "cudnn_benchmark": config["experiment"].get("cudnn_benchmark", False),
+                    "precision": config["experiment"].get("precision", "float32"),
+                    "batch_size": config["training"]["edmd"]["pretrain"]["batch_size"],
+                    "num_epochs": config["training"]["edmd"]["pretrain"]["num_epochs"],
+                    "patience": config["training"]["edmd"]["pretrain"].get("patience"),
+                    "learning_rate": config["training"]["edmd"]["pretrain"]["learning_rate"],
                 },
                 "ablation_ranges": {
                     "patch_lengths": ablation_cfg.get("patch_ablations", []),
@@ -348,3 +430,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+

@@ -46,6 +46,11 @@ class PatchTSTEncoder(nn.Module):
         super().__init__()
         self.P = config["encoder"]["history_length"]
         self.p = config["encoder"]["patch_length"]
+        if self.P % self.p != 0:
+            raise ValueError(
+                f"history_length ({self.P}) must be divisible "
+                f"by patch_length ({self.p})"
+            )
         self.n = config["data"]["state_dim"]
         self.d = config["encoder"]["latent_dim"]
         self.d_model = config["encoder"]["d_model"]

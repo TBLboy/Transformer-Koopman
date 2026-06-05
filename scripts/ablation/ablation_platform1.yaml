@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # 消融实验配置 - Platform 1 (Flexible Manipulator)
 # 独立于主实验配置，修改主实验配置不会影响消融实验
 # ============================================================
@@ -11,8 +11,8 @@ experiment:
   seed: 42
   device: "cuda"
   precision: "float32"
-  deterministic: false
-  cudnn_benchmark: true
+  deterministic: true
+  cudnn_benchmark: false
   amp: true
   allow_tf32: true
   log_dir: "./results/logs/ablation_platform1"
@@ -104,7 +104,8 @@ ablation:
   module_variants: ["no_patch", "no_attention", "no_positional"]
 
   # 参数扫描范围
-  patch_ablations: [2, 4, 8, 16]
-  history_ablations: [4, 8, 16, 32, 64]
-  n_layers_ablations: [1, 2, 3, 4, 6]
-  latent_dim_ablations: [12, 32, 64, 128, 256]
+  patch_ablations: [2, 8, 16]
+  history_ablations: [4, 8, 32, 64]
+  n_layers_ablations: [1, 2, 4, 6]
+  latent_dim_ablations: [12, 32, 128, 256]
+

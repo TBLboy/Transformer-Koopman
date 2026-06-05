@@ -1,4 +1,4 @@
-"""Test all ablation variants in a results directory and compare against baseline."""
+﻿"""Test all ablation variants in a results directory and compare against baseline."""
 import argparse
 import copy
 import json
@@ -15,6 +15,7 @@ from patchtst_koopman.models.full_model import PatchTSTKoopmanModel
 from patchtst_koopman.utils.config_loader import load_config
 from patchtst_koopman.utils.device import resolve_device
 from patchtst_koopman.utils.seed import configure_cuda_performance
+from train_ablation import summarize_effective_config, validate_variant_configuration
 
 
 def find_latest_results_dir(platform, results_root):
@@ -120,7 +121,7 @@ def main():
     args = parser.parse_args()
 
     results_dir = args.results_dir or find_latest_results_dir(args.platform, args.results_root)
-    config_path = args.config or f"configs/{args.platform}.yaml"
+    config_path = args.config or f"scripts/ablation/ablation_{args.platform}.yaml"
 
     print("=" * 70)
     print(f"Testing ablation variants for {args.platform}")
@@ -140,6 +141,7 @@ def main():
     base_config["experiment"]["device"] = device
     configure_cuda_performance(base_config)
     base_config["data"]["platform"] = args.platform
+    baseline_summary = summarize_effective_config(base_config, device)
 
     test_metrics = {}
     for variant_id, result in results_data["results"].items():
@@ -164,6 +166,8 @@ def main():
         model, norm_stats, saved_config = load_variant_checkpoint(
             variant_id, model_path, device, base_config
         )
+        effective_summary = summarize_effective_config(saved_config, device)
+        validate_variant_configuration(variant_id, effective_summary, baseline_summary)
 
         test_dataset = KoopmanDataset(
             base_config["data"]["data_dir"], saved_config, "test", norm_stats=norm_stats
@@ -213,3 +217,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

@@ -100,12 +100,12 @@ Most existing approaches, including EDMD \cite{williams2015data} and learned lif
 
 To address this limitation, we propose the Transformer-Koopman framework, a temporal lifting framework consisting of two components. The first component is a lifting map, implemented as a temporal encoder: it takes a finite history window as input, processes it through a Transformer encoder with non-overlapping multivariate temporal patches to capture inter-step dependencies, and combines the resulting history features with the current physical state to form a structured lifted state. The original physical state can be recovered through a simple linear projection. This encoder explicitly encodes short-term temporal context from past trajectories. The second component identifies the Koopman dynamics from the lifted state via a hybrid procedure with two stages: gradient-based joint optimization of the encoder and the linear operator, followed by a closed-form EDMD refit.
 
-Building on the Koopman dynamics model, we further develop a hierarchical LQR controller that exploits  the block structure of the lifted state, and we establish an UUB guarantee for the closed-loop tracking error. 
+Building on the Koopman dynamics model, we further develop a hierarchical LQR controller that exploits  the block structure of the lifted state, and we establish an UUB guarantee for the closed-loop tracking error.
 
 The contributions of this paper are summarized as follows:
 \begin{enumerate}
 \item A temporal lifting framework that constructs Koopman lifting map from finite history windows using patch-based Transformer encoding, thereby explicitly capturing short-term temporal correlations;
-\item A hybrid identification procedure combining joint gradient-based optimization with closed-form EDMD refinement, validated through trajectory prediction and ablation studies on two physical systems;
+\item A hybrid identification procedure combining joint gradient-based optimization with closed-form EDMD refinement, \textcolor{red}{enhanced by one-step and finite-horizon consistency losses and} validated through trajectory prediction and ablation studies on two physical systems;
 \item A hierarchical LQR controller that leverages the structured lifted state, along with an UUB guarantee that bounds the tracking error in terms of the modeling residual.
 \end{enumerate}
 
@@ -121,7 +121,7 @@ In this section, we briefly review prior work relevant to Koopman modeling and t
 
 \subsection{Koopman Modeling: Theory, Learning, and Control}
 
-Koopman operator theory represents nonlinear dynamics as a linear evolution on the observable functions of the state \cite{koopman1931hamiltonian, koopman1932spectra, mezic2005spectral}, which enables the direct application of standard linear control synthesis methods to nonlinear systems. Building upon this, early extensions such as Dynamic Mode Decomposition with control (DMDc) \cite{proctor2016dmdc}, input-aware Koopman formulations \cite{proctor2018generalizing, brunton2016invariant}, and Koopman-based Model Predictive Control (MPC) \cite{korda2018linear} have established a strong foundation for applying Koopman theory in control. More recent work has further advanced this area by incorporating learned representations and providing performance guarantees \cite{han2020deep, shi2022deep, strasser2026overview, duran2025control}. However, a consistent observation across this literature is that the performance of these controllers is highly sensitive to the quality of the underlying models, which in turn calls for improved lifting design. 
+Koopman operator theory represents nonlinear dynamics as a linear evolution on the observable functions of the state \cite{koopman1931hamiltonian, koopman1932spectra, mezic2005spectral}, which enables the direct application of standard linear control synthesis methods to nonlinear systems. Building upon this, early extensions such as Dynamic Mode Decomposition with control (DMDc) \cite{proctor2016dmdc}, input-aware Koopman formulations \cite{proctor2018generalizing, brunton2016invariant}, and Koopman-based Model Predictive Control (MPC) \cite{korda2018linear} have established a strong foundation for applying Koopman theory in control. More recent work has further advanced this area by incorporating learned representations and providing performance guarantees \cite{han2020deep, shi2022deep, strasser2026overview, duran2025control}. However, a consistent observation across this literature is that the performance of these controllers is highly sensitive to the quality of the underlying models, which in turn calls for improved lifting design.
 
 To learn accurate Koopman models from trajectory data, two primary approaches are commonly used: classical methods like EDMD and data-driven approaches. EDMD constructs the Koopman model by fitting observable functions from a pre-defined dictionary, such as polynomials or Fourier bases \cite{williams2015data, williams2015kernel, klus2018data}. Data-driven methods replace hand-crafted dictionaries with learned representations, enabling more flexible model fitting. Notable examples include invariant-subspace models \cite{takeishi2017koopman}, deep autoencoder-based methods \cite{lusch2018deep, yeung2019learning}, and variational formulations \cite{morton2019deep, yuan2022variational}. However, most existing methods construct observables from instantaneous states, neglecting short-term temporal correlations and limiting prediction accuracy over long horizons.
 
@@ -137,7 +137,7 @@ Recent works have also explored the use of Transformer encoders with Koopman-sty
 \subsection{Positioning of the Present Work}
 \label{subsec:positioning}
 
-This paper presents a method that integrates temporal sequence modeling with Koopman lifting for control applications. Unlike traditional instantaneous-state lifting methods, our approach incorporates a finite history window, making short-term temporal correlations explicitly available to the lifting map. Furthermore, unlike Transformer-Koopman hybrids focused on forecasting, our method uses the Transformer solely for encoding the history, while all prediction is based on the identified Koopman dynamics model. This separation ensures that the linear structure required for control synthesis is preserved, distinguishing our method from previous hybrid approaches and reinforcing its suitability for control applications. 
+This paper presents a method that integrates temporal sequence modeling with Koopman lifting for control applications. Unlike traditional instantaneous-state lifting methods, our approach incorporates a finite history window, making short-term temporal correlations explicitly available to the lifting map. Furthermore, unlike Transformer-Koopman hybrids focused on forecasting, our method uses the Transformer solely for encoding the history, while all prediction is based on the identified Koopman dynamics model. This separation ensures that the linear structure required for control synthesis is preserved, distinguishing our method from previous hybrid approaches and reinforcing its suitability for control applications.
 
 % =========================================================
 \section{Preliminaries and Problem Formulation}
@@ -211,7 +211,7 @@ The Transformer encoder \cite{vaswani2017attention} is a neural network architec
 
 We describe the encoder in a generic form using token notation $\{\mathbf{v}^{(i)}\}_{i=1}^{N}$, where each token represents a vectorized input. In the context of the proposed framework, these tokens correspond to temporal patches extracted from the history window, as detailed in Section~\ref{sec:temporal_lifting}.
 
-Given a sequence of tokens $\mathbf{v}^{(i)} \in \mathbb{R}^{d_{\mathrm{in}}}$, each token is first mapped into the embedding space through a shared linear projection, 
+Given a sequence of tokens $\mathbf{v}^{(i)} \in \mathbb{R}^{d_{\mathrm{in}}}$, each token is first mapped into the embedding space through a shared linear projection,
 \begin{equation}
     \vphi^{(i)} = \mW_{\mathrm{in}} \mathbf{v}^{(i)} + \vb_{\mathrm{in}} \in \mathbb{R}^{d_{\mathrm{model}}},
     \label{eq:general_embed}
@@ -278,7 +278,7 @@ Given the system \eqref{eq:nonlinear_system} and the temporal lifting framework 
     \mathcal{D} = \{(\mX_k, \vu_k, \vx_{k+1})\}_{k=1}^{M},
     \label{eq:dataset}
 \end{equation}
-where each sample consists of a history window $\mX_k$, the control input $\vu_k$, and the corresponding next state $\vx_{k+1}$. 
+where each sample consists of a history window $\mX_k$, the control input $\vu_k$, and the corresponding next state $\vx_{k+1}$.
 
 Based on the dataset $\mathcal{D}$, the objective of this work is to learn a temporal lifting map $g_\theta$ and identify system matrices $\mA \in \mathbb{R}^{d\times d}$ and $\mB \in \mathbb{R}^{d\times m}$ such that the Koopman dynamics model in \eqref{eq:lifted_dynamics_prelim} approximate the true system evolution with small residual. We seek a compact representation $\vz_k = g_\theta(\mX_k)$ that preserves the current physical state in its first $n$ coordinates, while the remaining $d-n$ coordinates encode history-dependent features, enabling exact state recovery through a fixed linear projection and a direct interface for controller design (Section~\ref{sec:control}).
 
@@ -336,7 +336,7 @@ tokenization reduces the sequence length from $P$ to $N=P/p$, thereby
 improving computational efficiency while preserving local temporal
 structure within each patch.
 
-After the vectorization process, the temporal patch sequence is formed, where each token corresponds to a vectorized temporal patch. This sequence of tokens is then augmented with sinusoidal positional encoding, as defined in \eqref{eq:pos_enc}, to incorporate positional information. The resulting sequence is then processed by the $L$-layer Transformer encoder described in Section~\ref{sec:transformer_background}. 
+After the vectorization process, the temporal patch sequence is formed, where each token corresponds to a vectorized temporal patch. This sequence of tokens is then augmented with sinusoidal positional encoding, as defined in \eqref{eq:pos_enc}, to incorporate positional information. The resulting sequence is then processed by the $L$-layer Transformer encoder described in Section~\ref{sec:transformer_background}.
 \begin{equation}
     \tilde{\vphi}_k^{(i)} = \vphi_k^{(i)} + \vs^{(i)},
     \label{eq:pos_enc_applied}
@@ -390,7 +390,7 @@ where $\mA \in \mathbb{R}^{d\times d}$ and $\mB \in \mathbb{R}^{d\times m}$ are 
 \label{sec:training}
 % ---------------------------------------------------------
 
-We train the temporal lifting map $g_\theta$ together with the Koopman dynamics matrices $(\mA,\mB)$ in three stages. Stage~0 initializes $(\mA,\mB)$ by an EDMD-based warm start, Stage~1 jointly optimizes $\theta$, $\mA$, and $\mB$ by gradient-based training, and Stage~2 refits $(\mA,\mB)$ in closed form using EDMD.
+We train the temporal lifting map $g_\theta$ together with the Koopman dynamics matrices $(\mA,\mB)$ in three stages. Stage~0 initializes $(\mA,\mB)$ by an EDMD-based warm start, Stage~1 jointly optimizes $\theta$, $\mA$, and $\mB$ \textcolor{red}{using an augmented prediction objective}, and Stage~2 refits $(\mA,\mB)$ in closed form using EDMD.
 
 In Stage~0, the parameters $\theta$ of the temporal encoder $g_\theta$ are initialized randomly. The history windows in the dataset are then encoded into lifted states to construct the data matrices $\mZ$, $\mZ^{+}$, and $\mU$. Based on these lifted trajectories, an initial estimate of the Koopman dynamics matrices is obtained by ridge-regularized EDMD,
 \begin{equation}
@@ -402,7 +402,7 @@ In Stage~0, the parameters $\theta$ of the temporal encoder $g_\theta$ are initi
 \end{equation}
 where $\mTheta = [\mA\;\mB]$ collects the Koopman dynamics matrices. This stage provides an initial estimate of $(\mA,\mB)$ for the subsequent joint optimization.
 
-In Stage~1, the temporal encoder $g_\theta$ and the Koopman dynamics matrices $(\mA,\mB)$ are optimized jointly using one-step prediction consistency. To this end, define the shifted history window
+\textcolor{red}{In Stage~1, the temporal encoder $g_\theta$ and the Koopman dynamics matrices $(\mA,\mB)$ are optimized jointly. We first define the one-step prediction terms and then extend the same linear dynamics over a finite training horizon.} To this end, define the shifted history window
 \begin{equation}
     \mX_k^{+} = [\vx_{k-P+2}^\top,\ldots,\vx_{k+1}^\top]^\top,
 \end{equation}
@@ -411,30 +411,116 @@ and let
     \vz_k = g_\theta(\mX_k), \qquad
     \vz_k^{+} = g_\theta(\mX_k^{+}),
 \end{equation}
-where $\vz_k^{+}$ denotes the lifted state obtained by encoding the shifted history window. The predicted lifted state and physical state are computed as
+where $\vz_k^{+}$ denotes the lifted state obtained by encoding the shifted history window. \textcolor{red}{The one-step lifted-state prediction and the corresponding physical-state prediction are computed as}
 \begin{equation}
+    \color{red}
     \hat{\vz}_{k+1} = \mA \vz_k + \mB \vu_k,
     \qquad
     \hat{\vx}_{k+1} = \mC \hat{\vz}_{k+1}.
 \end{equation}
-Here, $\hat{\vz}_{k+1}$ is the one-step prediction of the Koopman dynamics model, while $\vz_k^{+}$ is the corresponding target lifted state obtained from the shifted window. The training objective combines three loss terms, as illustrated in Fig.~\ref{fig:training_procedure},
-\begin{align}
-    \mathcal{L}_{x} &= \|\hat{\vx}_{k+1}-\vx_{k+1}\|_2^2,
-    \label{eq:loss_x}\\
-    \mathcal{L}_{z} &= \|\hat{\vz}_{k+1}-\vz_k^{+}\|_2^2,
-    \label{eq:loss_z}\\
-    \mathcal{L}_{c} &=
+\textcolor{red}{The physical-state prediction error and the lifted-state consistency error are measured by}
+\begin{equation}
+    \color{red}
+    \mathcal{L}_{x}
+    =
+    \|\hat{\vx}_{k+1}-\vx_{k+1}\|_2^2.
+    \label{eq:loss_x}
+\end{equation}
+\begin{equation}
+    \color{red}
+    \mathcal{L}_{z}
+    =
+    \|\hat{\vz}_{k+1}-\vz_k^{+}\|_2^2.
+    \label{eq:loss_z}
+\end{equation}
+\textcolor{red}{The former directly penalizes the one-step prediction error in the physical state, whereas the latter aligns the Koopman-predicted lifted state with the lifted state obtained from the shifted history window.}
+
+\textcolor{red}{In addition, the predicted physical state $\hat{\vx}_{k+1}$ is inserted into the shifted window to form $\mathcal{W}^{+}_{\mathrm{pred}}$. The encoder is then required to produce a lifted representation close to $\vz_k^{+}$, leading to the re-encoding loss}
+\begin{equation}
+    \color{red}
+    \mathcal{L}_{c} =
     \bigl\|g_\theta(\mathcal{W}^{+}_{\mathrm{pred}})-\vz_k^{+}\bigr\|_2^2,
     \label{eq:loss_c}
-\end{align}
-where $\mathcal{W}^{+}_{\mathrm{pred}}$ denotes the predicted shifted window obtained by replacing the most recent entry in $\mX_k^{+}$ with $\hat{\vx}_{k+1}$. The overall loss is defined as
+\end{equation}
+\textcolor{red}{where $\mathcal{W}^{+}_{\mathrm{pred}}$ denotes the predicted shifted window obtained by replacing the most recent entry in $\mX_k^{+}$ with $\hat{\vx}_{k+1}$. This term serves as a robustness regularizer for the temporal encoder when the input history contains predicted rather than measured states.}
+
+\textcolor{red}{Furthermore, to improve the multi-step rollout prediction capability of the learned Koopman dynamics, we introduce two multi-step loss terms during Stage~1 training. Let $N_L$ denote the rollout horizon used in these losses. Starting from $\hat{\vz}_{k}=\vz_k$, the lifted state is recursively propagated as}
 \begin{equation}
-    \mathcal{L}_{\mathrm{pre}} =
-    \lambda_x \mathcal{L}_x + \lambda_z \mathcal{L}_z
-    + \lambda_c \mathcal{L}_c,
+    \color{red}
+    \hat{\vz}_{k+i}
+    =
+    \mA\hat{\vz}_{k+i-1}
+    +
+    \mB\vu_{k+i-1},
+    \qquad
+    i=1,\ldots,N_L.
+    \label{eq:multi_step_lifted_rollout}
+\end{equation}
+\textcolor{red}{The corresponding physical state is recovered by the fixed projection}
+\begin{equation}
+    \color{red}
+    \hat{\vx}_{k+i}
+    =
+    \mC\hat{\vz}_{k+i}.
+    \label{eq:multi_step_state_rollout}
+\end{equation}
+\textcolor{red}{The multi-step physical-state prediction loss is defined as}
+\begin{equation}
+    \color{red}
+    \mathcal{L}_{\mathrm{multi},x}
+    =
+    \sum_{i=1}^{N_L}
+    \left\|
+    \hat{\vx}_{k+i}
+    -
+    \vx_{k+i}
+    \right\|_2^2.
+    \label{eq:loss_multi_x}
+\end{equation}
+\textcolor{red}{For the lifted space, the target at each future step is obtained by directly encoding the corresponding future history window,}
+\begin{equation}
+    \color{red}
+    \vz_{k+i}=g_\theta(\mX_{k+i}),
+    \qquad i=1,\ldots,N_L.
+\end{equation}
+\textcolor{red}{The multi-step lifted-state prediction loss is defined as}
+\begin{equation}
+    \color{red}
+    \mathcal{L}_{\mathrm{multi},z}
+    =
+    \sum_{i=1}^{N_L}
+    \left\|
+    \hat{\vz}_{k+i}
+    -
+    \vz_{k+i}
+    \right\|_2^2.
+    \label{eq:loss_multi_z}
+\end{equation}
+\textcolor{red}{Mini-batches are selected such that the future states and control inputs required up to the horizon $N_L$ are available.}
+
+\textcolor{red}{The overall Stage~1 training objective is given by}
+\begin{equation}
+    \color{red}
+    \begin{aligned}
+    \mathcal{L}_{\mathrm{pre}}
+    =
+    {}&
+    \lambda_x \mathcal{L}_x
+    +
+    \lambda_z \mathcal{L}_z
+    +
+    \lambda_c \mathcal{L}_c
+    \\
+    &+
+    \lambda_{\mathrm{multi},x}
+    \mathcal{L}_{\mathrm{multi},x}
+    +
+    \lambda_{\mathrm{multi},z}
+    \mathcal{L}_{\mathrm{multi},z}.
+    \end{aligned}
     \label{eq:pretraining_loss}
 \end{equation}
-where $\lambda_x$, $\lambda_z$, and $\lambda_c$ are nonnegative weighting coefficients that balance the state-prediction, lifted-state consistency, and rollout-consistency losses, respectively. All parameters $(\theta, \mA, \mB)$ are then optimized jointly via gradient-based methods.
+\textcolor{red}{where $\lambda_x$, $\lambda_z$, $\lambda_c$, $\lambda_{\mathrm{multi},x}$, and $\lambda_{\mathrm{multi},z}$ are nonnegative hyperparameters. These coefficients balance the one-step physical-state prediction error, the one-step lifted-state consistency error, the re-encoding regularization, the multi-step physical-state prediction error, and the multi-step lifted-state prediction error, respectively.} All parameters $(\theta, \mA, \mB)$ are then optimized jointly via gradient-based methods.
 
 In Stage~2, the encoder parameters $\theta$ are fixed, and the entire dataset is passed through $g_\theta$ again to recompute the lifted trajectories. The Koopman dynamics matrices are then re-estimated in closed form using ridge-regularized EDMD,
 \begin{equation}
@@ -450,8 +536,10 @@ The complete training procedure is summarized in Algorithm~\ref{alg:training}.
 \label{alg:training}
 \begin{algorithmic}[1]
 
-\STATE \textbf{Input:} Dataset $\mathcal{D}$ \eqref{eq:dataset};
-$P, p, d, \lambda_x, \lambda_z, \lambda_c, \lambda, E$
+\STATE \textbf{Input:} Dataset $\mathcal{D}$ \eqref{eq:dataset}
+\STATE \textcolor{red}{History length $P$; patch length $p$; lifted dimension $d$; rollout horizon $N_L$}
+\STATE \textcolor{red}{Loss weights $\lambda_x$, $\lambda_z$, $\lambda_c$, $\lambda_{\mathrm{multi},x}$, and $\lambda_{\mathrm{multi},z}$}
+\STATE Ridge parameter $\lambda$; training epochs $E$
 
 \STATE \textbf{Output:} Encoder $\theta^{*}$; matrices $\mA^{*}, \mB^{*}$
 
@@ -465,8 +553,10 @@ $\mZ$, $\mZ^{+}$, $\mU$; compute $(\mA,\mB)$ via
 \STATE \textbf{Stage~1:}
 \FOR{epoch $\ell = 1$ \TO $E$}
     \FOR{each mini-batch $\mathcal{B} \subset \mathcal{D}$}
-        \STATE Compute $\mathcal{L}_{\mathrm{pre}}$
-               via \eqref{eq:loss_x}--\eqref{eq:pretraining_loss}.
+        \STATE \textcolor{red}{Compute the five loss terms in
+        \eqref{eq:loss_x}--\eqref{eq:loss_multi_z}.}
+        \STATE \textcolor{red}{Form $\mathcal{L}_{\mathrm{pre}}$
+        via \eqref{eq:pretraining_loss}.}
         \STATE Update $(\theta, \mA, \mB)$ via gradient descent.
     \ENDFOR
 \ENDFOR
@@ -485,15 +575,16 @@ obtain $(\mA^{*}, \mB^{*})$ via \eqref{eq:edmd_solution}.
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.95\textwidth]{pictures/Figure2.pdf}
-    \caption{Stage~1 training procedure. The current history window 
-    $\mX_k$ and the shifted window $\mX_k^{+}$ are each encoded by 
-    $g_\theta$ to produce $\vz_k$ and $\vz_k^{+}$. The linear model 
-    $(\mA,\mB)$ generates the one-step prediction $\hat{\vz}_{k+1}$, 
-    from which $\hat{\vx}_{k+1}$ is recovered via $\mC$. Three 
-    consistency losses $\mathcal{L}_x$, $\mathcal{L}_z$, and 
-    $\mathcal{L}_c$ jointly supervise the encoder and linear dynamics.}
+    \caption{Stage~1 training procedure. The current history window
+    $\mX_k$ and the shifted window $\mX_k^{+}$ are each encoded by
+    $g_\theta$ to produce $\vz_k$ and $\vz_k^{+}$. The linear model
+    $(\mA,\mB)$ generates the one-step prediction $\hat{\vz}_{k+1}$,
+    from which $\hat{\vx}_{k+1}$ is recovered via $\mC$.
+    \textcolor{red}{The encoder and linear dynamics are jointly supervised
+    by the five weighted loss terms in \eqref{eq:pretraining_loss}.}}
     \label{fig:training_procedure}
 \end{figure*}
+
 
 % ---------------------------------------------------------
 \subsection{Modeling Error Characterization}

@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # 消融实验配置 - Platform 2 (Soft Robot)
 # 独立于主实验配置，修改主实验配置不会影响消融实验
 # ============================================================
@@ -11,6 +11,8 @@ experiment:
   seed: 42
   device: "cuda"
   precision: "float64"
+  deterministic: true
+  cudnn_benchmark: false
   log_dir: "./results/logs/ablation_platform2"
   save_dir: "./results/ablation/platform2"
 
@@ -101,6 +103,8 @@ ablation:
 
   # 参数扫描范围
   patch_ablations: [1, 4]
-  history_ablations: [2, 4, 6, 8, 12, 16]
-  n_layers_ablations: [1, 2, 3, 4]
-  latent_dim_ablations: [4, 8, 16, 32, 64]
+  history_ablations: [2, 6, 8, 12, 16]
+  n_layers_ablations: [1, 2, 4]
+  latent_dim_ablations: [4, 16, 32, 64]
+
+
