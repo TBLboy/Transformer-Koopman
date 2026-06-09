@@ -1,0 +1,13 @@
+{
+  "method": "edmd",
+  "test_rmse_onestep": 0.056979904817919716,
+  "auto_test_rmse": 0.2507055699825287,
+  "auto_test_mae": 0.12915918231010437,
+  "timestamp": "2026-06-05 23:12:09",
+  "config": {
+    "method": "edmd",
+    "state_dim": 6,
+    "control_dim": 3,
+    "latent_dim": 64
+  }
+}

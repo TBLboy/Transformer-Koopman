@@ -1,0 +1,79 @@
+Command: C:\Users\Windows\.conda\envs\koopman\python.exe C:\Users\Windows\Desktop\论文4\code-projectv2\scripts\train_traditional_edmd.py --config C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform1.yaml --save_dir C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform1\Models\traditional_edmd
+Started: 2026-05-29T13:50:05.082649
+============================================================
+============================================================
+Traditional EDMD training (baseline)
+============================================================
+  Config:  C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform1.yaml
+  Output:  C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform1\Models\traditional_edmd
+Random seed set to: 42
+  State normalised: mean=[ 0.09753077 -0.01582445  0.6733926   0.00189379  0.22411865 -0.00133182], std=[0.42824686 2.9804783  0.2169297  1.9343365  0.11937906 1.5706955 ]
+  Control normalised: mean=[0.0345642 3.11136   1.3806984], std=[0.9186094  0.91855556 0.5460997 ]
+Dataset [train]:
+  Total points: 74655
+  Valid samples: 74415
+  Trajectories: 15
+  State normalised (using training-set statistics)
+  Control normalised (using training-set statistics)
+Dataset [val]:
+  Total points: 19909
+  Valid samples: 19845
+  Trajectories: 4
+  State normalised (using training-set statistics)
+  Control normalised (using training-set statistics)
+Dataset [test]:
+  Total points: 4976
+  Valid samples: 4960
+  Trajectories: 1
+  Train: 74415 / Val: 19845 / Test: 4960
+
+============================================================
+传统EDMD训练（对照组）
+============================================================
+
+步骤1：初始化升维函数...
+  使用机械臂物理驱动升维函数 (d=28)
+  升维函数已拟合，输入维度 n=6，输出维度 d=28
+
+步骤2：升维训练数据...
+
+升维数据:   0%|          | 0/73 [00:00<?, ?it/s]
+升维数据:  21%|██        | 15/73 [00:00<00:00, 147.07it/s]
+升维数据:  48%|████▊     | 35/73 [00:00<00:00, 177.95it/s]
+升维数据:  75%|███████▌  | 55/73 [00:00<00:00, 187.97it/s]
+升维数据: 100%|██████████| 73/73 [00:00<00:00, 175.48it/s]
+  升维完成：74415 个样本
+  原始状态维度 n = 6
+  升维后维度   d = 28
+  控制维度     m = 3
+
+步骤3：计算EDMD闭式解...
+  Koopman矩阵 A: (28, 28)
+  控制矩阵    B: (28, 3)
+  谱半径: 0.9980
+
+步骤4：构造降维矩阵C...
+  降维矩阵    C: (6, 28)  (C = [I_n | 0]，精确成立)
+
+步骤5：验证性能...
+
+升维数据:   0%|          | 0/20 [00:00<?, ?it/s]
+升维数据: 100%|██████████| 20/20 [00:00<00:00, 204.07it/s]
+  验证集升维空间 RMSE: 0.259879
+
+传统EDMD训练完成！
+  模型已保存到: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform1\Models\traditional_edmd
+    A (28, 28), B (28, 3), C (6, 28)
+Trajectory length: 4976; predicting 4960 steps
+  RMSE: 0.903176
+  MAE:  0.559897
+Plot saved: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform1\Models\traditional_edmd\test_prediction.png
+
+Training complete
+  Output: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform1\Models\traditional_edmd
+  RMSE:   0.903176
+  MAE:    0.559897
+
+============================================================
+Exit code: 0
+Finished: 2026-05-29T13:50:08.603836

@@ -1,0 +1,77 @@
+Command: C:\Users\Windows\.conda\envs\koopman\python.exe C:\Users\Windows\Desktop\论文4\code-projectv2\scripts\train_traditional_edmd.py --config C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform2.yaml --save_dir C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+Started: 2026-05-29T12:24:42.574035
+============================================================
+============================================================
+Traditional EDMD training (baseline)
+============================================================
+  Config:  C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform2.yaml
+  Output:  C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+Random seed set to: 42
+  State normalised: mean=[0.34522903 0.42333376], std=[3.497775 3.206664]
+  Control normalised: mean=[0.01455709 0.09308819], std=[27.882555 28.230585]
+Dataset [train]:
+  Total points: 24150
+  Valid samples: 23758
+  Trajectories: 49
+  State normalised (using training-set statistics)
+  Control normalised (using training-set statistics)
+Dataset [val]:
+  Total points: 10351
+  Valid samples: 10183
+  Trajectories: 21
+  State normalised (using training-set statistics)
+  Control normalised (using training-set statistics)
+Dataset [test]:
+  Total points: 500
+  Valid samples: 492
+  Trajectories: 1
+  Train: 23758 / Val: 10183 / Test: 492
+
+============================================================
+传统EDMD训练（对照组）
+============================================================
+
+步骤1：初始化升维函数...
+  使用多项式升维函数 (degree=2)
+  升维函数已拟合，输入维度 n=2，输出维度 d=5
+
+步骤2：升维训练数据...
+
+升维数据:   0%|          | 0/24 [00:00<?, ?it/s]
+升维数据:  67%|██████▋   | 16/24 [00:00<00:00, 152.38it/s]
+升维数据: 100%|██████████| 24/24 [00:00<00:00, 169.01it/s]
+  升维完成：23758 个样本
+  原始状态维度 n = 2
+  升维后维度   d = 5
+  控制维度     m = 2
+
+步骤3：计算EDMD闭式解...
+  Koopman矩阵 A: (5, 5)
+  控制矩阵    B: (5, 2)
+  谱半径: 1.0023
+
+步骤4：构造降维矩阵C...
+  降维矩阵    C: (2, 5)  (C = [I_n | 0]，精确成立)
+
+步骤5：验证性能...
+
+升维数据:   0%|          | 0/10 [00:00<?, ?it/s]
+升维数据: 100%|██████████| 10/10 [00:00<00:00, 204.94it/s]
+  验证集升维空间 RMSE: 0.065459
+
+传统EDMD训练完成！
+  模型已保存到: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+    A (5, 5), B (5, 2), C (2, 5)
+Trajectory length: 500; predicting 492 steps
+  RMSE: 1.679543
+  MAE:  1.402344
+Plot saved: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd\test_prediction.png
+
+Training complete
+  Output: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+  RMSE:   1.679543
+  MAE:    1.402344
+
+============================================================
+Exit code: 0
+Finished: 2026-05-29T12:24:44.780087

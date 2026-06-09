@@ -1,0 +1,410 @@
+{
+  "platform": "platform1",
+  "timestamp": "20260604_225802",
+  "baseline_params": {
+    "history_length": 16,
+    "patch_length": 4,
+    "latent_dim": 64,
+    "d_model": 128
+  },
+  "ablation_ranges": {
+    "patch_lengths": [
+      2,
+      4,
+      8,
+      16
+    ],
+    "history_lengths": [
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "n_layers": [
+      1,
+      2,
+      3,
+      4,
+      6
+    ],
+    "latent_dims": [
+      12,
+      32,
+      64,
+      128,
+      256
+    ]
+  },
+  "results": {
+    "full_model": {
+      "name": "Full Model (Baseline)",
+      "rmse": 0.4115786552429199,
+      "mae": 0.16196000576019287,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\full_model\\full_model_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "no_patch": {
+      "name": "Without Patching",
+      "rmse": 0.24667631089687347,
+      "mae": 0.12734000384807587,
+      "params": 311418,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\no_patch\\no_patch_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "no_attention": {
+      "name": "Without Attention",
+      "rmse": 0.3482648432254791,
+      "mae": 0.17676036059856415,
+      "params": 47994,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\no_attention\\no_attention_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "no_positional": {
+      "name": "Without Positional Encoding",
+      "rmse": 0.18965886533260345,
+      "mae": 0.10225111246109009,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\no_positional\\no_positional_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "patch_L2": {
+      "name": "Patch Length L=2",
+      "rmse": 0.337583065032959,
+      "mae": 0.16566017270088196,
+      "params": 312186,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\patch_L2\\patch_L2_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 2,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "patch_L4": {
+      "name": "Patch Length L=4",
+      "rmse": 0.41991138458251953,
+      "mae": 0.16044512391090393,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\patch_L4\\patch_L4_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "patch_L8": {
+      "name": "Patch Length L=8",
+      "rmse": 0.2557590901851654,
+      "mae": 0.13258899748325348,
+      "params": 316794,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\patch_L8\\patch_L8_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 8,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "patch_L16": {
+      "name": "Patch Length L=16",
+      "rmse": 0.45565271377563477,
+      "mae": 0.232168510556221,
+      "params": 322938,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\patch_L16\\patch_L16_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 16,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "history_P4": {
+      "name": "History P=4",
+      "rmse": 1.3361198902130127,
+      "mae": 0.7372613549232483,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\history_P4\\history_P4_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "history_P8": {
+      "name": "History P=8",
+      "rmse": 0.28165099024772644,
+      "mae": 0.14358769357204437,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\history_P8\\history_P8_model.pth",
+      "config": {
+        "history_length": 8,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "history_P16": {
+      "name": "History P=16",
+      "rmse": 0.2807753384113312,
+      "mae": 0.14020496606826782,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\history_P16\\history_P16_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "history_P32": {
+      "name": "History P=32",
+      "rmse": 0.2543562948703766,
+      "mae": 0.13441872596740723,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\history_P32\\history_P32_model.pth",
+      "config": {
+        "history_length": 32,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "history_P64": {
+      "name": "History P=64",
+      "rmse": 0.22587040066719055,
+      "mae": 0.12400051951408386,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\history_P64\\history_P64_model.pth",
+      "config": {
+        "history_length": 64,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L1": {
+      "name": "Transformer L=1 layers",
+      "rmse": 0.6291354298591614,
+      "mae": 0.3210112750530243,
+      "params": 114554,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\n_layers_L1\\n_layers_L1_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 1,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L2": {
+      "name": "Transformer L=2 layers",
+      "rmse": 0.4103143811225891,
+      "mae": 0.20375566184520721,
+      "params": 214138,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\n_layers_L2\\n_layers_L2_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 2,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L3": {
+      "name": "Transformer L=3 layers",
+      "rmse": 0.2695681154727936,
+      "mae": 0.13512194156646729,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\n_layers_L3\\n_layers_L3_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L4": {
+      "name": "Transformer L=4 layers",
+      "rmse": 0.23978862166404724,
+      "mae": 0.125041663646698,
+      "params": 413306,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\n_layers_L4\\n_layers_L4_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 4,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L6": {
+      "name": "Transformer L=6 layers",
+      "rmse": 0.22757939994335175,
+      "mae": 0.11283019930124283,
+      "params": 612474,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\n_layers_L6\\n_layers_L6_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 6,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d12": {
+      "name": "Latent dim d=12",
+      "rmse": 0.25810688734054565,
+      "mae": 0.1285276859998703,
+      "params": 302906,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\latent_dim_d12\\latent_dim_d12_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 12,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d32": {
+      "name": "Latent dim d=32",
+      "rmse": 0.2149275243282318,
+      "mae": 0.106630340218544,
+      "params": 306426,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\latent_dim_d32\\latent_dim_d32_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 32,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d64": {
+      "name": "Latent dim d=64",
+      "rmse": 0.23337462544441223,
+      "mae": 0.11979304254055023,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\latent_dim_d64\\latent_dim_d64_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d128": {
+      "name": "Latent dim d=128",
+      "rmse": 1.490688443183899,
+      "mae": 0.9916893839836121,
+      "params": 334458,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\latent_dim_d128\\latent_dim_d128_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 128,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d256": {
+      "name": "Latent dim d=256",
+      "rmse": NaN,
+      "mae": NaN,
+      "params": 400506,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260604_225802\\latent_dim_d256\\latent_dim_d256_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 256,
+        "n_layers": 3,
+        "precision": "float32",
+        "device": "cuda"
+      }
+    }
+  },
+  "baseline_rmse": 0.4115786552429199
+}

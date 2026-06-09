@@ -1,0 +1,6 @@
+{
+  "method": "mlp_koopman",
+  "training_method": "end_to_end",
+  "test_rmse": 2.186218500137329,
+  "test_mae": 1.907016634941101
+}

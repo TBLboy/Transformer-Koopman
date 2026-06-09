@@ -1,0 +1,3 @@
+Command: C:\Users\Windows\.conda\envs\koopman\python.exe C:\Users\Windows\Desktop\论文4\code-projectv2\scripts\train_patchtst.py --config C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform2.yaml --save_dir C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\patchtst_koopman
+Started: 2026-05-29T11:55:55.894425
+============================================================

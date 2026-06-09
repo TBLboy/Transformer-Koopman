@@ -22,14 +22,6 @@ env/
 *.swp
 *.swo
 
-# Project artifacts (not committed; reproducible from training)
-data/
-results/
-*.pth
-*.npz
-!data/.gitkeep
-!results/.gitkeep
-
 # OS
 .DS_Store
 Thumbs.db

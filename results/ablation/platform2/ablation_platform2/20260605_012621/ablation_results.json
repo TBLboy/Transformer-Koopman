@@ -1,0 +1,376 @@
+{
+  "platform": "platform2",
+  "timestamp": "20260605_012621",
+  "baseline_params": {
+    "history_length": 4,
+    "patch_length": 2,
+    "latent_dim": 8,
+    "d_model": 16
+  },
+  "ablation_ranges": {
+    "patch_lengths": [
+      1,
+      4
+    ],
+    "history_lengths": [
+      2,
+      4,
+      6,
+      8,
+      12,
+      16
+    ],
+    "n_layers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "latent_dims": [
+      4,
+      8,
+      16,
+      32,
+      64
+    ]
+  },
+  "results": {
+    "full_model": {
+      "name": "Full Model (Baseline)",
+      "rmse": 0.7941995081994003,
+      "mae": 0.6220205679774429,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\full_model\\full_model_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "no_patch": {
+      "name": "Without Patching",
+      "rmse": 1.544278742151236,
+      "mae": 1.3668200720231147,
+      "params": 10070,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\no_patch\\no_patch_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "no_attention": {
+      "name": "Without Attention",
+      "rmse": 1.8310220478482273,
+      "mae": 1.5248833165058973,
+      "params": 806,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\no_attention\\no_attention_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "no_positional": {
+      "name": "Without Positional Encoding",
+      "rmse": 1.4078259848034125,
+      "mae": 1.1814295536374313,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\no_positional\\no_positional_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "patch_L1": {
+      "name": "Patch Length L=1",
+      "rmse": 2.608280381471967,
+      "mae": 2.058851330728857,
+      "params": 10070,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\patch_L1\\patch_L1_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 1,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "patch_L4": {
+      "name": "Patch Length L=4",
+      "rmse": 0.5064342189952813,
+      "mae": 0.4256517478414297,
+      "params": 10166,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\patch_L4\\patch_L4_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 4,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "history_P2": {
+      "name": "History P=2",
+      "rmse": 0.649224481648012,
+      "mae": 0.5359988219847363,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\history_P2\\history_P2_model.pth",
+      "config": {
+        "history_length": 2,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "history_P4": {
+      "name": "History P=4",
+      "rmse": 1.8384122783470236,
+      "mae": 1.4622478597668145,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\history_P4\\history_P4_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "history_P6": {
+      "name": "History P=6",
+      "rmse": 0.9381926050379501,
+      "mae": 0.7429480194748431,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\history_P6\\history_P6_model.pth",
+      "config": {
+        "history_length": 6,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "history_P8": {
+      "name": "History P=8",
+      "rmse": 1.8661139417331842,
+      "mae": 1.4968921776212611,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\history_P8\\history_P8_model.pth",
+      "config": {
+        "history_length": 8,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "history_P12": {
+      "name": "History P=12",
+      "rmse": 1.0151769733464904,
+      "mae": 0.7367665895155446,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\history_P12\\history_P12_model.pth",
+      "config": {
+        "history_length": 12,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "history_P16": {
+      "name": "History P=16",
+      "rmse": 2.4972688379804633,
+      "mae": 2.101601109551706,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\history_P16\\history_P16_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L1": {
+      "name": "Transformer L=1 layers",
+      "rmse": 0.6517452309720058,
+      "mae": 0.5473947779397209,
+      "params": 3542,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\n_layers_L1\\n_layers_L1_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 1,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L2": {
+      "name": "Transformer L=2 layers",
+      "rmse": 1.2009401710160423,
+      "mae": 1.0389860819394185,
+      "params": 6822,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\n_layers_L2\\n_layers_L2_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 2,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L3": {
+      "name": "Transformer L=3 layers",
+      "rmse": 1.0269466208269156,
+      "mae": 0.8228333464245792,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\n_layers_L3\\n_layers_L3_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "n_layers_L4": {
+      "name": "Transformer L=4 layers",
+      "rmse": 0.7709753850944397,
+      "mae": 0.6398658525172546,
+      "params": 13382,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\n_layers_L4\\n_layers_L4_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 4,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d4": {
+      "name": "Latent dim d=4",
+      "rmse": 1.9337243753640339,
+      "mae": 1.5748478603468616,
+      "params": 9978,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\latent_dim_d4\\latent_dim_d4_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 4,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d8": {
+      "name": "Latent dim d=8",
+      "rmse": 0.8805480760580093,
+      "mae": 0.7715903269496807,
+      "params": 10102,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\latent_dim_d8\\latent_dim_d8_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 8,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d16": {
+      "name": "Latent dim d=16",
+      "rmse": 2.156350099325103,
+      "mae": 1.4669378190165696,
+      "params": 10446,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\latent_dim_d16\\latent_dim_d16_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 16,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d32": {
+      "name": "Latent dim d=32",
+      "rmse": 1.5038182388617387,
+      "mae": 1.1804277559698197,
+      "params": 11518,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\latent_dim_d32\\latent_dim_d32_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 32,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    },
+    "latent_dim_d64": {
+      "name": "Latent dim d=64",
+      "rmse": 0.5201049336507406,
+      "mae": 0.42549531503601734,
+      "params": 15198,
+      "status": "success",
+      "model_path": "./results/ablation/platform2\\ablation_platform2\\20260605_012621\\latent_dim_d64\\latent_dim_d64_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 2,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "precision": "float64",
+        "device": "cuda"
+      }
+    }
+  },
+  "baseline_rmse": 0.7941995081994003
+}

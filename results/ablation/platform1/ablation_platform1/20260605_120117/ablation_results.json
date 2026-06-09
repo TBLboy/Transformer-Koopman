@@ -1,0 +1,554 @@
+{
+  "platform": "platform1",
+  "timestamp": "20260605_120117",
+  "baseline_params": {
+    "history_length": 16,
+    "patch_length": 4,
+    "latent_dim": 64,
+    "n_layers": 3,
+    "d_model": 128
+  },
+  "control_variables": {
+    "seed": 42,
+    "deterministic": true,
+    "cudnn_benchmark": false,
+    "precision": "float32",
+    "batch_size": 1024,
+    "num_epochs": 300,
+    "patience": 50,
+    "learning_rate": 0.0003
+  },
+  "ablation_ranges": {
+    "patch_lengths": [
+      2,
+      8,
+      16
+    ],
+    "history_lengths": [
+      4,
+      8,
+      32,
+      64
+    ],
+    "n_layers": [
+      1,
+      2,
+      4,
+      6
+    ],
+    "latent_dims": [
+      12,
+      32,
+      128,
+      256
+    ]
+  },
+  "results": {
+    "full_model": {
+      "name": "Full Model (Baseline)",
+      "rmse": 0.4115786552429199,
+      "mae": 0.16196000576019287,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\full_model\\full_model_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": []
+    },
+    "no_patch": {
+      "name": "Without Patching",
+      "rmse": 0.35476791858673096,
+      "mae": 0.17523083090782166,
+      "params": 311418,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\no_patch\\no_patch_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": []
+    },
+    "no_attention": {
+      "name": "Without Attention",
+      "rmse": 0.34358149766921997,
+      "mae": 0.1655697077512741,
+      "params": 47994,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\no_attention\\no_attention_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": []
+    },
+    "no_positional": {
+      "name": "Without Positional Encoding",
+      "rmse": 0.2367565631866455,
+      "mae": 0.12512792646884918,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\no_positional\\no_positional_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": []
+    },
+    "patch_L2": {
+      "name": "Patch Length L=2",
+      "rmse": 0.21543176472187042,
+      "mae": 0.11484909057617188,
+      "params": 312186,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\patch_L2\\patch_L2_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 2,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "patch_length"
+      ]
+    },
+    "patch_L8": {
+      "name": "Patch Length L=8",
+      "rmse": 0.3035448491573334,
+      "mae": 0.15423259139060974,
+      "params": 316794,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\patch_L8\\patch_L8_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 8,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "patch_length"
+      ]
+    },
+    "patch_L16": {
+      "name": "Patch Length L=16",
+      "rmse": 0.4435572624206543,
+      "mae": 0.22768180072307587,
+      "params": 322938,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\patch_L16\\patch_L16_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 16,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "patch_length"
+      ]
+    },
+    "history_P4": {
+      "name": "History P=4",
+      "rmse": 0.48904338479042053,
+      "mae": 0.23150986433029175,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\history_P4\\history_P4_model.pth",
+      "config": {
+        "history_length": 4,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "history_length"
+      ]
+    },
+    "history_P8": {
+      "name": "History P=8",
+      "rmse": 0.35990577936172485,
+      "mae": 0.1779026985168457,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\history_P8\\history_P8_model.pth",
+      "config": {
+        "history_length": 8,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "history_length"
+      ]
+    },
+    "history_P32": {
+      "name": "History P=32",
+      "rmse": 0.2578216791152954,
+      "mae": 0.13230162858963013,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\history_P32\\history_P32_model.pth",
+      "config": {
+        "history_length": 32,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "history_length"
+      ]
+    },
+    "history_P64": {
+      "name": "History P=64",
+      "rmse": 0.23165841400623322,
+      "mae": 0.12434390187263489,
+      "params": 313722,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\history_P64\\history_P64_model.pth",
+      "config": {
+        "history_length": 64,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 3,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "history_length"
+      ]
+    },
+    "n_layers_L1": {
+      "name": "Transformer L=1 layers",
+      "rmse": 0.4979623854160309,
+      "mae": 0.2644444704055786,
+      "params": 114554,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\n_layers_L1\\n_layers_L1_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 1,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "n_layers"
+      ]
+    },
+    "n_layers_L2": {
+      "name": "Transformer L=2 layers",
+      "rmse": 1.0086784362792969,
+      "mae": 0.4741278886795044,
+      "params": 214138,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\n_layers_L2\\n_layers_L2_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 2,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "n_layers"
+      ]
+    },
+    "n_layers_L4": {
+      "name": "Transformer L=4 layers",
+      "rmse": 0.5999454855918884,
+      "mae": 0.21744315326213837,
+      "params": 413306,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\n_layers_L4\\n_layers_L4_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 4,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "n_layers"
+      ]
+    },
+    "n_layers_L6": {
+      "name": "Transformer L=6 layers",
+      "rmse": 0.23328348994255066,
+      "mae": 0.11844547837972641,
+      "params": 612474,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\n_layers_L6\\n_layers_L6_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 64,
+        "n_layers": 6,
+        "koopman_lifted_dim": 64,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "n_layers"
+      ]
+    },
+    "latent_dim_d12": {
+      "name": "Latent dim d=12",
+      "rmse": 0.2223949283361435,
+      "mae": 0.1113695502281189,
+      "params": 302906,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\latent_dim_d12\\latent_dim_d12_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 12,
+        "n_layers": 3,
+        "koopman_lifted_dim": 12,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "latent_dim"
+      ]
+    },
+    "latent_dim_d32": {
+      "name": "Latent dim d=32",
+      "rmse": 0.19100435078144073,
+      "mae": 0.10470660030841827,
+      "params": 306426,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\latent_dim_d32\\latent_dim_d32_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 32,
+        "n_layers": 3,
+        "koopman_lifted_dim": 32,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "latent_dim"
+      ]
+    },
+    "latent_dim_d128": {
+      "name": "Latent dim d=128",
+      "rmse": 2.790583610534668,
+      "mae": 1.9567325115203857,
+      "params": 334458,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\latent_dim_d128\\latent_dim_d128_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 128,
+        "n_layers": 3,
+        "koopman_lifted_dim": 128,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "latent_dim"
+      ]
+    },
+    "latent_dim_d256": {
+      "name": "Latent dim d=256",
+      "rmse": NaN,
+      "mae": NaN,
+      "params": 400506,
+      "status": "success",
+      "model_path": "./results/ablation/platform1\\ablation_platform1\\20260605_120117\\latent_dim_d256\\latent_dim_d256_model.pth",
+      "config": {
+        "history_length": 16,
+        "patch_length": 4,
+        "latent_dim": 256,
+        "n_layers": 3,
+        "koopman_lifted_dim": 256,
+        "precision": "float32",
+        "device": "cuda",
+        "seed": 42,
+        "deterministic": true,
+        "cudnn_benchmark": false,
+        "batch_size": 1024,
+        "num_epochs": 300,
+        "patience": 50,
+        "learning_rate": 0.0003
+      },
+      "diff_vs_full_model": [
+        "latent_dim"
+      ]
+    }
+  },
+  "baseline_rmse": 0.4115786552429199
+}

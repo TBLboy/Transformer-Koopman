@@ -1,0 +1,219 @@
+{
+  "platform": "platform2",
+  "results_dir": "C:\\Users\\Windows\\Desktop\\论文4\\code-projectv2\\results\\ablation\\platform2\\ablation_platform2\\20260605_012621",
+  "config_path": "C:\\Users\\Windows\\Desktop\\论文4\\code-projectv2\\scripts\\ablation\\ablation_platform2.yaml",
+  "timestamp": "20260605_045135",
+  "test_metrics": {
+    "full_model": {
+      "rmse": 0.7941995081994003,
+      "mae": 0.6220205679774429,
+      "per_dim_rmse": [
+        0.9397765158422039,
+        0.6150819603270988
+      ],
+      "name": "Full Model (Baseline)",
+      "params": 10102
+    },
+    "no_patch": {
+      "rmse": 1.544278742151236,
+      "mae": 1.3668200720231147,
+      "per_dim_rmse": [
+        1.9520451439588715,
+        0.9793433631096895
+      ],
+      "name": "Without Patching",
+      "params": 10070
+    },
+    "no_attention": {
+      "rmse": 1.8310220478482273,
+      "mae": 1.5248833165058973,
+      "per_dim_rmse": [
+        2.355102045139936,
+        1.0764654366909898
+      ],
+      "name": "Without Attention",
+      "params": 806
+    },
+    "no_positional": {
+      "rmse": 1.4078259848034125,
+      "mae": 1.1814295536374313,
+      "per_dim_rmse": [
+        1.800998281075566,
+        0.8487362361406825
+      ],
+      "name": "Without Positional Encoding",
+      "params": 10102
+    },
+    "patch_L1": {
+      "rmse": 2.608280381471967,
+      "mae": 2.058851330728857,
+      "per_dim_rmse": [
+        3.595495472148963,
+        0.8238115115118303
+      ],
+      "name": "Patch Length L=1",
+      "params": 10070
+    },
+    "patch_L4": {
+      "rmse": 0.5064342189952813,
+      "mae": 0.4256517478414297,
+      "per_dim_rmse": [
+        0.44020468386097683,
+        0.5649522746618323
+      ],
+      "name": "Patch Length L=4",
+      "params": 10166
+    },
+    "history_P2": {
+      "rmse": 0.649224481648012,
+      "mae": 0.5359988219847363,
+      "per_dim_rmse": [
+        0.6826787319626041,
+        0.6139500012771324
+      ],
+      "name": "History P=2",
+      "params": 10102
+    },
+    "history_P4": {
+      "rmse": 1.8384122783470236,
+      "mae": 1.4622478597668145,
+      "per_dim_rmse": [
+        2.489404044614494,
+        0.7499246048845107
+      ],
+      "name": "History P=4",
+      "params": 10102
+    },
+    "history_P6": {
+      "rmse": 0.9381926050379501,
+      "mae": 0.7429480194748431,
+      "per_dim_rmse": [
+        0.6405318205387606,
+        1.1619508230441988
+      ],
+      "name": "History P=6",
+      "params": 10102
+    },
+    "history_P8": {
+      "rmse": 1.8661139417331842,
+      "mae": 1.4968921776212611,
+      "per_dim_rmse": [
+        1.0526440029172823,
+        2.420062621128678
+      ],
+      "name": "History P=8",
+      "params": 10102
+    },
+    "history_P12": {
+      "rmse": 1.0151769733464904,
+      "mae": 0.7367665895155446,
+      "per_dim_rmse": [
+        1.3935204306645033,
+        0.3453539977276921
+      ],
+      "name": "History P=12",
+      "params": 10102
+    },
+    "history_P16": {
+      "rmse": 2.4972688379804633,
+      "mae": 2.101601109551706,
+      "per_dim_rmse": [
+        1.668536852913519,
+        3.112665749605318
+      ],
+      "name": "History P=16",
+      "params": 10102
+    },
+    "n_layers_L1": {
+      "rmse": 0.6517452309720058,
+      "mae": 0.5473947779397209,
+      "per_dim_rmse": [
+        0.6487910053303861,
+        0.6546861260114598
+      ],
+      "name": "Transformer L=1 layers",
+      "params": 3542
+    },
+    "n_layers_L2": {
+      "rmse": 1.2009401710160423,
+      "mae": 1.0389860819394185,
+      "per_dim_rmse": [
+        1.5451185252863144,
+        0.7050697352298757
+      ],
+      "name": "Transformer L=2 layers",
+      "params": 6822
+    },
+    "n_layers_L3": {
+      "rmse": 1.0269466208269156,
+      "mae": 0.8228333464245792,
+      "per_dim_rmse": [
+        1.3891973137750369,
+        0.4235204215334408
+      ],
+      "name": "Transformer L=3 layers",
+      "params": 10102
+    },
+    "n_layers_L4": {
+      "rmse": 0.7709753850944397,
+      "mae": 0.6398658525172546,
+      "per_dim_rmse": [
+        0.6092947742014091,
+        0.9041935450852838
+      ],
+      "name": "Transformer L=4 layers",
+      "params": 13382
+    },
+    "latent_dim_d4": {
+      "rmse": 1.9337243753640339,
+      "mae": 1.5748478603468616,
+      "per_dim_rmse": [
+        1.4822765462012417,
+        2.298137541648838
+      ],
+      "name": "Latent dim d=4",
+      "params": 9978
+    },
+    "latent_dim_d8": {
+      "rmse": 0.8805480760580093,
+      "mae": 0.7715903269496807,
+      "per_dim_rmse": [
+        0.971189301280075,
+        0.7794364435783354
+      ],
+      "name": "Latent dim d=8",
+      "params": 10102
+    },
+    "latent_dim_d16": {
+      "rmse": 2.156350099325103,
+      "mae": 1.4669378190165696,
+      "per_dim_rmse": [
+        0.3604167706578097,
+        3.028166318607246
+      ],
+      "name": "Latent dim d=16",
+      "params": 10446
+    },
+    "latent_dim_d32": {
+      "rmse": 1.5038182388617387,
+      "mae": 1.1804277559698197,
+      "per_dim_rmse": [
+        1.8171181246070212,
+        1.1049978788627175
+      ],
+      "name": "Latent dim d=32",
+      "params": 11518
+    },
+    "latent_dim_d64": {
+      "rmse": 0.5201049336507406,
+      "mae": 0.42549531503601734,
+      "per_dim_rmse": [
+        0.6038060947791885,
+        0.42004343099635333
+      ],
+      "name": "Latent dim d=64",
+      "params": 15198
+    }
+  },
+  "baseline_rmse": 0.7941995081994003
+}
