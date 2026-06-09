@@ -4,8 +4,8 @@
 experiment:
   name: "platform2_patchtst"
   seed: 42
-  device: "cuda"  # 改为CPU
-  precision: "float64"  # float32 (单精度) / float64 (双精度)
+  device: "cuda" # 改为CPU
+  precision: "float64" # float32 (单精度) / float64 (双精度)
   log_dir: "./results/logs/platform2"
   save_dir: "./results/models/platform2"
 
@@ -22,13 +22,13 @@ data:
   test_file: "test.npz"
 
   # 数据维度
-  state_dim: 2          # n: 状态维度 (3个关节位置 + 3个关节速度)
-  control_dim: 2        # m: 控制输入维度 (3个关节力矩)
+  state_dim: 2 # n: 状态维度 (3个关节位置 + 3个关节速度)
+  control_dim: 2 # m: 控制输入维度 (3个关节力矩)
 
   # 预处理
   normalize_state: true
   normalize_control: true
-  normalization_method: "standard"  # standard / minmax
+  normalization_method: "standard" # standard / minmax
 
   # 噪声注入（用于噪声鲁棒性实验）
   add_noise: false
@@ -40,74 +40,80 @@ data:
 # ============================================================
 encoder:
   # 历史窗口
-  history_length: 4    # P: 历史时刻数
-  patch_length: 2       # p: 每个patch的长度
+  history_length: 4 # P: 历史时刻数
+  patch_length: 2 # p: 每个patch的长度
 
   # 模型维度
-  latent_dim: 10            # d: 潜在空间维度（与训练好的模型一致）
-  d_model: 16          # Transformer模型维度
+  latent_dim: 10 # d: 潜在空间维度（与训练好的模型一致）
+  d_model: 16 # Transformer模型维度
 
   # Transformer结构
-  n_layers: 3           # L: Transformer层数（增加）
-  n_heads: 2            # 多头注意力的头数
-  d_ff: 64             # 前馈网络维度
+  n_layers: 3 # L: Transformer层数（增加）
+  n_heads: 2 # 多头注意力的头数
+  d_ff: 64 # 前馈网络维度
   dropout: 0.1
 
   # 位置编码
-  positional_encoding: "sinusoidal"  # sinusoidal / learnable
+  positional_encoding: "sinusoidal" # sinusoidal / learnable
 
   # Readout方式
-  readout_method: "mean"  # mean / max / last
+  readout_method: "mean" # mean / max / last
 
 # ============================================================
 # Koopman动力学参数
 # ============================================================
 koopman:
   # 稳定性约束
-  enforce_stability: false  # 关闭SVD限制，让EDMD自由计算最优A、B
-  rho_max: 0.9999         # 最大奇异值上界（当enforce_stability=true时生效）
+  enforce_stability: false # 关闭SVD限制，让EDMD自由计算最优A、B
+  rho_max: 0.9999 # 最大奇异值上界（当enforce_stability=true时生效）
 
   # 模型类型
-  model_type: "linear"  # linear / bilinear
+  model_type: "linear" # linear / bilinear
 
 # ============================================================
 # 线性降维参数
 # ============================================================
 decoder:
-  decoder_type: "linear"  # linear / mlp
+  decoder_type: "linear" # linear / mlp
 
 # ============================================================
 # 训练参数
 # ============================================================
 training:
   # 训练方法选择
-  method: "edmd"        # edmd / end_to_end
+  method: "edmd" # edmd / end_to_end
 
   # ============ EDMD方法参数 ============
   edmd:
     # 预训练阶段（训练编码器和降维矩阵）
     pretrain:
-      enabled: true           # 是否预训练编码器
-      num_epochs: 500         # 预训练轮数（再增加）
-      batch_size: 128         # 再减小batch size
-      learning_rate: 0.0010   # 再降低学习率
+      enabled: true # 是否预训练编码器
+      num_epochs: 500 # 预训练轮数（再增加）
+      batch_size: 128 # 再减小batch size
+      learning_rate: 0.0010 # 再降低学习率
       optimizer: "adam"
       early_stopping: true
-      patience: 100            # 增加patience
+      patience: 100 # 增加patience
       min_delta: 0.00001
 
-      # 三项损失权重
+      # 多步预测损失参数
+      multi_step:
+        horizon: 3 # N_L: 多步展开长度 (0=关闭)
+
+      # 五项损失权重
       loss_weights:
-        prediction: 1.0        # H步自回归预测损失（H=1 → 等价原单步）
-        latent: 1.0            # λ₂: 升维空间预测损失
-        consistency: 1.0       # λ₃: 一致性约束损失
+        prediction: 1.0 # H步自回归预测损失（H=1 → 等价原单步）
+        latent: 0.5 # λ₂: 升维空间预测损失
+        consistency: 0.5 # λ₃: 一致性约束损失
+        multi_step_physical: 1.0 # λ_multi,x (默认0，向后兼容)
+        multi_step_latent: 0.5 # λ_multi,z (默认0，向后兼容)
 
     # EDMD计算参数
     compute:
-      regularization: 0.000001    # Tikhonov正则化
-      svd_clipping: false     # 关闭SVD限制
-      batch_encode: false      # 是否批量编码（节省内存）
-      batch_size: 1024         # 编码时的batch size
+      regularization: 0.000001 # Tikhonov正则化
+      svd_clipping: false # 关闭SVD限制
+      batch_encode: false # 是否批量编码（节省内存）
+      batch_size: 1024 # 编码时的batch size
 
     # 降维矩阵学习
     decoder:
@@ -118,17 +124,17 @@ training:
   traditional_edmd:
     # 升维函数配置
     lifting_function:
-      type: "polynomial"  # polynomial / rbf
+      type: "polynomial" # polynomial / rbf
       params:
-        degree: 2         # 多项式阶数（type=polynomial时使用）
+        degree: 2 # 多项式阶数（type=polynomial时使用）
         # rbf_centers: null  # RBF中心点（type=rbf时使用）
         # rbf_sigma: 1.0     # RBF宽度（type=rbf时使用）
 
     # EDMD计算参数
     compute:
-      regularization: 0.000001    # Tikhonov正则化
-      svd_clipping: false         # 是否应用SVD限制
-      batch_size: 1024            # 编码时的batch size
+      regularization: 0.000001 # Tikhonov正则化
+      svd_clipping: false # 是否应用SVD限制
+      batch_size: 1024 # 编码时的batch size
 
   # ============ 端到端方法参数 ============
   end_to_end:
@@ -136,10 +142,10 @@ training:
     batch_size: 1024
     num_epochs: 500
     learning_rate: 0.0001
-    optimizer: "adam"         # adam / sgd / adamw
+    optimizer: "adam" # adam / sgd / adamw
 
     # 学习率调度
-    scheduler: "step"         # step / cosine / none
+    scheduler: "step" # step / cosine / none
     scheduler_params:
       step_size: 100
       gamma: 0.9
@@ -154,14 +160,14 @@ training:
 
     # SVD约束
     svd_projection:
-      enabled: false           # 是否在每步后应用SVD投影
-      frequency: 1            # 每N步投影一次（1表示每步都投影）
+      enabled: false # 是否在每步后应用SVD投影
+      frequency: 1 # 每N步投影一次（1表示每步都投影）
 
     # 损失函数权重
     loss_weights:
-      prediction: 1.0         # 预测误差权重
-      stability: 1.0          # 稳定性约束权重
-      regularization: 0.001   # 正则化权重
+      prediction: 1.0 # 预测误差权重
+      stability: 1.0 # 稳定性约束权重
+      regularization: 0.001 # 正则化权重
 
   # ============ 通用参数 ============
   # 验证和保存
@@ -170,18 +176,18 @@ training:
   save_best_only: true
 
   # 设备和并行
-  num_workers: 4              # DataLoader的worker数量
+  num_workers: 4 # DataLoader的worker数量
 
 # ============================================================
 # 控制器参数
 # ============================================================
 controller:
   # 控制器类型
-  type: "lqr"           # lqr / mpc / none
+  type: "lqr" # lqr / mpc / none
 
   # LQR参数
   lqr:
-    Q_matrix: "identity"  # identity / custom
+    Q_matrix: "identity" # identity / custom
     R_matrix: "identity"
     Q_scale: 1.0
     R_scale: 0.1
@@ -222,13 +228,13 @@ logging:
 # ============================================================
 mlp_koopman:
   # ── 编码器结构 ──────────────────────────────────────────────
-  latent_dim: 8             # d: 升维后的潜在空间维度（与训练好的模型一致）
-  hidden_dims: [128, 64, 32]   # MLP 隐藏层维度列表（与训练好的模型一致）
-  activation: "relu"        # relu / tanh / elu
+  latent_dim: 8 # d: 升维后的潜在空间维度（与训练好的模型一致）
+  hidden_dims: [128, 64, 32] # MLP 隐藏层维度列表（与训练好的模型一致）
+  activation: "relu" # relu / tanh / elu
   dropout: 0.1
 
   # ── 训练方式 ────────────────────────────────────────────────
-  training_method: "end_to_end"   # edmd / end_to_end（与训练好的模型一致）
+  training_method: "end_to_end" # edmd / end_to_end（与训练好的模型一致）
 
   # ── EDMD 训练参数 ────────────────────────────────────────────
   edmd:
@@ -266,14 +272,14 @@ mlp_koopman:
 # ============================================================
 lstm_koopman:
   # ── 编码器结构 ──────────────────────────────────────────────
-  latent_dim: 8             # d: 升维后的潜在空间维度
-  hidden_size: 32           # LSTM 隐藏层维度
-  n_layers: 2               # LSTM 层数
-  dropout: 0.1              # LSTM 层间 dropout
-  bidirectional: false      # 是否双向 LSTM
+  latent_dim: 8 # d: 升维后的潜在空间维度
+  hidden_size: 32 # LSTM 隐藏层维度
+  n_layers: 2 # LSTM 层数
+  dropout: 0.1 # LSTM 层间 dropout
+  bidirectional: false # 是否双向 LSTM
 
   # ── 训练方式 ────────────────────────────────────────────────
-  training_method: "end_to_end"   # edmd / end_to_end
+  training_method: "end_to_end" # edmd / end_to_end
 
   # ── EDMD 训练参数 ────────────────────────────────────────────
   edmd:

@@ -79,10 +79,14 @@ training:
       early_stopping: true
       patience: 100
       min_delta: 0.00001
+      multi_step:
+        horizon: 0
       loss_weights:
         prediction: 1.0
         latent: 1.0
         consistency: 1.0
+        multi_step_physical: 0.0
+        multi_step_latent: 0.0
 
     compute:
       regularization: 0.000001

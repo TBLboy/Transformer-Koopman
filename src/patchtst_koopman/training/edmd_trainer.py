@@ -307,17 +307,22 @@ class EDMDTrainer:
         print(f"预训练完成，最佳验证损失: {best_val_loss:.6f}")
 
     def _pretrain_epoch(self, train_loader, optimizer):
-        """预训练的单个epoch（三项损失：单步预测 + 升维空间 + 一致性约束）"""
+        """预训练的单个epoch（五项损失：单步预测 + 升维空间 + 一致性约束 + 多步物理 + 多步升维）"""
         self.model.train()
         total_loss = None
         loss_pred_total = None
         loss_latent_total = None
         loss_consistency_total = None
+        loss_multi_x_total = None
+        loss_multi_z_total = None
 
         loss_weights = self.edmd_config['pretrain'].get('loss_weights',
                                                         {'prediction': 1.0,
                                                          'latent': 0.5,
                                                          'consistency': 0.5})
+        w_multi_x = loss_weights.get('multi_step_physical', 0.0)
+        w_multi_z = loss_weights.get('multi_step_latent', 0.0)
+        use_multi_step = (w_multi_x > 0 or w_multi_z > 0)
 
         for batch in tqdm(train_loader, desc="预训练"):
             x_history = self._to_device(batch['x_history'])
@@ -348,16 +353,43 @@ class EDMDTrainer:
                 loss = (loss_weights['prediction'] * L_pred +
                         loss_weights['latent'] * L_latent +
                         loss_weights['consistency'] * L_consistency)
-                return loss, L_pred, L_latent, L_consistency
+
+                L_multi_x = torch.tensor(0.0, device=x_history.device)
+                L_multi_z = torch.tensor(0.0, device=x_history.device)
+
+                if use_multi_step:
+                    x_future = self._to_device(batch['x_future'])
+                    u_future = self._to_device(batch['u_future'])
+                    x_history_future = self._to_device(batch['x_history_future'])
+
+                    B, N_L = x_future.shape[0], x_future.shape[1]
+
+                    z_hat_seq = self.model.roll_out_latent(z_t, u_future)
+
+                    if w_multi_x > 0:
+                        n_state = self.model.decoder.n
+                        x_hat_seq = z_hat_seq[..., :n_state]
+                        L_multi_x = F.mse_loss(x_hat_seq, x_future)
+                        loss = loss + w_multi_x * L_multi_x
+
+                    if w_multi_z > 0:
+                        B, N_L = x_history_future.shape[0], x_history_future.shape[1]
+                        P = x_history.shape[1]
+                        xhf_flat = x_history_future.reshape(B * N_L, P, -1)
+                        z_true_seq = self.model.encoder(xhf_flat).reshape(B, N_L, -1)
+                        L_multi_z = F.mse_loss(z_hat_seq, z_true_seq)
+                        loss = loss + w_multi_z * L_multi_z
+
+                return loss, L_pred, L_latent, L_consistency, L_multi_x, L_multi_z
 
             if self.use_amp:
                 with torch.amp.autocast("cuda"):
-                    loss, L_pred, L_latent, L_consistency = _compute_losses()
+                    loss, L_pred, L_latent, L_consistency, L_multi_x, L_multi_z = _compute_losses()
                 self.scaler.scale(loss).backward()
                 self.scaler.step(optimizer)
                 self.scaler.update()
             else:
-                loss, L_pred, L_latent, L_consistency = _compute_losses()
+                loss, L_pred, L_latent, L_consistency, L_multi_x, L_multi_z = _compute_losses()
                 loss.backward()
                 optimizer.step()
 
@@ -365,13 +397,22 @@ class EDMDTrainer:
             loss_pred_total = self._accumulate_loss(loss_pred_total, L_pred)
             loss_latent_total = self._accumulate_loss(loss_latent_total, L_latent)
             loss_consistency_total = self._accumulate_loss(loss_consistency_total, L_consistency)
+            loss_multi_x_total = self._accumulate_loss(loss_multi_x_total, L_multi_x)
+            loss_multi_z_total = self._accumulate_loss(loss_multi_z_total, L_multi_z)
 
         avg_loss = (total_loss / len(train_loader)).item()
         avg_pred = (loss_pred_total / len(train_loader)).item()
         avg_latent = (loss_latent_total / len(train_loader)).item()
         avg_consistency = (loss_consistency_total / len(train_loader)).item()
 
-        print(f"  [损失分解] Pred: {avg_pred:.6f}, Latent: {avg_latent:.6f}, Consistency: {avg_consistency:.6f}")
+        if use_multi_step:
+            avg_multi_x = (loss_multi_x_total / len(train_loader)).item()
+            avg_multi_z = (loss_multi_z_total / len(train_loader)).item()
+            print(f"  [损失分解] Pred: {avg_pred:.6f}, Latent: {avg_latent:.6f}, "
+                  f"Consistency: {avg_consistency:.6f}, "
+                  f"MultiX: {avg_multi_x:.6f}, MultiZ: {avg_multi_z:.6f}")
+        else:
+            print(f"  [损失分解] Pred: {avg_pred:.6f}, Latent: {avg_latent:.6f}, Consistency: {avg_consistency:.6f}")
 
         return avg_loss
 

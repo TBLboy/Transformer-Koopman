@@ -25,7 +25,7 @@ from patchtst_koopman.utils.config_loader import load_config
 # Defaults assume you run the script from the project root.
 # ============================================================================
 CONFIG_PATH = 'configs/platform1.yaml'
-TRANSFORMER_MODEL_PATH = 'experiment1/Transformer-Koopman/platform1/model.pth'
+TRANSFORMER_MODEL_PATH = 'results/platform1/Models/patchtst_koopman/model_best.pth'
 LSTM_MODEL_PATH = 'experiment1/LSTM-Koopman/platform1/model.pth'
 MLP_MODEL_PATH = 'experiment1/MLP-Koopman/platform1/model.pth'
 EDMD_MODEL_PATH = 'experiment1/EDMD-Koopman/platform1'
