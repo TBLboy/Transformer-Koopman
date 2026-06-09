@@ -1,0 +1,27 @@
+{
+  "candidate_id": "P2__p1__d6__L1__dm16__ff64",
+  "status": "success",
+  "selection_source_split": "val",
+  "val_one_step_rmse": 0.017629894042149402,
+  "val_rollout_rmse": 1.9607175309364366,
+  "val_rollout_mae": 1.507540200884608,
+  "test_rollout_rmse_preview": 0.9977838343823939,
+  "test_rollout_mae_preview": 0.7980885601546921,
+  "params": 3444,
+  "final_model_path": "./results/experiment4/platform2/20260609_185945/P2__p1__d6__L1__dm16__ff64/final_model.pth",
+  "pretrain_best_path": "./results/experiment4/platform2/20260609_185945/P2__p1__d6__L1__dm16__ff64/pretrain_best.pth",
+  "config": {
+    "candidate_id": "P2__p1__d6__L1__dm16__ff64",
+    "history_length": 2,
+    "patch_length": 1,
+    "latent_dim": 6,
+    "n_layers": 1,
+    "d_model": 16,
+    "d_ff": 64,
+    "precision": "float64",
+    "batch_size": 4096,
+    "learning_rate": 0.001,
+    "seed": 42,
+    "deterministic": true
+  }
+}

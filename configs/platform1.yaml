@@ -6,10 +6,10 @@ experiment:
   seed: 42
   device: "cuda"
   precision: "float32" # float32 (单精度) / float64 (双精度)
-  deterministic: false
-  cudnn_benchmark: true
+  deterministic: true
+  cudnn_benchmark: false
   amp: true
-  allow_tf32: true
+  allow_tf32: false
   log_dir: "./results/logs/platform1"
   save_dir: "./results/models/platform1"
 
@@ -44,8 +44,8 @@ data:
 # ============================================================
 encoder:
   # 历史窗口
-  history_length: 16 # P: 历史时刻数
-  patch_length: 4 # p: 每个patch的长度
+  history_length: 8 # P: 历史时刻数
+  patch_length: 2 # p: 每个patch的长度
 
   # 模型维度
   latent_dim: 64 # d: 潜在空间维度（减小）
@@ -93,7 +93,7 @@ training:
     pretrain:
       enabled: true # 是否预训练编码器
       num_epochs: 300 # 预训练轮数（再增加）
-      batch_size: 1024 # RTX 5060 Ti 16GB
+      batch_size: 8192 # RTX 4090 24GB
       learning_rate: 0.0003 # 再降低学习率
       optimizer: "adam"
       early_stopping: true
@@ -117,7 +117,7 @@ training:
       regularization: 0.000001 # Tikhonov正则化
       svd_clipping: false # 关闭SVD限制
       batch_encode: true # 是否批量编码（节省内存）
-      batch_size: 1024 # 编码时的batch size
+      batch_size: 8192 # 编码时的batch size
 
     # 降维矩阵学习
     decoder:
@@ -177,8 +177,8 @@ training:
   save_best_only: true
 
   # 设备和并行
-  num_workers: 4 # DataLoader worker 数量
-  prefetch_factor: 4 # 每个 worker 预取 batch 数
+  num_workers: 8 # DataLoader worker 数量
+  prefetch_factor: 8 # 每个 worker 预取 batch 数
 
 # ============================================================
 # 控制器参数

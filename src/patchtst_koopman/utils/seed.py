@@ -43,6 +43,15 @@ def configure_cuda_performance(config):
     torch.backends.cudnn.allow_tf32 = exp.get("allow_tf32", True)
     torch.set_float32_matmul_precision(exp.get("float32_matmul_precision", "high"))
 
+    if deterministic:
+        torch.use_deterministic_algorithms(True, warn_only=True)
+        if hasattr(torch.backends.cuda, "enable_flash_sdp"):
+            torch.backends.cuda.enable_flash_sdp(False)
+        if hasattr(torch.backends.cuda, "enable_mem_efficient_sdp"):
+            torch.backends.cuda.enable_mem_efficient_sdp(False)
+        if hasattr(torch.backends.cuda, "enable_math_sdp"):
+            torch.backends.cuda.enable_math_sdp(True)
+
     print(
         "CUDA performance: "
         f"deterministic={deterministic}, "
@@ -51,3 +60,17 @@ def configure_cuda_performance(config):
         f"tf32={exp.get('allow_tf32', True)}, "
         f"matmul_precision={exp.get('float32_matmul_precision', 'high')}"
     )
+
+
+def get_worker_init_fn(seed):
+    """Return a ``worker_init_fn`` that seeds each DataLoader worker process.
+
+    Each worker gets ``seed + worker_id`` so shuffles differ across workers
+    but are reproducible across runs with the same base seed.
+    """
+    def _worker_init_fn(worker_id):
+        worker_seed = seed + worker_id
+        np.random.seed(worker_seed)
+        random.seed(worker_seed)
+        torch.manual_seed(worker_seed)
+    return _worker_init_fn

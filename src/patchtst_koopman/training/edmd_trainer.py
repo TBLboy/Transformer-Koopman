@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from patchtst_koopman.utils.seed import get_worker_init_fn
+
 
 class EDMDTrainer:
     """
@@ -36,10 +38,13 @@ class EDMDTrainer:
         """Create DataLoader kwargs with CUDA-friendly defaults."""
         training = self.config['training']
         num_workers = training.get('num_workers', 0)
+        seed = self.config['experiment'].get('seed', 42)
         kwargs = {
             'batch_size': batch_size,
             'shuffle': shuffle,
             'num_workers': num_workers,
+            'worker_init_fn': get_worker_init_fn(seed),
+            'generator': torch.Generator().manual_seed(seed),
         }
         if self.device == 'cuda':
             kwargs['pin_memory'] = True

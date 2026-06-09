@@ -6,6 +6,10 @@ experiment:
   seed: 42
   device: "cuda" # 改为CPU
   precision: "float64" # float32 (单精度) / float64 (双精度)
+  deterministic: true
+  cudnn_benchmark: false
+  amp: true
+  allow_tf32: false
   log_dir: "./results/logs/platform2"
   save_dir: "./results/models/platform2"
 
@@ -89,7 +93,7 @@ training:
     pretrain:
       enabled: true # 是否预训练编码器
       num_epochs: 500 # 预训练轮数（再增加）
-      batch_size: 128 # 再减小batch size
+      batch_size: 4096 # RTX 4090 24GB, float64
       learning_rate: 0.0010 # 再降低学习率
       optimizer: "adam"
       early_stopping: true
@@ -105,15 +109,15 @@ training:
         prediction: 1.0 # H步自回归预测损失（H=1 → 等价原单步）
         latent: 0.5 # λ₂: 升维空间预测损失
         consistency: 0.5 # λ₃: 一致性约束损失
-        multi_step_physical: 1.0 # λ_multi,x (默认0，向后兼容)
-        multi_step_latent: 0.5 # λ_multi,z (默认0，向后兼容)
+        multi_step_physical: 0.0 # λ_multi,x (默认0，向后兼容)
+        multi_step_latent: 0.0 # λ_multi,z (默认0，向后兼容)
 
     # EDMD计算参数
     compute:
       regularization: 0.000001 # Tikhonov正则化
       svd_clipping: false # 关闭SVD限制
       batch_encode: false # 是否批量编码（节省内存）
-      batch_size: 1024 # 编码时的batch size
+      batch_size: 4096 # 编码时的batch size
 
     # 降维矩阵学习
     decoder:
@@ -176,7 +180,8 @@ training:
   save_best_only: true
 
   # 设备和并行
-  num_workers: 4 # DataLoader的worker数量
+  num_workers: 8 # DataLoader的worker数量
+  prefetch_factor: 4 # 每个 worker 预取 batch 数
 
 # ============================================================
 # 控制器参数

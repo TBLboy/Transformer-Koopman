@@ -1,0 +1,110 @@
+{
+  "platform": "platform1",
+  "timestamp": "20260609_191708",
+  "config_path": "scripts/experiment4/experiment4_platform1.yaml",
+  "selection": {
+    "source_split": "val",
+    "primary_metric": "val_rollout_rmse",
+    "tie_breakers": [
+      "val_one_step_rmse",
+      "params"
+    ]
+  },
+  "scan_space": {
+    "history_length": [
+      4,
+      8,
+      16,
+      32
+    ],
+    "patch_length": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "latent_dim": [
+      32,
+      64,
+      128
+    ],
+    "n_layers": [
+      2,
+      3,
+      4,
+      6
+    ],
+    "d_model": [
+      64,
+      128,
+      256
+    ],
+    "d_ff": [
+      128,
+      256,
+      512
+    ]
+  },
+  "candidate_count": 1,
+  "results": [
+    {
+      "candidate_id": "P4__p1__d32__L2__dm64__ff128",
+      "status": "success",
+      "selection_source_split": "val",
+      "val_one_step_rmse": 0.0768122500622348,
+      "val_rollout_rmse": NaN,
+      "val_rollout_mae": NaN,
+      "test_rollout_rmse_preview": 0.5874649882316589,
+      "test_rollout_mae_preview": 0.3013138473033905,
+      "params": 70202,
+      "final_model_path": "./results/experiment4/platform1/20260609_191708/P4__p1__d32__L2__dm64__ff128/final_model.pth",
+      "best_model_path": "./results/experiment4/platform1/20260609_191708/P4__p1__d32__L2__dm64__ff128/best_model.pth",
+      "pretrain_best_path": "./results/experiment4/platform1/20260609_191708/P4__p1__d32__L2__dm64__ff128/pretrain_best.pth",
+      "config": {
+        "candidate_id": "P4__p1__d32__L2__dm64__ff128",
+        "history_length": 4,
+        "patch_length": 1,
+        "latent_dim": 32,
+        "n_layers": 2,
+        "d_model": 64,
+        "d_ff": 128,
+        "precision": "float32",
+        "batch_size": 8192,
+        "learning_rate": 0.0003,
+        "seed": 42,
+        "deterministic": true
+      }
+    }
+  ],
+  "ranking": [
+    {
+      "candidate_id": "P4__p1__d32__L2__dm64__ff128",
+      "status": "success",
+      "selection_source_split": "val",
+      "val_one_step_rmse": 0.0768122500622348,
+      "val_rollout_rmse": NaN,
+      "val_rollout_mae": NaN,
+      "test_rollout_rmse_preview": 0.5874649882316589,
+      "test_rollout_mae_preview": 0.3013138473033905,
+      "params": 70202,
+      "final_model_path": "./results/experiment4/platform1/20260609_191708/P4__p1__d32__L2__dm64__ff128/final_model.pth",
+      "best_model_path": "./results/experiment4/platform1/20260609_191708/P4__p1__d32__L2__dm64__ff128/best_model.pth",
+      "pretrain_best_path": "./results/experiment4/platform1/20260609_191708/P4__p1__d32__L2__dm64__ff128/pretrain_best.pth",
+      "config": {
+        "candidate_id": "P4__p1__d32__L2__dm64__ff128",
+        "history_length": 4,
+        "patch_length": 1,
+        "latent_dim": 32,
+        "n_layers": 2,
+        "d_model": 64,
+        "d_ff": 128,
+        "precision": "float32",
+        "batch_size": 8192,
+        "learning_rate": 0.0003,
+        "seed": 42,
+        "deterministic": true
+      }
+    }
+  ],
+  "best_candidate_id": "P4__p1__d32__L2__dm64__ff128"
+}

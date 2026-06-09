@@ -1,0 +1,110 @@
+controller:
+  lqr:
+    Q_matrix: identity
+    Q_scale: 1.0
+    R_matrix: identity
+    R_scale: 0.1
+  type: lqr
+data:
+  add_noise: false
+  control_dim: 2
+  data_dir: ./data/experiment_006
+  noise_level: 0.0
+  noise_type: gaussian
+  normalization_method: standard
+  normalize_control: true
+  normalize_state: true
+  platform: platform2
+  state_dim: 2
+  test_file: test.npz
+  train_file: train.npz
+  val_file: val.npz
+decoder:
+  decoder_type: linear
+encoder:
+  d_ff: 64
+  d_model: 16
+  dropout: 0.1
+  history_length: 2
+  latent_dim: 6
+  n_heads: 2
+  n_layers: 1
+  patch_length: 1
+  positional_encoding: sinusoidal
+  readout_method: mean
+evaluation:
+  prediction:
+    multi_step: true
+    multi_step_horizons:
+    - 5
+    - 10
+    - 20
+    one_step: true
+  tracking:
+    enabled: false
+    reference_trajectories:
+    - sine
+    - circle
+    - step
+    tracking_length: 100
+  visualization:
+    plot_koopman_spectrum: true
+    plot_predictions: true
+    plot_trajectories: true
+    save_format: png
+experiment:
+  allow_tf32: false
+  amp: false
+  cudnn_benchmark: false
+  deterministic: true
+  device: cuda
+  log_dir: ./results/logs/experiment4/platform2
+  name: platform2_patchtst
+  precision: float64
+  save_dir: ./results/experiment4
+  seed: 42
+koopman:
+  enforce_stability: false
+  lifted_dim: 6
+  model_type: linear
+  rho_max: 0.9999
+logging:
+  level: INFO
+  log_frequency: 10
+  log_to_console: true
+  log_to_file: true
+  tensorboard: false
+  wandb: false
+training:
+  edmd:
+    compute:
+      batch_encode: false
+      batch_size: 4096
+      regularization: 1.0e-06
+      svd_clipping: false
+    decoder:
+      method: least_squares
+      regularization: 1.0e-06
+    pretrain:
+      batch_size: 4096
+      early_stopping: true
+      enabled: true
+      learning_rate: 0.001
+      loss_weights:
+        consistency: 0.5
+        latent: 0.5
+        multi_step_latent: 0.0
+        multi_step_physical: 0.0
+        prediction: 1.0
+      min_delta: 1.0e-05
+      multi_step:
+        horizon: 3
+      num_epochs: 500
+      optimizer: adam
+      patience: 100
+  method: edmd
+  num_workers: 8
+  prefetch_factor: 4
+  save_best_only: true
+  save_every_n_epochs: 10
+  val_every_n_epochs: 5

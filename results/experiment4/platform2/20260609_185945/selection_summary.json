@@ -1,0 +1,48 @@
+{
+  "platform": "platform2",
+  "timestamp": "20260609_185945",
+  "config_path": "scripts/experiment4/experiment4_platform2.yaml",
+  "selection": {
+    "source_split": "val",
+    "primary_metric": "val_rollout_rmse",
+    "tie_breakers": [
+      "val_one_step_rmse",
+      "params"
+    ]
+  },
+  "scan_space": {
+    "history_length": [
+      2,
+      4,
+      6,
+      8,
+      12
+    ],
+    "patch_length": [
+      1,
+      2,
+      4
+    ],
+    "latent_dim": [
+      6,
+      8,
+      10,
+      16
+    ],
+    "n_layers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "d_model": [
+      16,
+      32
+    ],
+    "d_ff": [
+      64,
+      128
+    ]
+  },
+  "candidate_count": 1
+}

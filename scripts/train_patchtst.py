@@ -20,7 +20,7 @@ from patchtst_koopman.utils.evaluation import (
     evaluate_on_first_trajectory,
     plot_trajectory_comparison,
 )
-from patchtst_koopman.utils.seed import configure_cuda_performance, set_seed
+from patchtst_koopman.utils.seed import configure_cuda_performance, get_worker_init_fn, set_seed
 
 
 def parse_args():
@@ -111,7 +111,14 @@ def main():
     print("Evaluating model")
     print("=" * 60)
     model.eval()
-    test_loader = DataLoader(test_dataset, batch_size=256, shuffle=False)
+    seed = config["experiment"]["seed"]
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=256,
+        shuffle=False,
+        num_workers=config["training"].get("num_workers", 0),
+        worker_init_fn=get_worker_init_fn(seed),
+    )
     total_loss = 0.0
     with torch.no_grad():
         for batch in test_loader:

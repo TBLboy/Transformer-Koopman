@@ -14,7 +14,7 @@ experiment:
   deterministic: true
   cudnn_benchmark: false
   amp: true
-  allow_tf32: true
+  allow_tf32: false
   log_dir: "./results/logs/ablation_platform1"
   save_dir: "./results/ablation/platform1"
 
@@ -69,13 +69,14 @@ decoder:
 # ============================================================
 training:
   method: "edmd"
-  num_workers: 4
+  num_workers: 8
+  prefetch_factor: 8
 
   edmd:
     pretrain:
       enabled: true
       num_epochs: 300
-      batch_size: 1024
+      batch_size: 8192
       learning_rate: 0.0003
       optimizer: "adam"
       early_stopping: true
@@ -94,7 +95,7 @@ training:
       regularization: 0.000001
       svd_clipping: false
       batch_encode: true
-      batch_size: 1024
+      batch_size: 8192
 
     decoder:
       method: "least_squares"

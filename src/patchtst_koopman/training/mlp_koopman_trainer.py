@@ -13,6 +13,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import numpy as np
 
+from patchtst_koopman.utils.seed import get_worker_init_fn
+
 
 class MLPKoopmanTrainer:
 
@@ -21,6 +23,18 @@ class MLPKoopmanTrainer:
         self.config = config
         self.device = config['experiment']['device']
         self.mlp_cfg = config['mlp_koopman']
+        self._seed = config['experiment'].get('seed', 42)
+
+    def _dl_kwargs(self, shuffle=False, batch_size=256):
+        kwargs = {
+            'batch_size': batch_size,
+            'shuffle': shuffle,
+            'num_workers': 0,
+            'pin_memory': True,
+            'worker_init_fn': get_worker_init_fn(self._seed),
+            'generator': torch.Generator().manual_seed(self._seed),
+        }
+        return kwargs
 
     # ════════════════════════════════════════════════════════════
     # 主入口

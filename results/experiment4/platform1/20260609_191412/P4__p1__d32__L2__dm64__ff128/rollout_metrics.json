@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "rmse": NaN,
+    "mae": NaN
+  },
+  "test_preview": {
+    "rmse": 0.5852270126342773,
+    "mae": 0.30399060249328613
+  }
+}

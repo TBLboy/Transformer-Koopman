@@ -1,0 +1,12 @@
+{
+  "platform": "platform2",
+  "results_dir": "/home/tbl/Project/Transformer-Koopman/results/experiment4/platform2/20260609_190635",
+  "test_metrics": {
+    "P2__p1__d6__L1__dm16__ff64": {
+      "rmse": 0.9977838343823939,
+      "mae": 0.7980885601546921,
+      "final_model_path": "./results/experiment4/platform2/20260609_190635/P2__p1__d6__L1__dm16__ff64/final_model.pth",
+      "best_model_path": "./results/experiment4/platform2/20260609_190635/P2__p1__d6__L1__dm16__ff64/best_model.pth"
+    }
+  }
+}

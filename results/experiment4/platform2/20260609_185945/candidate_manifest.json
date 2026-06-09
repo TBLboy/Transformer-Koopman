@@ -1,0 +1,24 @@
+{
+  "platform": "platform2",
+  "config_path": "scripts/experiment4/experiment4_platform2.yaml",
+  "candidate_count": 1,
+  "candidate_ids": [
+    "P2__p1__d6__L1__dm16__ff64"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "P2__p1__d6__L1__dm16__ff64",
+      "history_length": 2,
+      "patch_length": 1,
+      "latent_dim": 6,
+      "n_layers": 1,
+      "d_model": 16,
+      "d_ff": 64,
+      "precision": "float64",
+      "batch_size": 4096,
+      "learning_rate": 0.001,
+      "seed": 42,
+      "deterministic": true
+    }
+  ]
+}
