@@ -1,0 +1,6 @@
+{
+  "method": "lstm_koopman",
+  "training_method": "end_to_end",
+  "test_rmse": 0.40983372926712036,
+  "test_mae": 0.18139256536960602
+}

@@ -1,0 +1,45 @@
+Command: D:\conda\envs\edmddl2\python.exe D:\Project\code-projectv2\scripts\train_lstm_koopman.py --config D:\Project\code-projectv2\configs\platform2.yaml --save_dir D:\Project\code-projectv2\results\platform2\Models\lstm_koopman
+Started: 2026-06-23T22:20:20.416030
+============================================================
+============================================================
+LSTM-Koopman training (temporal baseline)
+============================================================
+  Config:  D:\Project\code-projectv2\configs\platform2.yaml
+  Output:  D:\Project\code-projectv2\results\platform2\Models\lstm_koopman
+CUDA device: NVIDIA GeForce RTX 4060 Laptop GPU
+PyTorch CUDA version: 12.6
+Using device: cuda
+Random seed set to: 42
+  State normalised: mean=[0.34522903 0.42333376], std=[3.497775 3.206664]
+  Control normalised: mean=[0.01455709 0.09308819], std=[27.882555 28.230585]
+Dataset [train]:
+  Total points: 24150
+  Valid samples: 23758
+  Trajectories: 49
+  State normalised (using training-set statistics)
+  Control normalised (using training-set statistics)
+Dataset [val]:
+  Total points: 10001
+  Valid samples: 9841
+  Trajectories: 20
+  State normalised (using training-set statistics)
+  Control normalised (using training-set statistics)
+Dataset [test]:
+  Total points: 500
+  Valid samples: 492
+  Trajectories: 1
+  Train: 23758 / Val: 9841 / Test: 492
+Traceback (most recent call last):
+  File "D:\Project\code-projectv2\scripts\train_lstm_koopman.py", line 109, in <module>
+    main()
+  File "D:\Project\code-projectv2\scripts\train_lstm_koopman.py", line 62, in main
+    model = LSTMKoopmanModel(config)
+  File "D:\Project\code-projectv2\src\patchtst_koopman\models\lstm_koopman_model.py", line 23, in __init__
+    self._patch_config(config)
+  File "D:\Project\code-projectv2\src\patchtst_koopman\models\lstm_koopman_model.py", line 31, in _patch_config
+    config["encoder"]["latent_dim"] = config["lstm_koopman"]["latent_dim"]
+KeyError: 'lstm_koopman'
+
+============================================================
+Exit code: 1
+Finished: 2026-06-23T22:20:22.789126

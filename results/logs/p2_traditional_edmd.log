@@ -1,11 +1,11 @@
-Command: C:\Users\Windows\.conda\envs\koopman\python.exe C:\Users\Windows\Desktop\论文4\code-projectv2\scripts\train_traditional_edmd.py --config C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform2.yaml --save_dir C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
-Started: 2026-05-29T12:24:42.574035
+Command: D:\conda\envs\edmddl2\python.exe D:\Project\code-projectv2\scripts\train_traditional_edmd.py --config D:\Project\code-projectv2\configs\platform2.yaml --save_dir D:\Project\code-projectv2\results\platform2\Models\traditional_edmd
+Started: 2026-06-23T22:20:22.796683
 ============================================================
 ============================================================
 Traditional EDMD training (baseline)
 ============================================================
-  Config:  C:\Users\Windows\Desktop\论文4\code-projectv2\configs\platform2.yaml
-  Output:  C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+  Config:  D:\Project\code-projectv2\configs\platform2.yaml
+  Output:  D:\Project\code-projectv2\results\platform2\Models\traditional_edmd
 Random seed set to: 42
   State normalised: mean=[0.34522903 0.42333376], std=[3.497775 3.206664]
   Control normalised: mean=[0.01455709 0.09308819], std=[27.882555 28.230585]
@@ -16,16 +16,16 @@ Dataset [train]:
   State normalised (using training-set statistics)
   Control normalised (using training-set statistics)
 Dataset [val]:
-  Total points: 10351
-  Valid samples: 10183
-  Trajectories: 21
+  Total points: 10001
+  Valid samples: 9841
+  Trajectories: 20
   State normalised (using training-set statistics)
   Control normalised (using training-set statistics)
 Dataset [test]:
   Total points: 500
   Valid samples: 492
   Trajectories: 1
-  Train: 23758 / Val: 10183 / Test: 492
+  Train: 23758 / Val: 9841 / Test: 492
 
 ============================================================
 传统EDMD训练（对照组）
@@ -38,8 +38,8 @@ Dataset [test]:
 步骤2：升维训练数据...
 
 升维数据:   0%|          | 0/24 [00:00<?, ?it/s]
-升维数据:  67%|██████▋   | 16/24 [00:00<00:00, 152.38it/s]
-升维数据: 100%|██████████| 24/24 [00:00<00:00, 169.01it/s]
+升维数据:  54%|█████▍    | 13/24 [00:00<00:00, 121.69it/s]
+升维数据: 100%|██████████| 24/24 [00:00<00:00, 143.43it/s]
   升维完成：23758 个样本
   原始状态维度 n = 2
   升维后维度   d = 5
@@ -56,22 +56,22 @@ Dataset [test]:
 步骤5：验证性能...
 
 升维数据:   0%|          | 0/10 [00:00<?, ?it/s]
-升维数据: 100%|██████████| 10/10 [00:00<00:00, 204.94it/s]
-  验证集升维空间 RMSE: 0.065459
+升维数据: 100%|██████████| 10/10 [00:00<00:00, 164.38it/s]
+  验证集升维空间 RMSE: 0.065612
 
 传统EDMD训练完成！
-  模型已保存到: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+  模型已保存到: D:\Project\code-projectv2\results\platform2\Models\traditional_edmd
     A (5, 5), B (5, 2), C (2, 5)
 Trajectory length: 500; predicting 492 steps
   RMSE: 1.679543
   MAE:  1.402344
-Plot saved: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd\test_prediction.png
+Plot saved: D:\Project\code-projectv2\results\platform2\Models\traditional_edmd\test_prediction.png
 
 Training complete
-  Output: C:\Users\Windows\Desktop\论文4\code-projectv2\results\platform2\Models\traditional_edmd
+  Output: D:\Project\code-projectv2\results\platform2\Models\traditional_edmd
   RMSE:   1.679543
   MAE:    1.402344
 
 ============================================================
 Exit code: 0
-Finished: 2026-05-29T12:24:44.780087
+Finished: 2026-06-23T22:20:25.817285

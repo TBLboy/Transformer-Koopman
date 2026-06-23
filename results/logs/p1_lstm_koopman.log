@@ -1,0 +1,11 @@
+Command: D:\conda\envs\edmddl2\python.exe D:\Project\code-projectv2\scripts\train_lstm_koopman.py --config D:\Project\code-projectv2\configs\platform1.yaml --save_dir D:\Project\code-projectv2\results\platform1\Models\lstm_koopman
+Started: 2026-06-23T21:27:49.863492
+============================================================
+Traceback (most recent call last):
+  File "D:\Project\code-projectv2\scripts\train_lstm_koopman.py", line 9, in <module>
+    from patchtst_koopman.models.lstm_koopman_model import LSTMKoopmanModel
+ModuleNotFoundError: No module named 'patchtst_koopman'
+
+============================================================
+Exit code: 1
+Finished: 2026-06-23T21:27:51.068946

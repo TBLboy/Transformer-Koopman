@@ -6,10 +6,10 @@ experiment:
   seed: 42
   device: "cuda"
   precision: "float32" # float32 (单精度) / float64 (双精度)
-  deterministic: true
-  cudnn_benchmark: false
+  deterministic: false
+  cudnn_benchmark: true
   amp: true
-  allow_tf32: false
+  allow_tf32: true
   log_dir: "./results/logs/platform1"
   save_dir: "./results/models/platform1"
 
@@ -93,7 +93,7 @@ training:
     pretrain:
       enabled: true # 是否预训练编码器
       num_epochs: 300 # 预训练轮数（再增加）
-      batch_size: 8192 # RTX 4090 24GB
+      batch_size: 4096 # RTX 4060 8GB（原8192过大）
       learning_rate: 0.0003 # 再降低学习率
       optimizer: "adam"
       early_stopping: true
@@ -117,7 +117,7 @@ training:
       regularization: 0.000001 # Tikhonov正则化
       svd_clipping: false # 关闭SVD限制
       batch_encode: true # 是否批量编码（节省内存）
-      batch_size: 8192 # 编码时的batch size
+      batch_size: 4096 # 编码时的batch size
 
     # 降维矩阵学习
     decoder:
@@ -140,7 +140,7 @@ training:
   # ============ 端到端方法参数 ============
   end_to_end:
     # 训练参数
-    batch_size: 1024
+    batch_size: 2048
     num_epochs: 200
     learning_rate: 0.001
     optimizer: "adam" # adam / sgd / adamw
@@ -177,8 +177,8 @@ training:
   save_best_only: true
 
   # 设备和并行
-  num_workers: 8 # DataLoader worker 数量
-  prefetch_factor: 8 # 每个 worker 预取 batch 数
+  num_workers: 4              # DataLoader的worker数量（Windows 建议 4）
+  prefetch_factor: 4
 
 # ============================================================
 # 控制器参数
@@ -243,7 +243,7 @@ mlp_koopman:
     pretrain:
       enabled: true
       num_epochs: 300
-      batch_size: 128
+      batch_size: 1024
       learning_rate: 0.0003
       optimizer: "adam"
       early_stopping: true
@@ -256,12 +256,12 @@ mlp_koopman:
 
     compute:
       regularization: 1
-      batch_size: 1024
+      batch_size: 2048
 
   # ── 端到端训练参数 ───────────────────────────────────────────
   end_to_end:
     num_epochs: 300
-    batch_size: 128
+    batch_size: 1024
     learning_rate: 0.0003
     optimizer: "adam"
     early_stopping: true
@@ -288,7 +288,7 @@ lstm_koopman:
     pretrain:
       enabled: true
       num_epochs: 300
-      batch_size: 512
+      batch_size: 1024
       learning_rate: 0.0003
       optimizer: "adam"
       early_stopping: true
@@ -306,7 +306,7 @@ lstm_koopman:
   # ── 端到端训练参数 ───────────────────────────────────────────
   end_to_end:
     num_epochs: 300
-    batch_size: 512
+    batch_size: 1024
     learning_rate: 0.0003
     optimizer: "adam"
     early_stopping: true

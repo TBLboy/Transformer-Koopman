@@ -62,15 +62,19 @@ def configure_cuda_performance(config):
     )
 
 
+def _worker_init_fn(worker_id, seed=42):
+    """Seed each DataLoader worker process for reproducibility on Windows."""
+    worker_seed = seed + worker_id
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
+    torch.manual_seed(worker_seed)
+
+
 def get_worker_init_fn(seed):
     """Return a ``worker_init_fn`` that seeds each DataLoader worker process.
 
     Each worker gets ``seed + worker_id`` so shuffles differ across workers
     but are reproducible across runs with the same base seed.
     """
-    def _worker_init_fn(worker_id):
-        worker_seed = seed + worker_id
-        np.random.seed(worker_seed)
-        random.seed(worker_seed)
-        torch.manual_seed(worker_seed)
-    return _worker_init_fn
+    import functools
+    return functools.partial(_worker_init_fn, seed=seed)

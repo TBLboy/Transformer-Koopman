@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Unified one-click training pipeline: trains 8 models across 2 platforms.
 
