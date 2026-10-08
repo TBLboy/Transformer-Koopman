@@ -1,2 +1,336 @@
-1：故事讲的不是很好，我们提出一个方法都是要解决一个特定的问题，需要有问题作为背景。但是这里开头我觉得只是简单描述了一下问题，然后就直接抛出我们的方法，感觉就是为了这个方法才讲出这个问题，让人看着非常的不顺畅。
+原文：“ Here $\vx_k$ denotes the measured coordinates used by the predictor; finite history is introduced below when these coordinates are not Markov-complete.”
+意见：“前边都介绍了xk是什么了，怎么这里又来一句介绍呢，这不是重叠了吗？”
 
+原文：“$\vz_{k+1} \approx \mA \vz_k + \mB \vu_k$, with $\mA$ and $\mB$ identified from data.”
+意见：“这里第一次出现AB矩阵就要介绍AB矩阵分别是什么矩阵，比如A就是系统转移矩阵，然后AB矩阵和Koopman算子K是什么关系，这样既能承接前文内容，同时后文中提到什么状态转移模型矩阵什么的也能有所出处，不然内容就会有断裂感。”
+
+原文：“Instantaneous-state lifting may miss temporal information that
+matters for prediction, particularly when the measured state
+does not by itself characterize the underlying dynamics.”
+意见：“这段写得有点莫名其妙，感觉前后衔接不是很顺畅”
+
+原文：“Temporal lifting introduces recent trajectory information into the latent state; the remaining question is how to accommodate history-dependent variations in the lifted dynamics without abandoning a control-compatible structure.”
+意见：这部分写的也很别扭，没有论文感
+
+原文： Prediction Problem and Design Requirements
+意见：名字有没有更好的选择？
+
+原文：\begin{equation}
+    \mU_k^{\mathrm{in}} = [\vu_{k-P+1}^{\top}, \ldots, \vu_{k-1}^{\top}]^{\top}
+    \in \mathbb{R}^{(P-1)m}.
+    \label{eq:input_history_problem}
+\end{equation}
+意见：这个定义没问题吗，为什么前面的Xk是一个矩阵，这里过去输入反而摊平成一个向量了？
+
+原文：Because the measured state need not form a complete Markov state, the predictor must exploit finite history. However, using history only in the lifting map does not by itself remove the restriction imposed by a single global lifted transition: all history-dependent latent states would still be required to evolve under the same linear operator. Conversely, replacing the lifted dynamics with an unstructured nonlinear predictor would weaken the linear structure that makes Koopman models attractive for predictive control.
+意见：这一大坨东西写的也很拧巴，没有论文感，让人读起来很费劲
+
+原文：A control-oriented predictor should therefore exploit finite history to represent temporal information that the instantaneous measurement does not provide, allow the lifted transition to adapt to recent trajectory context while retaining linear propagation for a fixed context, and remain accurate when its own predicted histories are recursively fed back during multi-step prediction.
+意见：	这跟上一段是同样的问题，一点论文感都没有
+
+原文：A predictor satisfying these requirements takes the form of a state-preserving temporal lifting
+\begin{equation}
+    \vz_k = g_\theta(\mX_k), \qquad \mC\vz_k = \vx_k,
+    \label{eq:problem_lifting}
+\end{equation}
+together with a history-conditioned lifted predictor of the form
+\begin{equation}
+    \hat{\vz}_{k+1} = \mathcal{A}_{\psi}(\mX_k, \mU_k^{\mathrm{in}})\,\vz_k + \mB\vu_k,
+    \qquad \hat{\vx}_{k+1} = \mC\hat{\vz}_{k+1},
+    \label{eq:problem_predictor}
+\end{equation}
+where the current control input enters through a context-independent linear channel. Section~\ref{sec:methodology} instantiates this predictor.
+意见：你这部分也太他妈突兀了吧，这部分是为了引出本文的目标，但是你这里直接写眼目条件的模型长什么样子，跟人的感觉就好像为了这碟醋包了这盘饺子，而且也不一定说满足这个条件的就一定是我们的模型吧，总觉得非常别扭，而且这三段之间一点逻辑衔接感觉都没有，非常的生硬粗糙，一点也不像是human-made-like的论文
+
+原文：We instantiate the predictor of Section~\ref{sec:problem} using a patch-based temporal lifting, a history-conditioned low-rank transition, and deployment-consistent scheduled training.
+意见：格式不统一，应该是In this section, we xxx
+
+原文：Temporal Lifting and History-Conditioned Transition
+意见：Transition后边是不是要加模型还是怎么的，就一个Transition是不是有点太奇怪了
+
+原文：We now introduce the proposed temporal lifting architecture.
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=\textwidth]{pictures/Figure1.pdf}
+    \caption{Overall prediction pipeline of the proposed
+    Transformer-Koopman framework. Given a history window $\mX_k$ and
+    the current control input $\vu_k$, the Transformer encoder extracts
+    a history feature $\vh_k$, which is concatenated with the current
+    state $\vx_k$ to form the lifted state
+    $\vz_k = [\vx_k;\,\vh_k] \in \mathbb{R}^d$. The Koopman linear
+    dynamics $\hat{\vz}_{k+1} = \mA(\vc_k)\vz_k + \mB\vu_k$ propagate the
+    lifted state forward, and the predicted next physical state
+    $\hat{\vx}_{k+1} = \mC\hat{\vz}_{k+1}$ is recovered through a
+    fixed linear projection.}
+    \label{fig:framework}
+\end{figure*}
+
+Given the history window $\mX_k \in \mathbb{R}^{P \times n}$, we partition it into $N_p = P/p$ contiguous non-overlapping temporal patches of length $p$, where $p$ is assumed to divide $P$. The $i$th patch is denoted by
+意见：开头太生硬了，没有human感，而且开头一句话单独一段这也很奇怪啊
+
+原文： (or
+"unrolled") 
+意见：是不是多余了
+
+原文：The token sequence is augmented with sinusoidal positional encoding \cite{vaswani2017attention} to incorporate temporal order, and is then processed by an $L$-layer Transformer encoder:
+\begin{equation}
+    \tilde{\vphi}_k^{(i)} = \vphi_k^{(i)} + \vs^{(i)},
+    \label{eq:pos_enc_applied}
+\end{equation}
+意见：这部分公式出现的位置很奇怪，上一段都说到要经过L层Transformer处理了，结果下面出现的公式是位置编码的公式。这部分很奇怪。要不然就把这个L层transformer的描述挪到下面一句话里
+
+原文： We then apply mean pooling over
+  the token dimension to obtain a single representation:
+\begin{equation}
+    \vr_k = \frac{1}{N_p}\sum_{i=1}^{N_p} \mH_k^{(i)}
+    \in \mathbb{R}^{d_{\mathrm{model}}}.
+    \label{eq:pooling}
+\end{equation}
+意见：这部分也有点问题，直接就说要采用平均池化，也没解释为什么或者没有留余地，这个感觉不是很好
+
+原文：Here $\mA_0 \in \mathbb{R}^{d\times d}$, $\mU,\mV \in \mathbb{R}^{d\times r}$, $\gamma_\psi:\mathbb{R}^{d_c}\to\mathbb{R}^r$, and $\mB \in \mathbb{R}^{d\times m}$ is \emph{context-independent} (not context-modulated). Throughout, $r=2$.
+\end{definition}
+意见：这部分只介绍了矩阵维度，是不是加上矩阵的作用或者名称介绍会比较合适一点？有待讨论。而且你这里直接就给出r=2，这是一个超参数，你理论部分怎么能直接给超参数的值呢？你应该介绍这个参数的含义作用而不是直接给一个值，你怎么能保证所有情况下r=2都是最优的呢？你这不是他妈扯淡呢吗？这么些能论文吗？？？？
+
+原文：$\mA_0$ represents the shared nominal lifted dynamics, while the low-rank term provides a structured context-dependent correction. Context dependence is confined to $\mA(\vc)$; $\mB$ is a single global matrix shared across all contexts, so the current input always enters through the same affine channel.
+意见：这部分介绍是不是太晚了？应该放在上面介绍维度的时候就直接介绍了吧？？？
+
+原文：Section~\ref{subsec:schedule_ablation} shows that the modulation must be refined jointly with the temporal representation and the nominal transition, since training it alone degrades deployment accuracy by more than an order of magnitude.
+意见：这他妈又开始往后引用了，你见哪个论文里前面引用后面的，他们的哪有这么写的？？？？不要他妈往后引用
+
+原文：The model of Definition~\ref{def:hcltk} has three trainable parts: the lifting-encoder parameters $\theta$ that produce the lifted state $\vz_k$, the context parameters $\phi$ that produce $\vc_k=C_\phi(\mX_k,\mU^{\mathrm{in}}_k)$, and the dynamics parameters $\mA_0$, $\mU$, $\mV$, and $\gamma_\psi$. The input matrix $\mB$ is context-independent: a single global matrix is shared across all contexts and is optimized jointly with the other parameters. The projection $\mC$ is structurally fixed throughout training, as in Definition~\ref{def:hcltk}. 
+意见：你这部分介绍可训练模块的时候，咋那么他妈没介绍B，B不也是可训练的？可训练部分没介绍，后边又说B怎么怎么联合训练
+
+原文：Training operates on length-$H_R$ segments cut from single trajectories: each segment provides the history window $\mX_k$, the past-input history $\mU^{\mathrm{in}}_k$, the future inputs $\vu_{k:k+H_R-1}$, and the future states $\vx_{k+1:k+H_R}$ as prediction targets, and segments do not cross trajectory boundaries.
+意见：这部分描述谁他妈能看懂，设看到这里能知道这个所谓的什么Hk是个什么鸡巴玩意？这么写能论文吗？？？？还有就是这一整个段落是不是他妈太罗嗦了？
+
+原文：The history-conditioned transition introduces an additional deployment issue. During one-step training the context is evaluated on measured histories, whereas during recursive prediction future contexts are evaluated on predicted histories, so prediction errors alter the scheduling signal itself. Training therefore proceeds in two stages, which we treat as an optimization schedule rather than a requirement of the model: a nominal one-step pretraining stage that provides a well-scaled initialization, followed by scheduled-rollout fine-tuning that jointly refines the full history-conditioned family on the \emph{propagated}-latent distribution that arises at deployment, by minimizing the rollout-aware scheduled objective $\mathcal{L}_R$ of Definition~\ref{def:rollout_aware}.
+意见：这写的是不是太他妈罗嗦太防御了？？？？把意思交代清楚就可以了，不要老是把内容都堆在一起写，你前面做店铺点，这里一两句话带过，你这专门用一大段来写，他妈的谁的论文是这么写的？
+
+原文：This stage provides a well-scaled lifted representation and a data-fitted nominal base operator; it is the only stage optimized exclusively on the encoder-consistent one-step latent distribution, and it corresponds to the fixed (time-invariant) Transformer-Koopman baseline. It serves as an optimization initialization: Section~\ref{subsec:schedule_ablation} shows that omitting it does not degrade deployment accuracy.
+意见：这部分又他妈着急往后引，你是生怕读者不知道你后面写了东西，干嘛非得往后引呢？？？有啥说啥不就好了吗？
+
+原文：\begin{definition}[Rollout-Aware Scheduled Objective]
+\label{def:rollout_aware}
+With the scheduled rollout $\vz^{P}$ (latent propagated, context re-scheduled from the decoded history) and uniform weights $w_i=1/H_R$,
+\begin{equation}
+    \mathcal{L}_R=\sum_k\sum_{i=1}^{H_R} w_i\,\big\|\mC\vz^{P}_{k+i}-\vx_{k+i}\big\|_2^2 .
+    \label{eq:loss_rollout}
+\end{equation}
+\end{definition}
+
+At deployment the transition consumes \emph{propagated} latents $\vz^{P}$, whose distribution differs from the encoder-generated one-step distribution on which Stage~0 is fitted. The rollout objective is an algorithmic training mechanism rather than a theoretical guarantee: no statement in Section~\ref{sec:theory} uses $\mathcal{L}_R$, and Section~\ref{sec:theory} analyzes rollout consistency independently through finite-horizon error propagation.
+意见：我就问你这部分谁他妈能看懂是什么意思？？？？里面的这些什么H_R是啥，你自己，你解释了没有，还是说前面解释了，要是前文解释了那就算了，要是前面没解释你这个变量谁知道是什么意思，还有整个写的这么灰色，什么一堆概念，你前文做好铺垫了吗？你他妈直接一坨这个谁看得懂。
+
+原文：in which the latent is propagated through $\mA(\vc_{k+i-1})$ while the context is \emph{re-scheduled} from the history that the predictor itself has rolled out, $\vc_{k+i-1}=C_\phi(\hat{\mX}_{k+i-1},\mU^{\mathrm{in}}_{k+i-1})$ (Section~\ref{subsec:rollout}).
+意见：这里的k+i-1是哪里来的？为啥不是k而是多了个+i-1，没看懂是为啥，看看是不是必须要多，但是你没有解释清楚写的不好让我没理解？
+
+原文： Only the projection $\mC$ is structurally fixed. We use horizon $H_R=20$ with uniform weights $w_i$.
+意见：这里又他妈在理论部分写我们自己的超参数，他妈的我们的超参数只是我们的个例，你他妈不要写道理论部分好吗，你见过哪一个论文理论部分就固定一个超参数的，这个超参数是他吗绝对统一的吗？你他妈应该解释这个超参数的含义不是他妈的去给出一个确定的数值。
+
+原文：Minimizing $\mathcal{L}_R$ trains the operator on the propagated-latent distribution that arises at deployment, rather than on the encoder-generated one-step distribution---precisely the distribution shift analyzed in Section~\ref{subsec:rollout}.
+意见：又他妈往后引。还他妈正好是xxx，让人一看就知道这他妈是AI写的，操你妈的。
+
+原文： No closed-form EDMD refit is applied after the transition is activated, since the regression target is no longer a single operator shared across all contexts. Spectral stabilization is not relied upon: Remark~\ref{rem:spectral} shows that constraining $\rho(\mA(\vc))<1$ does not restore scheduled-rollout accuracy.
+意见：你写这么一个东西意义何在？？？有什么意义？？？？这两个都是实验里的细枝末节，你他妈在理论部分故意描述一下，你是要干啥？分清楚写论文和做实验好吗？没人关心你这些，理论部分就是讲解理论，没人关心你什么是不是EDMD训练，或者你前面已经介绍了是联合训练这里再强调一下不是EDMD，你是此地无银三百两还是怎么的？？？给男厕所保安强调自己不是女人？你他妈有病吗？
+
+原文：The modulation is parameterized with a bounded budget so that the lifted dynamics remain well-conditioned: the columns of $\mU$ and $\mV$ are unit-norm and $\gamma_\psi$ is bounded elementwise, so $\|\mA(\vc)-\mA_0\|_2$ is bounded uniformly in $\vc$. Throughout, $r=2$, a small rank chosen so that the modulation remains a bounded low
+意见：依然是暴露超参数，依然是写的不像是论文理论部分写的向他妈的实验报告，操你妈的你个傻逼，写的是什么鸡巴？？？？你要做的是解释这个参数或者这个部分有什么用，是讲解理论，不是给读者说这里我们选择了多少多少，这他妈是论文不是实验报告！！！
+
+原文：For the reported predictor, the checkpoint with the lowest validation rollout loss over the fine-tuning stage is retained, and no spectral penalty is applied; the ablation of Section~\ref{subsec:schedule_ablation} instead trains each variant for a fixed number of epochs without checkpoint selection. The complete procedure is summarized in Algorithm~\ref{alg:training}.
+意见：这部分更是他妈的逆天，这他妈不是实验报告吗？？？？还他妈往后引，你见谁他妈理论部分引用实验部分的？还解释实验细节，你认清楚现在写的是什么
+
+原文：\begin{algorithm}[!t]
+\caption{Transformer-Koopman Training Algorithm}
+\label{alg:training}
+\begin{algorithmic}[1]
+
+\STATE \textbf{Input:} Trajectory dataset $\mathcal{D}$ \eqref{eq:trajectory_dataset}
+\STATE History length $P$; patch length $p$; lifted dimension $d$; rank $r$; rollout horizon $H_R$
+\STATE Rollout weights $w_1,\ldots,w_{H_R}$; epochs $E_0$ (nominal pretraining), $E_1$ (scheduled-rollout fine-tuning)
+
+\STATE \textbf{Output:} Lifting encoder $\theta^{*}$; context $\phi^{*}$; transition parameters $\mA_0^{*},\mU^{*},\mV^{*},\gamma_\psi^{*}$; input matrix $\mB^{*}$
+
+\STATE \textbf{Stage~0 (nominal one-step pretraining):}
+Initialize $\theta$ and $(\mA_0,\mB)$; for $E_0$ epochs, minimize the one-step loss \eqref{eq:loss_one_step} over $(\theta,\mA_0,\mB)$.
+
+\vspace{2pt}
+
+\STATE \textbf{Stage~1 (scheduled-rollout fine-tuning):}
+Activate $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\,\mV^\top$; keep only $\mC$ structurally fixed.
+\FOR{epoch $\ell = 1$ \TO $E_1$}
+    \FOR{each mini-batch of length-$H_R$ segments $\mathcal{B}$ drawn from $\mathcal{D}$}
+        \STATE Roll out the latent over $H_R$ steps, re-scheduling the context $\vc_{k+i}=C_\phi(\hat{\mX}_{k+i},\mU^{\mathrm{in}}_{k+i})$ from the rolled-out history.
+        \STATE Form the scheduled objective $\mathcal{L}_R$ \eqref{eq:loss_rollout}.
+        \STATE Update $(\theta,\phi,\mA_0,\mU,\mV,\gamma_\psi,\mB)$ via gradient descent.
+    \ENDFOR
+\ENDFOR
+
+\RETURN $\theta^{*},\phi^{*},\mA_0^{*},\mU^{*},\mV^{*},\gamma_\psi^{*},\mB^{*}$
+
+\end{algorithmic}
+\end{algorithm}
+意见：这部分你自己检查检查符合不符合论文要求吧
+
+原文：\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{pictures/Figure2.pdf}
+    \caption{One-step lifting and prediction (nominal pretraining, Stage~0). The
+    history window $\mX_k$ and its shift $\mX_k^{+}$ are each encoded by
+    $g_\theta$ to produce $\vz_k$ and $\vz_k^{+}$. The time-invariant base
+    operator $(\mA_0,\mB)$ produces the one-step prediction
+    $\hat{\vz}_{k+1}=\mA_0\vz_k+\mB\vu_k$, from which $\hat{\vx}_{k+1}$ is
+    recovered via $\mC$. This one-step coupling is used to initialize the
+    encoder and base operator, supervised by the one-step loss
+    \eqref{eq:loss_one_step}. Stage~1 replaces $\mA_0$ by the
+    history-conditioned $\mA(\vc)$ and jointly refines the full model on the
+    rollout-aware scheduled objective (Algorithm~\ref{alg:training}).}
+    \label{fig:training_procedure}
+\end{figure*}
+意见：正文里哪里引用图2了吗？我为什么没有看到对图2的引用，这里光插入个图片没有引用？？？？要这个图片有何用？？？？
+
+原文：% ---------------------------------------------------------
+\subsection{Modeling Error Characterization}
+\label{subsec:modeling_error}
+% ---------------------------------------------------------
+
+The history-conditioned model \eqref{eq:temporal_dynamics} is only approximate, due to finite-dimensional Koopman truncation and encoder approximation error. We define the one-step modeling residual at the encoder-consistent latent as
+\begin{equation}
+    \vw_k = \vz_{k+1} - \big(\mA(\vc_k)\vz_k + \mB \vu_k\big),
+    \label{eq:modeling_error}
+\end{equation}
+where $\vz_{k+1} = g_\theta(\mX_{k+1})$ and $\vz_k=g_\theta(\mX_k)$. Here $\vw_k$ is evaluated on recorded histories and measures one-step data consistency. It is distinct from the rollout-consistency defect $\epsilon_k$ of Proposition~\ref{prop:propagation}, which is evaluated on predictor-generated histories. A small one-step residual alone does not imply accurate recursive rollout; the propagation of this residual is analyzed in Section~\ref{subsec:rollout} and motivates the rollout-aware objective \eqref{eq:loss_rollout}.
+意见：这一整个小节我都不知所云，你这一小节存在的意义是什么？定义一个单步预测误差，用途是什么？？？？还拿来跟前面的什么命题2做一个对比，你他妈这是为了干什么？？？动机不明，莫名其妙，还什么式子26是为了给式子25做动机提供，你他妈是傻逼吗？？？？式子25在前面都讲解完了，你这里来一个莫名其妙的误差定义说是给前面的公式提供动机，你这是要干啥？？？这一小节存在的意义是啥？？？我是一点也看不懂。
+
+
+接下来是第五章的内容，在开始之前我有一个问题，第五章本质上是对建模部分做的理论分析和证明，那么这部分内容需要单开一章节来写吗？我理解的是这个属于是证明部分，那么按理来说就要和第四章节融合在一起，但是现在单独拆分出来了，我不确定这种写法是否属于正规写法。还有就是现在第五章分成了4个小节，是不是有点多余？还是确实需要这么划分？？还有就是第五章内容量是不是有点太多了？需要些这么多内容量吗？还是建议精简一下或者把一部分内容放在附录之类的地方？？？？还是说到时候根据投稿的期刊再做具体调整？
+
+原文：This section develops a finite-horizon theory for the history-conditioned low-rank Koopman family introduced in Section~\ref{sec:methodology}, i.e. $\vz_{k+1}=\mA(\vc_k)\vz_k+\mB\vu_k$ with $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\mV^\top$ \eqref{eq:lowrank_A}. The analysis is deliberately restricted to \emph{finite-horizon prediction consistency} and the \emph{local} accuracy of the real-time controller; we do not claim global asymptotic closed-loop stability, common Lyapunov functions, terminal invariant sets, or recursive feasibility under learned uncertainty (see the scope remark below). The assumptions and quantities of this section are empirically assessed on the validation distribution in Section~\ref{subsec:diagnostics}; they are diagnostics, not worst-case certificates over $\Omega$.
+意见：这部分是不是他妈的写的太罗嗦了，格式也不同意，而且还往后引，有必要吗？一堆防御性说明，一看就知道是他妈AI写的，操你妈的臭逼。
+
+原文：\subsection{Finite-History Markovization}
+\label{subsec:markov}
+
+Because the lifted state $\vz_k$ is a function of a finite window, the predictor can be recast as a first-order system on an augmented state.
+
+\begin{proposition}[Finite-History Predictor Markovization]
+\label{prop:markov}
+Define the augmented state
+\begin{equation}
+    \vxi_k = \mathrm{col}\big(\vx_{k-P+1:k},\,\vu_{k-P+1:k-1},\,\vz_k\big)
+    \in \mathbb{R}^{Pn+(P-1)m+d}.
+    \label{eq:augmented_state}
+\end{equation}
+Under the predictor's own closed loop---i.e. the newest fed-back output is the decoded $\hat{\vx}_{k+1}=\mC\vz_{k+1}$---there exists a deterministic map $\mF_\Theta$ such that
+\begin{equation}
+    \vxi_{k+1} = \mF_\Theta(\vxi_k, \vu_k).
+    \label{eq:augmented_map}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The window update is a deterministic shift: append $(\hat{\vx}_{k+1},\vu_k)$ and drop the oldest entry. The appended output is $\hat{\vx}_{k+1}=\mC\vz_{k+1}$ with $\vz_{k+1}=\mA(\vc_k)\vz_k+\mB\vu_k$ and $\vc_k=C_\phi(\mX_k,\mU^{\mathrm{in}}_k)$. Since $\mX_k$ and $\mU^{\mathrm{in}}_k$ are sub-vectors of $\vxi_k$, every argument of the update is a function of $(\vxi_k,\vu_k)$ alone; composing the shift, context map, transition, and decoder yields a single deterministic $\mF_\Theta$.
+\end{proof}
+
+\begin{remark}
+Proposition~\ref{prop:markov} holds \emph{only} for the internal rollout with decoded feedback. If the true measurement $\vx_{k+1}$ is fed back, the update also depends on an exogenous input and is not a function of $\vxi_k$ alone.
+\end{remark}
+意见：这部分我也没什么好说的，看看需不需要单独开一个小节？语言是不是过度解释过度防御？还有前面的一个问题，Xk我记得是一个矩阵，Uk你写的是一个向量，这里这么写会不会有问题？自己审查一下吧。
+
+原文：\subsection{Latent Rollout Inconsistency and Its Propagation}
+\label{subsec:rollout}整个小节
+意见：还是相同的问题你检查看看这个小节是否存在，自己检查看看吧。
+
+原文：\subsection{Finite-Horizon Prediction Error Bound}
+\label{subsec:fh_bound}整个小节
+意见：这部分内容是不是太多了？是否可以调整精简？当然不一定必须送到附录里，是否要又附录还要根据后面期刊要求来，暂时就不设立附录。还有这里有一个什么推论，这个推论是必要的吗？会不会画蛇添足？？？仔细评审一下。
+
+原文：\subsection{Local Linearization Remainder}
+\label{subsec:rti_remainder}
+意见：这一小节也是同样的问题，有必要单独立一个小节吗？？
+
+
+原文：We integrate the rollout-trained scheduled predictor into a receding-horizon controller that runs within the sampling period $T_s=200\,\mathrm{ms}$ of the soft-robot platform.
+意见：格式不统一，还有这是写论文不是实验报告，不要把他妈什么200ms运行写上来，你搞清楚好吗！！！这是理论部分，这不是他妈实验报告！！！！！！！
+
+原文：\begin{table}[!t]
+\centering
+\caption{One-iteration RTI on the soft-robot proxy ($N=5$). The matched oracle is an exact scheduled NMPC solved to convergence at the \textup{same} horizon and plant.}
+\label{tab:rti}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Controller & RMSE & $\Delta$ vs oracle & p50 / p95 (ms) \\
+\midrule
+Exact scheduled oracle & $0.1635$ & --- & $1465$ / $1931$ \\
+\textbf{RTI-SP (proposed)} & $0.1618$ & $-1.04\%$ & $\mathbf{78}$ / $\mathbf{120}$ \\
+Exact re-encode oracle & $0.1582$ & --- & $1958$ / $2930$ \\
+RTI-RE & $0.1565$ & $-1.05\%$ & $182$ / $253$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+意见：你他妈的，这一章节还是理论部分呢，正在讲解控制器设计呢，你他妈突然给一个指标表格你是傻逼吗？这到底是实验还是理论，你他妈要干啥？？？？我操死你的妈
+
+原文：% =========================================================
+\section{Real-Time Predictive Control}
+\label{sec:control}
+% =========================================================
+
+We integrate the rollout-trained scheduled predictor into a receding-horizon controller that runs within the sampling period $T_s=200\,\mathrm{ms}$ of the soft-robot platform.
+
+\subsection{History-Consistent Scheduled Prediction}
+
+At each control instant the controller predicts over a horizon $N$ by propagating the latent and re-scheduling the context from the decoded history,
+\begin{equation}
+    \vz_{i+1}=\mA(\vc_i)\vz_i+\mB\vu_i,\quad
+    \vc_i=C_\phi(\hat{\mX}_i,\mU^{\mathrm{in}}_i),\quad
+    \hat{\vx}_i=\mC\vz_i ,
+    \label{eq:scheduled_predictor}
+\end{equation}
+where $\hat{\mX}_i$ is the rolled-out history. This \emph{context-re-scheduled, latent-propagated} structure (RTI-SP) never re-runs the full Transformer lifting encoder inside the horizon. The alternative---re-encoding the history at every prediction stage (RTI-RE)---is more accurate in principle but costs one encoder evaluation per stage.
+
+\subsection{One-Iteration RTI}
+
+We solve the receding-horizon problem
+\begin{equation}
+    \min_{\vu_{0:N-1}}\ \sum_{i=1}^{N}\|\hat{\vx}_i-\vx_i^{\mathrm{ref}}\|_{\mQ}^2+\sum_{i=0}^{N-1}\big(\|\vu_i\|_{\mR}^2+\|\vu_i-\vu_{i-1}\|_{\mS}^2\big)
+    \label{eq:mpc_cost}
+\end{equation}
+subject to $\vu_i\in[\vu_{\min},\vu_{\max}]$, using a single real-time-iteration (RTI) SQP step per sampling instant \cite{diehl2005realtime, gros2020rti}: (i) warm-start from the shifted previous solution; (ii) roll out the nominal trajectory \eqref{eq:scheduled_predictor}; (iii) linearize to obtain $\delta\vxi_{i+1}=\mF_i\delta\vxi_i+\mG_i\delta\vu_i$; (iv) solve one quadratic program over $\delta\vu_{0:N-1}$; and (v) apply only the first input. Proposition~\ref{prop:rti} bounds the second-order linearization remainder of the model used in the RTI step; the adequacy of a single iteration is assessed empirically against the matched exact scheduled NMPC oracle, and we make no global SQP convergence claim.
+
+\subsection{Real-Time Behavior and Fidelity}
+
+Table~\ref{tab:rti} reports the soft-robot closed-loop proxy (plant: an independently trained direct neural predictor; recorded validation references; $N=5$).
+
+\begin{table}[!t]
+\centering
+\caption{One-iteration RTI on the soft-robot proxy ($N=5$). The matched oracle is an exact scheduled NMPC solved to convergence at the \textup{same} horizon and plant.}
+\label{tab:rti}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Controller & RMSE & $\Delta$ vs oracle & p50 / p95 (ms) \\
+\midrule
+Exact scheduled oracle & $0.1635$ & --- & $1465$ / $1931$ \\
+\textbf{RTI-SP (proposed)} & $0.1618$ & $-1.04\%$ & $\mathbf{78}$ / $\mathbf{120}$ \\
+Exact re-encode oracle & $0.1582$ & --- & $1958$ / $2930$ \\
+RTI-RE & $0.1565$ & $-1.05\%$ & $182$ / $253$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three points follow. First, one-iteration RTI-SP tracks the \emph{matched} exact scheduled oracle to within about $1\%$ at $N=5$, i.e. the RTI approximation introduces no meaningful tracking degradation. Second, RTI-SP is roughly $2.3\times$ faster than RTI-RE at the median and $2.1\times$ at $p95$, because it avoids a full Transformer lifting-encoder evaluation per stage, and its $p95$ latency ($120$~ms) is well below the $\sim200$~ms soft-robot sampling period. Third, the small negative $\Delta$ should not be read as RTI outperforming exact NMPC; it is attributable to numerical optimization, warm-starting, finite simulation length, solver tolerance, and receding-horizon trajectory differences. Accordingly, the exact oracle is not a strict RMSE upper bound, which is why Proposition~\ref{prop:rti} is assessed by its own remainder diagnostic (Section~\ref{subsec:diagnostics}) rather than by this comparison. We note that a longer horizon ($N=8$) tracks slightly better but exceeds the sampling period ($p95=215$~ms) and is therefore not used.
+意见：我他妈真是无语了，哥们这个是一个独立的理论章节，是控制器设计的章节，你他妈写的即不像是理论又他妈不像是实验，理论里掺杂实验，而且作为一个控制器设计章节，你既没有稳定性证明分析，前面给的误差界啥的你这里也没用上啊，作为一个控制章节你理论包完整吗？前面建模部分分析一堆这里控制器一点没有分析，几个公式夸夸就带过了？？？你他妈搁着头重脚轻呢？？？？你认真的吗？你觉得这个能称之为一篇论文吗？？？？
+
+
+原文：
+\subsection{Training Schedule Ablation}
+\label{subsec:schedule_ablation}
+意见：我在这里郑重重申：现在我们还处于理论阶段，暂时还没有开始正式规划并且实施实验，可能已经做了一部分工作，但是整个实验体系还没有完成，请你暂时搁置实验，我们现在不需要正式开始写实验部分的内容，等到把理论部分完成的差不多确认没什么问题之后，我们再去开始计划实验，完成实验之后再开始正式写实验章节，不要在这里呼呼啦啦着急忙慌写一堆，弄得前后不一致，污染前文内容，就先不要写实验，现有的材料就先备着，后买你实验做完了再统一整理材料统一写实验章节！！！！
+
+原文：% =========================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% =========================================================
+
+This paper presented Transformer-Koopman, a framework for learning history-conditioned Koopman models of controlled nonlinear systems from finite history windows. Because the measured state need not reveal the system's internal dynamics, a patch-based Transformer encoder first maps the history to a structured, state-preserving lifted state. Because a single global lifted transition would then still require all history-dependent regimes to share one evolution law, the lifted transition is additionally modulated by the history through a rank-$r$ term $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\mV^\top$ ($r=2$), which confines history dependence to a structured correction of a shared nominal operator while keeping the propagation conditional-linear. We identified a training--deployment inconsistency between one-step-trained history-conditioned dynamics and the recursively generated latent states seen at deployment, showed that it is not repaired by spectral stabilization, and resolved it with deployment-consistent scheduled training. The rollout-trained scheduled predictor was integrated into a one-iteration RTI-MPC that runs in real time and matches a matched exact scheduled NMPC oracle to within about $1\%$. A finite-horizon theory---finite-history Markovization, latent rollout error propagation, a bounded prediction-error theorem, a physical-space corollary, and a local RTI approximation result---was established and supported by empirical diagnostics. Hardware validation on the soft-robot platform across multi-setpoint, circular, figure-eight, unseen-trajectory, and speed-shift regimes, together with closed-loop baselines against a fixed (time-invariant) Transformer-Koopman controller, remains the immediate next step.
+意见：纯纯狗篮，要不然你就先不写，等到前面实验啥都写完了你最后再写结论。
