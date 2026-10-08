@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tV4-resume",
+  "expected_revision": 403,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-005",
+    "next_action": "TASK-005（论文理论章节）v2.1 完成。**第十七轮裁定已接收**：理论路线 CLOSED、RTI-SP/N=5/1-iter 冻结、P2 真机 GO（DEC-026）；理论结构固定为 Prop.1→Def(HCLTK)→Prop.2→Thm.1→Cor.1→Prop.3。**v2.1 追加**：按 GPT §10 收紧 ε_k 措辞——ε_k>0 仅表示有限维模型有非零一步一致性缺陷，**不能单独**推出训练/部署分布不一致；分布缺口结论须由四元合取支撑（ε_k>0 ∧ d_M(H)↑ ∧ naive propagation failure ∧ rollout-aware recovery），已写入 §3.7 与 §3.12。**关键提醒（已记 PHASE2-ROUND17-NUMCORR-001）**：GPT §5/§9 引用的 bound/actual 4.7–18.7× 与余项 0.27 是**复核前旧数字**，已被 v2 修正为 **1.65–6.57×**（同口径）与 **M_F≈0.007**（δ² 标度）；Cor.1 应用 L_F=1.445 → 53–48374×；P=8。下次交 GPT 须明确标注该修正。**下一步**：(1) v2 针对性复检（后台）确认 4 项 HIGH 闭合 → verdict 升 go；(2) 出 handoff v15（含数字修正说明）交 GPT 讨论理论章节；(3) 真机按 DEC-025 推迟。"
+  }
+}

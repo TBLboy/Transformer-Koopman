@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "command_id": "t90-qroutes",
+  "expected_revision": 312,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-Q-ROUTES-001",
+    "title": "GPT 第四轮 Q0-Q6 验证：Q0 成立但平凡；Q1/Q2/Q3/Q5/Q6 在 P2 被经验杀死",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_q_routes_validation_v1.md",
+      "document_sha256": "fab4108feb73f507f7540d706f98dcb30ddeb22ac0ade1c64a703fe3664e69a8",
+      "scope": "GPT round-4 routes Q0-Q6 validation (prior-art + cheap experiments T4-1..T4-6)",
+      "verdicts": {
+        "Q0 linear-prefeedback invariance": "CONFIRMED but trivial linear-algebra identity (row-space), not a contribution",
+        "Q1 FSAKC": "KILLED on P2: even full-rank nonlinear drift only -0.25% val RMSE, residual rank unchanged; P1 -31% but = standard input-channel identification; exact case occupied by Fan 2401.08153",
+        "Q2 FSMO": "KILLED: P2 residual block-Hankel rank 90%=78/99%=97 of 100 -> no low-order dynamic realization; D7 'low-rank' was instantaneous covariance only",
+        "Q3 COMP": "WEAK/FAIL: mode placement rho_E best 0.9675, closed-loop rho=1.0; classical eigenstructure assignment",
+        "Q4 FCH": "collapses on P2 (J2<J1 fails because Q1 killed)",
+        "Q5 SNOK": "KILLED: obstruction subspace reproducible (top2-3 <1deg) but full-order dynamics + not feedback-shapeable",
+        "Q6 CSKC": "KILLED: depends on Q1+Q2+Q3, all fail on P2"
+      },
+      "new_prior_art": {
+        "Fan et al. 2401.08153": "stable/stabilizable Koopman embeddings with smooth prefeedback + generalized feedback linearizability (most dangerous)",
+        "Strasser et al. 2509.02839": "Annual Reviews in Control 2026 survey: Koopman control from error bounds to closed-loop guarantees",
+        "2510.05359": "Koopman Control Factorization (controller-model joint convex design)",
+        "2606.10344": "exact bilinear via RKHS lifting",
+        "2201.05098": "Neural Koopman Lyapunov Control"
+      },
+      "meta_conclusion": "After R(18)/N(6)/M(12)/Q(7) routes, none survives the gate; pattern: P2 closure error is small, non-reshapable by feedback, and full-order; P1 residual always in im(B). Diminishing returns under current gate -> C-level direction decision needed.",
+      "user_directive": "validate + feedback only, do not invent new routes"
+    }
+  }
+}

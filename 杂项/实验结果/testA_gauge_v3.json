@@ -1,0 +1,90 @@
+{
+  "alpha_1": {
+    "condT_1": {
+      "K_rel_max": 6.466914269128293e-07,
+      "track_rel_max": 1.5459346887330896e-06,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_100": {
+      "K_rel_max": 0.4112741696544973,
+      "track_rel_max": 0.8294345160734918,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_10000": {
+      "K_rel_max": 0.956687510373958,
+      "track_rel_max": 0.8799578177293864,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_1e+06": {
+      "K_rel_max": 1.4377813810598863,
+      "track_rel_max": 1.947936441541811e+87,
+      "n_dare_failures_out_of_4": 3
+    }
+  },
+  "alpha_10": {
+    "condT_1": {
+      "K_rel_max": 3.7426862266293124e-07,
+      "track_rel_max": 8.762209560346887e-07,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_100": {
+      "K_rel_max": 0.3653496292539719,
+      "track_rel_max": 0.6647866397551361,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_10000": {
+      "K_rel_max": 3.255092716181637,
+      "track_rel_max": 1.3372239804318058,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_1e+06": {
+      "K_rel_max": 0.9049636182889215,
+      "track_rel_max": Infinity,
+      "n_dare_failures_out_of_4": 0
+    }
+  },
+  "alpha_100": {
+    "condT_1": {
+      "K_rel_max": 5.7850280356357423e-08,
+      "track_rel_max": 1.3697302153661286e-07,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_100": {
+      "K_rel_max": 0.7650088704934932,
+      "track_rel_max": 0.8051972711707176,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_10000": {
+      "K_rel_max": 9.169033044497413,
+      "track_rel_max": 2.825335486742735,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_1e+06": {
+      "K_rel_max": 1.1491571102782225,
+      "track_rel_max": Infinity,
+      "n_dare_failures_out_of_4": 2
+    }
+  },
+  "alpha_1000": {
+    "condT_1": {
+      "K_rel_max": 1.2225035571790804e-08,
+      "track_rel_max": 2.7012205142858595e-08,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_100": {
+      "K_rel_max": 0.6753365153847278,
+      "track_rel_max": 0.702481677060959,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_10000": {
+      "K_rel_max": 1.197761931825684,
+      "track_rel_max": 6.050407255466185e+104,
+      "n_dare_failures_out_of_4": 0
+    },
+    "condT_1e+06": {
+      "K_rel_max": 1.5358110469451078,
+      "track_rel_max": Infinity,
+      "n_dare_failures_out_of_4": 3
+    }
+  }
+}

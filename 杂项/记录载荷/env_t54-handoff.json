@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t54-handoff",
+  "expected_revision": 271,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "用户反馈候选已审查并记录。P2-B 论据证伪（(A,B)可控秩10/10）；P2-A/P2-C 降为基线；P2-D 暂缓；G-A 仅DEC-018工程前置，G-B/G-E/G-F/G-G kill，G-C/G-D 辅助。A2/A7 最小 spike 均未通过：导出模型输出相对阶平凡为1且CB条件数1.13（‘保相对阶’无非平凡约束，除非能构造会破坏相对阶的lifting反例）；A7 可控性满秩但sigma_min/sigma_max=2.09e-7、无谱隙，需任务误差判据且改变控制器才非平凡。当前无候选通过‘新模型结构+新控制器结构+非平凡定理+数据可检验+prior-art delta’。下一步触发C级决策：补采能辨识相对阶/任务相关状态/闭环分布的数据，或缩小论文范围为P1-only/P2-only并接受增量创新。"
+  }
+}

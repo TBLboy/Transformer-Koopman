@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ10-audit",
+  "expected_revision": 412,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-CONFIG-AUDIT-001",
+    "title": "Configuration audit: P_final=8 for the paper; deploy ckpt (P=4, old route) is a stale legacy artifact",
+    "status": "complete",
+    "payload": {
+      "question": "P_final = 4 or 8? (GPT round-18, the only pre-manuscript technical item)",
+      "rule_from_gpt": "final checkpoint metadata is the source of truth for the reported experiment configuration",
+      "findings": {
+        "configs/platform2.yaml": {
+          "history_length": 8,
+          "patch_length": 2,
+          "latent_dim": 10,
+          "d_model": 16,
+          "n_layers": 1,
+          "n_heads": 2,
+          "d_ff": 64,
+          "dropout": 0.1,
+          "readout_method": "mean",
+          "data_dir": "../数据备份/软体平台数据/处理后的数据"
+        },
+        "deploy/algorithms/tk_assets/model_assets/platform2_metadata.json": {
+          "history_length": 4,
+          "patch_length": 2,
+          "latent_dim": 10,
+          "d_model": 16,
+          "n_layers": 3,
+          "n_heads": 2,
+          "source_checkpoint": "C:/Users/Windows/Desktop/论文4/code_project/results/models/ablation_platform2/20260514_084213/full_model/full_model_model.pth"
+        },
+        "deploy/algorithms/tk_assets/transformer_koopman_model.py": "OLD ROUTE: KoopmanDynamics has a single fixed nn.Parameter A (no context MLP, no low-rank A(c) modulation); PatchTSTKoopmanModel = encoder -> fixed-A koopman -> linear decoder.",
+        "deploy/algorithms/configs/transformer_koopman_controller.json": "OLD ROUTE controller: LQR gains (Q_x1/Q_x2/alpha/R_control/ff_gain/u_limit), not RTI-MPC.",
+        "deploy/export_assets.py": "exports by copying a checkpoint from results/models/... and reading its config; no results/ dir exists in the repo.",
+        "repo checkpoints": "only ONE .pth in the repo: deploy/algorithms/tk_assets/model_assets/platform2_full_model.pth (the P=4 legacy one). No results/ or results/models/ directory exists; no P=8 checkpoint is checked in."
+      },
+      "experiments_actually_run": "all Phase-2 gate experiments (A/B/AB ablation, rank sweep, rollout-aware, DirectNN, Gate-14C/14D RTI, matched oracle, theory diagnostics) trained their models from 处理后的数据 using configs/platform2.yaml -> P=8, n_layers=1.",
+      "conclusion": "P_final for the PAPER = 8 (config + every executed experiment). The bundled deploy checkpoint (P=4, n_layers=3) is a STALE LEGACY artifact imported from the previous project (论文4/code_project, ablation_platform2/20260514_084213) and implements the OLD route (fixed A + LQR); it was not used in any current experiment and cannot reproduce any new-route result.",
+      "required_actions": [
+        "Train and save the final P=8 new-route model (history-conditioned low-rank A(c), rollout-aware scheduled training) as the paper's single model artifact; none currently exists in the repo.",
+        "Regenerate deploy assets (deploy/algorithms/tk_assets/model_assets/) from that P=8 checkpoint via deploy/export_assets.py.",
+        "Replace the old-route deploy stack (fixed-A KoopmanDynamics + LQR controller config) with the new-route model + RTI-SP controller before P2 hardware.",
+        "Then unify P=8 across paper tables / algorithm box / experiment description."
+      ],
+      "classified_as": "deployment-consistency defect (same family as ALN-010 residual / ALN-004): config vs artifact drift."
+    }
+  }
+}

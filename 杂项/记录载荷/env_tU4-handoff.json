@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tU4-handoff",
+  "expected_revision": 371,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "Gate-13（GPT 第十三轮 v1.2：A-only 定稿性检验）完成。**关键负结果**：13A 四种预测器对比——R_reencode（每步重编码，第12轮强结果）H20 −73.7%；F_reencode −556%、F_prop（frozen+开环传播）−738%、R_prop（scheduled+开环传播）−115% → **开环传播（frozen 或 scheduled）全部崩溃**，只有每步重编码保留增益；η_F 为负。13C 根因：ρ(A_k) median 1.032/max 1.043（>1，边际不稳定），A0 ρ=1.0299，乘积增长 ≈1.04/步 → 模型是'encoder 锚定的一步预测器'，非可独立传播的动力系统。13B：r=1 不足、r=2 最小近优（S_r 0.03722）；13D：matched-current history shuffle 下一步误差 6.63×（PASS）；13C 诊断：‖ΔA‖ q99 0.059/max 0.068、漂移 0.006、三模态活跃、gate 与速度/Δu 相关性≈0。产出 phase2_gate_stage3_gate13_v1.md + phase2_gpt_handoff_v11.md；记录 PHASE2-GATE13-FINALIZATION-001 / PHASE2-GATE13-EXPERIMENTS-001 / EV-PHASE2-GATE13-FINALIZATION-001。下一步（待 GPT 回复 handoff v11 §6）：(1) 控制架构二选一——(i) 重编码 MPC（encoder 在环，增益保留但预测器对 u 非线性）或 (ii) 稳定化 latent（budgeted low-rank + ‖ΔA‖≤δ_A + ρ/共同 P 约束，使开环传播可用；DEC-018 升级为 MPC 可用性前提）；(2) 有界性参数化与 δ_A（建议 0.065–0.09）；(3) common-P β* 是否要求；(4) r=2 定稿；(5) 重编码 MPC 实时性（P2 Ts≈0.2s）。GOAL-001 门禁仍拒绝；DEC-018 未满足。"
+  }
+}

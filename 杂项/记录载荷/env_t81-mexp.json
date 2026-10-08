@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "command_id": "t81-mexp",
+  "expected_revision": 308,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-M-EXPERIMENTS-001",
+    "title": "M 轮廉价证伪实验 D1-D7：V*=0 / 任务族满秩 / 约束不激活 / DWR 精确伴随 / 低秩 obstruction",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_m_routes_validation_v1.md",
+      "document_sha256": "26141a1d771921ff8abb45e081d28bec2c83a41a52b2e5ff66fc182f0015cc50",
+      "scripts": [
+        "D_P2.py",
+        "D_P1.py",
+        "D_P2_DWR.py",
+        "D_P2_D7.py"
+      ],
+      "D1": {
+        "V_star_dim": 0,
+        "kerC_dim": 8,
+        "imB_dim": 2,
+        "benign_dim": 2,
+        "rho_V": 0.0,
+        "finding": "no output-nulling controlled-invariant subspace -> M1 shielding branch dead"
+      },
+      "D2": {
+        "rank_curve_task_counts_1_10_50_200": [
+          2,
+          10,
+          10,
+          10
+        ],
+        "finding": "task-family strategy-null rank saturates to n=10 by ~10 tasks -> no universal policy-null -> M9 dead"
+      },
+      "D3": {
+        "rho_matched_train_mean": 0.848,
+        "rho_harmful_train_mean": 0.152,
+        "q95_ratio_train": 0.2507,
+        "q95_ratio_val": 0.2365,
+        "finding": "only ~4x radius reduction; benign=imB -> M2 = classical matched compensation"
+      },
+      "D4": {
+        "n_windows": 5220,
+        "H": 10,
+        "corr_DWR_vs_dJ": 1.0,
+        "corr_raw_defect_vs_dJ": 0.1215,
+        "finding": "DWR weight = exact adjoint of linear nominal model (analytically exact) -> standard costate, not novel; M3 downgraded"
+      },
+      "D5": {
+        "u_abs_max_train": 65.29,
+        "u_abs_max_val": 59.17,
+        "u_max": 300,
+        "finding": "constraints never active -> M4 lacks physical anchor"
+      },
+      "D6": {
+        "recon_err": 3.68e-12,
+        "du_std": [
+          0.607,
+          1.807,
+          0.824
+        ],
+        "cross_joint_corr_2_3": 0.785,
+        "finding": "no lower-dim/more-predictable Delta-u structure -> M7 downgraded"
+      },
+      "D7": {
+        "residual_cov_eigvals_normalized": [
+          0.5166,
+          0.4227,
+          0.031,
+          0.0228,
+          0.0041,
+          0.002,
+          0.0003,
+          0.0003,
+          7e-05,
+          0.0
+        ],
+        "effective_rank_90pct": 2,
+        "effective_rank_99pct": 4,
+        "two_step_over_one_step_median": 2.21,
+        "two_step_over_one_step_q95": 5.36,
+        "n": 26640,
+        "finding": "defect concentrated in low-dim subspace (rank 2-4/10) -> M5/M12 empirically survives"
+      },
+      "P1_residual_ref": {
+        "residual_energy_frac_in_im_B": 1.0,
+        "r_n": "~0"
+      }
+    }
+  }
+}

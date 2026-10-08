@@ -1,0 +1,60 @@
+{
+  "D1": {
+    "Vstar_dim": 0,
+    "kerC_dim": 8,
+    "imB_dim": 2,
+    "benign_dim": 2,
+    "convergence_dims": [
+      0,
+      0
+    ]
+  },
+  "D2": {
+    "rank_curve_at_1_10_50_200": [
+      2,
+      10,
+      10,
+      10
+    ],
+    "full_rank_is": 10
+  },
+  "train.npz": {
+    "n": 20720,
+    "D1_rho_V_outputnulling": {
+      "mean": 0.0,
+      "median": 0.0
+    },
+    "rho_matched_imB": {
+      "mean": 0.8476319351161686,
+      "median": 0.9310187358701354
+    },
+    "rho_harmful_complement_benign": {
+      "mean": 0.1523680648838314,
+      "median": 0.06898126412986488
+    },
+    "D3_q95_full_defect": 0.046307293753280784,
+    "D3_q95_harmful_defect": 0.011608942084233981,
+    "D3_ratio_q95_harmful_over_full": 0.25069359799095386,
+    "D5_u_abs_max": 65.29083738715386
+  },
+  "val.npz": {
+    "n": 5920,
+    "D1_rho_V_outputnulling": {
+      "mean": 0.0,
+      "median": 0.0
+    },
+    "rho_matched_imB": {
+      "mean": 0.8557894848990091,
+      "median": 0.9378379106609075
+    },
+    "rho_harmful_complement_benign": {
+      "mean": 0.144210515100991,
+      "median": 0.06216208933909268
+    },
+    "D3_q95_full_defect": 0.04538031619740351,
+    "D3_q95_harmful_defect": 0.010732435191592667,
+    "D3_ratio_q95_harmful_over_full": 0.23649978869487776,
+    "D5_u_abs_max": 59.17246471427608
+  },
+  "verdict": "D1: rho_V>0.5 -> M1 strong; <0.1 -> downgrade shielding. D2: rank saturating <<10 -> task-family quotient nontrivial; ->10 -> M9 kill. D3: q95_harmful<<q95_full -> M2 value. D5: |u| far below 300 -> M4 kill."
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "command_id": "tU1-gate13exp",
+  "expected_revision": 368,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE13-EXPERIMENTS-001",
+    "title": "Gate-13 实验：四种预测器 / rank 扫描 / A-family 诊断 / conditional shuffle",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_gate13_v1.md",
+      "document_sha256": "647d3bad7776e789224a838f2c210ee5e977d56270a434daa0a2626dc4ea6e50",
+      "scripts": [
+        "gate13_analyze.py",
+        "gate13b_rsweep.py"
+      ],
+      "artifacts": [
+        "gate13_result.json",
+        "gate13b_result.json",
+        "gate_states/A_r{1,2,5}.pt"
+      ],
+      "gate13A": "Four predictors compared; only re-encoding (encoder each step) preserves the -74% gain; frozen and scheduled open-loop propagation diverge (rho>1).",
+      "gate13B": "r=1 insufficient; r=2 minimal near-optimal (S_r 0.03722); r=3/5 within noise.",
+      "gate13C": "rho(A_k) median 1.032 (>1); ||dA|| q99 0.059; slow drift 0.006; product growth ~1.04/step.",
+      "gate13D": "Matched-current history shuffle -> 6.63x next-step error -> history context genuinely used."
+    }
+  }
+}

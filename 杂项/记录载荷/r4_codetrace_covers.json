@@ -1,0 +1,11 @@
+{
+  "files": [
+    "Transformer-Koopman/训练代码/src/patchtst_koopman/models/koopman_dynamics.py",
+    "Transformer-Koopman/训练代码/src/patchtst_koopman/training/edmd_trainer.py",
+    "Transformer-Koopman/论文/新版本/Main.tex"
+  ],
+  "requirements": [],
+  "tasks": [
+    "TASK-006"
+  ]
+}

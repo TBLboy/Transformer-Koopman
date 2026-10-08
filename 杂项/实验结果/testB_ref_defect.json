@@ -1,0 +1,21 @@
+{
+  "train.npz": {
+    "n_samples": 20720,
+    "mean_abs_increment": 0.03500146835312078,
+    "mean_abs_defect": 0.0060187262382840456,
+    "median_abs_defect": 0.005489515621585906,
+    "p95_abs_defect": 0.01160894208423398,
+    "mean_relative_defect": 0.21623630710496247,
+    "median_relative_defect": 0.16748644030364138
+  },
+  "val.npz": {
+    "n_samples": 5920,
+    "mean_abs_increment": 0.03449601476710845,
+    "mean_abs_defect": 0.005713214359792346,
+    "median_abs_defect": 0.005323328036125202,
+    "p95_abs_defect": 0.010732435191592667,
+    "mean_relative_defect": 0.21348684908895407,
+    "median_relative_defect": 0.16206896853571878
+  },
+  "note": "reference = measured trajectory; defect=(I-BB+)(z_{k+1}-A z_k) in normalized latent; P2 only (no P1 checkpoint)"
+}

@@ -1,0 +1,39 @@
+{
+  "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+  "artifact_sha256": "017fa1c14769c0d94dbcf70eabebe2d67d2798925e4ff3fb2738be828496deee",
+  "recompiled_pdf": "Transformer-Koopman/论文/新版本/build/Main.pdf",
+  "recompiled_pdf_sha256": "83f92b9758b34fc40f0b8575d0a8a5054f98f28b5581509f87568c8d9d9dfc28",
+  "recompiled_pdf_bytes": 302232,
+  "pages": 12,
+  "sources_reviewed": [
+    "external Major-Revision review of the theory section (GPT)",
+    "second independent theory review: 'current theory part strict check and final closure' (DeepSeek)"
+  ],
+  "already_fixed_before_this_round": [
+    "Prop.3 Eq (62) missing delta_u_i -> current Eq (62) already contains [delta_xi_i; delta_u_i] (reviewer used an older draft)",
+    "Remark 2 '!=' -> current uses \\not\\Rightarrow",
+    "F* definition -> already explicit (reference augmented transition, not plant dynamics)",
+    "A(c) is not an exact Koopman operator -> already stated in Scope (vi)",
+    "Def.3 rollout-aware objective has no guarantee -> already stated 'mitigates ... does not guarantee strict manifold invariance'",
+    "epsilon vs epsilon_k -> already separated by Remark 3"
+  ],
+  "must_fix_applied": {
+    "T1_operating_set": "Theorem 1 now supposes the reference and predicted trajectories remain in Omega over horizon H; proof notes the assumptions apply at every step.",
+    "T2_joint_variable": "Prop.3 rewritten with the joint variable eta=col(xi,u): F_Theta(eta_bar_i+delta_eta_i)=F_Theta(eta_bar_i)+D F_Theta delta_eta_i+r_i, and r_i = integral_0^1 (1-s) D^2 F_Theta(eta_bar_i+s delta_eta_i)[delta_eta_i,delta_eta_i] ds (dimensionally consistent).",
+    "T3_empirical_wording": "Abstract/intro/contributions/section title/line-643 no longer claim to 'validate every assumption'; Section V-G renamed 'Numerical Diagnostics for the Theoretical Analysis' and a sentence added that these are empirical measurements on the validation distribution, not worst-case certificates over Omega.",
+    "T4_measured_state": "Problem formulation now states x_k is the measured task-space state (output) available to predictor/controller, not necessarily the complete physical state; the one-step map is a modeling abstraction and the finite history supplies the missing context."
+  },
+  "minor_fixes_applied": {
+    "F5": "Prop.2 uses d_k = d^abs_k, unified with Def.2.",
+    "F6": "Assumption 2 notes the learned transition inherits Lipschitz continuity from C_phi, g, and the linear transition; compactness of Omega bounds the lifted state.",
+    "F7": "Prop.2 notes the bound is a trajectory-wise (posterior) recursion.",
+    "F8": "Modeling-error section notes C z_{k+1}=x_{k+1} compatibility is enforced by the state-consistency loss, not structurally."
+  },
+  "deliberately_not_done": [
+    "No new global-stability / recursive-feasibility / JSR / terminal-invariant-set theory (out of scope, both reviews agree).",
+    "No context-Lipschitz theorem (both reviews say not needed).",
+    "No counterexample for Remark 2 (optional; classical citation already given)."
+  ],
+  "compile": "Tectonic 0.17.0; 12 pages; only remaining warning is the pre-existing 0.87pt overfull at the Corollary 1 equation; the new Prop.3 proof equation was split with align* to remove a 12.9pt overfull.",
+  "verdict": "Applied; theory text reopened then re-closed for reviewer edits. No numeric or structural change."
+}

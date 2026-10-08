@@ -1,0 +1,103 @@
+{
+  "baseline": {
+    "rmse_train": 0.008072,
+    "rmse_val": 0.008029,
+    "resid_eig_rank_90": 2,
+    "resid_eig_rank_99": 4,
+    "resid_eig_norm": [
+      0.52374,
+      0.4351,
+      0.02315,
+      0.01514,
+      0.0027,
+      0.00012,
+      4e-05,
+      2e-05,
+      1e-05,
+      0.0
+    ]
+  },
+  "T4_1_linear_prefeedback": {
+    "Q0_prediction": "residual norm invariant to linear prefeedback",
+    "baseline_rmse_train": 0.008072,
+    "random_K_rmse_train_mean": 0.008072,
+    "random_K_rmse_train_std": 0.0,
+    "max_abs_dev_from_baseline": 0.0
+  },
+  "T4_2_feedback_closure": {
+    "linear_alpha_Kz": {
+      "rmse_train": 0.008073,
+      "rmse_val": 0.008031,
+      "resid_rank_90": 2,
+      "resid_rank_99": 4,
+      "alpha_mean_abs_train": 0.099784
+    },
+    "quadratic_alpha": {
+      "rmse_train": 0.008044,
+      "rmse_val": 0.008005,
+      "resid_rank_90": 2,
+      "resid_rank_99": 4,
+      "alpha_mean_abs_train": 0.577056
+    },
+    "mlp_alpha_rank_m": {
+      "rmse_train": 0.008069,
+      "rmse_val": 0.00803,
+      "resid_rank_90": 2,
+      "resid_rank_99": 4,
+      "alpha_mean_abs_train": 0.219674
+    },
+    "full_nonlinear_drift_rank_n": {
+      "rmse_train": 0.008041,
+      "rmse_val": 0.008009,
+      "resid_rank_90": 2,
+      "resid_rank_99": 4
+    },
+    "note": "alpha must be rank<=m=2 (prefeedback); full drift is the unconstrained upper bound (rank<=n=10)"
+  },
+  "T4_3_residual_hankel": {
+    "L": 10,
+    "hankel_rank_90_train": 78,
+    "hankel_rank_99_train": 97,
+    "hankel_rank_90_val": 77,
+    "hankel_rank_99_val": 97,
+    "top10_sv_norm_train": [
+      1.0,
+      0.99292,
+      0.9899,
+      0.98641,
+      0.97963,
+      0.97401,
+      0.97222,
+      0.96761,
+      0.96452,
+      0.95664
+    ],
+    "note": "if covariance rank low but Hankel rank high -> instantaneous low-rank but NOT low-order dynamics"
+  },
+  "T4_4_obstruction_reproducibility": {
+    "n_trajectories": 70,
+    "r": 4,
+    "n_pairs": 2415,
+    "principal_angle_mean_deg": [
+      0.08,
+      0.2,
+      0.75,
+      7.03
+    ],
+    "principal_angle_max_deg": [
+      0.36,
+      0.85,
+      2.78,
+      22.51
+    ],
+    "note": "small angles => reproducible obstruction subspace (Q3/Q5 viable); large => artifact"
+  },
+  "T4_5_mode_placement": {
+    "r": 4,
+    "baseline_rho_A": 1.001,
+    "optimized_leakage": 0.03511,
+    "optimized_rho_E": 0.9675,
+    "optimized_rho_closedloop": 1.0,
+    "note": "if leakage~0 and rho_E<<1 at low task cost -> Q3 feasible; if not -> eigenstructure assign fails"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "command_id": "tY2-begin",
+  "expected_revision": 390,
+  "action": "task.begin",
+  "payload": {
+    "task_id": "TASK-005"
+  }
+}

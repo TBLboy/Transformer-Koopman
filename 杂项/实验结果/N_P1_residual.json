@@ -1,0 +1,43 @@
+{
+  "model": {
+    "A_spectral_radius": 0.9855390900980835,
+    "rank_B": 3,
+    "n": 6,
+    "m": 3
+  },
+  "state_residual_energy_mean_per_dim": [
+    9.004911120388256e-07,
+    0.056280694501574594,
+    1.7508384898500117e-06,
+    0.10942740561539044,
+    2.3807710525029014e-06,
+    0.14879819077788745
+  ],
+  "position_dims_total_energy": 5.032100654391739e-06,
+  "velocity_dims_total_energy": 0.3145062908948525,
+  "residual_energy_frac_in_im_B": {
+    "mean": 1.0,
+    "median": 1.0,
+    "p95": 1.0000000000000004
+  },
+  "residual_energy_frac_orthogonal_to_B": {
+    "mean": 1.1743392416347696e-16,
+    "median": 6.371145866108851e-17,
+    "p95": 7.476149561494098e-16
+  },
+  "residual_policy_sensitivity_via_LQR_K": {
+    "mean": 0.5732440258664174,
+    "median": 0.5707099119563954,
+    "p95": 0.6696989577316772
+  },
+  "LQR_on_identified_AB": {
+    "rank_K": 3,
+    "policy_null_dim": 3,
+    "sigma_K": [
+      0.9845573577345565,
+      0.7572627992347178,
+      0.5043156101171191
+    ]
+  },
+  "verdict": "Fully-actuated P1: if velocity(m=3) residual dominates and frac_in_im_B ~1, residual is input-reachable -> control-relevant, leaving little 'prediction-only' residual; policy-null subspace of a static gain is small and not physically meaningful."
+}

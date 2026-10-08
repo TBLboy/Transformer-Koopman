@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ11-dec028",
+  "expected_revision": 413,
+  "action": "record.create",
+  "payload": {
+    "kind": "decision",
+    "id": "DEC-028",
+    "title": "P_final = 8（论文）；部署栈需从当前 pipeline 重新生成（旧 ckpt P=4 作废）",
+    "status": "active",
+    "payload": {
+      "level": "B",
+      "basis": "GPT 第十八轮 §11/§12 configuration audit 要求 + 本机核查证据（PHASE2-CONFIG-AUDIT-001）",
+      "decision": "论文报告 P=8（与 platform2.yaml 及全部已执行实验一致）。仓库内现有部署 checkpoint（P=4, n_layers=3, 旧路线固定 A + LQR）来自旧项目 论文4/code_project 的 ablation 运行，作废，不作为论文模型。",
+      "consequence": "P2 真机前必须：(1) 训练并保存 P=8 新路线最终模型（当前仓库无该 checkpoint）；(2) 用 export_assets.py 重新导出部署资产；(3) 用新路线模型 + RTI-SP 控制器替换旧部署栈。理论章节中 P 为一般符号，不受影响。",
+      "note": "该不一致属于 deployment-consistency defect（与 ALN-010 残余、ALN-004 同类）：config 与 artifact 漂移。"
+    }
+  }
+}

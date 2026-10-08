@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tW6-handoff",
+  "expected_revision": 398,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-005",
+    "next_action": "TASK-005（论文理论章节）v2 完成（按独立复核 9 项意见修订）。**复核结论**：核心数学（Prop.1/2、Thm.1、Cor.1、Prop.3、Rem.1）正确且自洽，无全局稳定性/流形不变性过度声明；问题集中在**证据绑定**（4 项 HIGH）——已全部修订。**v2 关键修正**：(1) P 4→**8**（`platform2.yaml` history_length=8 为实验配置；部署 ckpt 为 P=4/n_layers=3 旧 experiment_006，属 ALN 类部署一致性问题，另记）；(2) bound/actual 改**同口径**（绝对 ε vs 绝对 d）→ **1.65/2.82/4.21/6.57×**（合理，取代错配的 4.7–18.7×）；(3) Cor.1 用正确 augmented-map L_F=1.445 → **53/309/1679/48374×**（极松，如实标注；取代误用 1.045 的 52–413×）；(4) Prop.3 余项重测 → δ² 标度成立、**M_F≈0.007**（取代噪声伪值 0.27）；(5) §3.13 RTI 行修正——Prop.3 **不由** oracle 对比验证；(6) 定义 F*、补 A4（经验估计 vs 认证界）、定义 ε_0、删 w_k、补中值形式、限定 Prop.1 内部 rollout。产出 `paper_theory_section_v2.md`；记录 PHASE2-THEORY-SECTION-REVIEW-001 / REV-THEORY-001（conditional）/ EV-PHASE2-THEORY-SECTION-002（v1 证据已 invalidate 为 superseded）。**下一步**：(1) v2 针对性复检（后台进行中，确认 4 项 HIGH 已闭合）→ 通过后 verdict 升 go；(2) 交 GPT 讨论理论章节；(3) 真机推迟（DEC-025）。"
+  }
+}

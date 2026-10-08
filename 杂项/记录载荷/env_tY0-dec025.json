@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "command_id": "tY0-dec025",
+  "expected_revision": 388,
+  "action": "record.create",
+  "payload": {
+    "kind": "decision",
+    "id": "DEC-025",
+    "title": "优先级调整：先完成论文理论章节，真机实验推迟",
+    "status": "active",
+    "payload": {
+      "level": "C",
+      "basis": "用户明确指令（2026-10-06）",
+      "decision": "不急于 P2 真机。当前阶段目标改为：把论文理论部分（Prop.1/2、Thm.1、Cor.1、Prop.3 正式化 + 理论章节成稿）写好，之后再考虑真机 E1–E5。",
+      "consequence": "TASK-004 的 matched oracle/理论路线已 CLOSED；新建 TASK-005 专门负责论文理论章节撰写。真机仍为后续阶段（GO 状态保留，不取消）。"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "command_id": "t55-p1",
+  "expected_revision": 272,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-P1-ONLY-ASSESS-001",
+    "title": "P1 输入语义确认与 P1-only 物理路线评估",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_p1_only_assessment_v0.1.md",
+      "document_sha256": "3952bd15f35157c17b8c472579845c7c97ce6a2420a9ee2aa93a10f9c05a1e4d",
+      "p1_input_semantics_confirmed": "joint torque / current command",
+      "p1_structure": "fully observed 3-DOF Euler-Lagrange arm, x=(q,qdot), torque input, gravity offset on joint 2",
+      "prior_art_direct_occupation": {
+        "arxiv_2509.17010": "Generalized Momenta-Based Koopman Formalism for Robust Control of Euler-Lagrangian Systems (Singh et al., 2025-09/v2 2026-02): decouples known linear actuation channel, learns unactuated dynamics, GESO, manipulator experiments.",
+        "cdc_2024_event_triggered_el_koopman": "Zheng et al., 10.1109/cdc56724.2024.10886671",
+        "ieee_access_2026_arm_koopman": "Hancioglu & Efe, 10.1109/access.2026.3652500"
+      },
+      "structured_lifting_spike": {
+        "raw_affine_val_rmse": 0.22556271591053131,
+        "structured_physics_val_rmse": 0.22292837258961862,
+        "multi_step_structured_h2_val_rmse": 0.36781751195039136,
+        "multi_step_structured_h3_val_rmse": 0.4820584726617948,
+        "verdict": "handcrafted physics features give no meaningful advantage; structured lifting is not a route by itself"
+      },
+      "candidate_p1_deltas_not_yet_approved": [
+        "finite-data closed-loop tracking bound for momentum-structured torque-driven arm",
+        "passivity/positive-definiteness preserving data-driven lifting with passive controller",
+        "unified full-state and partial-observation closed-loop bound with history-as-observer"
+      ],
+      "verdict": "P1-only is crowded and the naive structured lifting shows no data advantage. A P1-only route requires a specific, defended delta; otherwise escalate to data collection or scope decision.",
+      "scripts": [
+        "C:/Users/12187/AppData/Local/Temp/opencode/profile_p1_data.py",
+        "C:/Users/12187/AppData/Local/Temp/opencode/spike_p1_structured_lifting.py"
+      ]
+    }
+  }
+}

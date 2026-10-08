@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "command_id": "tU0-gate13",
+  "expected_revision": 367,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE13-FINALIZATION-001",
+    "title": "Gate-13 定稿检验：开环传播失效（frozen/scheduled 均崩），增益依赖每步重编码；ρ(A)>1；r=2",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_gate13_v1.md",
+      "document_sha256": "647d3bad7776e789224a838f2c210ee5e977d56270a434daa0a2626dc4ea6e50",
+      "scope": "Gate-13A/B/C/D finalization gate for A-only HCLT-K (GPT round-13 v1.2)",
+      "gate13A_prediction_variants_val_pct_vs_fixed": {
+        "R_reencode": {
+          "H1": -61.6,
+          "H5": -71.3,
+          "H10": -71.1,
+          "H20": -73.7
+        },
+        "F_reencode": {
+          "H1": -61.6,
+          "H5": -207.1,
+          "H10": -384.8,
+          "H20": -556.5
+        },
+        "F_prop": {
+          "H1": -61.6,
+          "H5": -223.3,
+          "H10": -443.0,
+          "H20": -738.2
+        },
+        "R_prop": {
+          "H1": -61.6,
+          "H5": 31.6,
+          "H10": -22.8,
+          "H20": -114.9
+        }
+      },
+      "gate13A_verdict": "Open-loop latent propagation (frozen OR scheduled) collapses; only re-encoding predictor (encoder in the loop each step) retains the gain. eta_F negative (<<0.4). Model is an encoder-anchored one-step predictor, not a standalone dynamical system.",
+      "gate13B_rank_sweep_Sr": {
+        "1": 0.11311,
+        "2": 0.03722,
+        "3": 0.03774,
+        "5": 0.03744
+      },
+      "gate13B_chosen_r": 2,
+      "gate13C_diagnostics": {
+        "rho_Ak": {
+          "median": 1.0318,
+          "q99": 1.0424,
+          "max": 1.0433
+        },
+        "A0_rho": 1.0299,
+        "A0_norm2": 1.0399,
+        "dA_spec2": {
+          "median": 0.0357,
+          "q99": 0.059,
+          "max": 0.0682
+        },
+        "drift_fro_ratio": {
+          "median": 0.00576,
+          "max": 0.0182
+        },
+        "product_growth_gH_H20": {
+          "median": 1.0391,
+          "max": 1.045
+        },
+        "gate_modes_active_frac": [
+          0.828,
+          0.8,
+          0.774
+        ],
+        "gate_corr_with_speed_du_dx": [
+          -0.026,
+          -0.0008,
+          -0.026
+        ]
+      },
+      "gate13D_conditional_shuffle": {
+        "n_pairs": 600,
+        "err_normal": 0.00763,
+        "err_swapped": 0.05057,
+        "ratio": 6.63,
+        "verdict": "PASS"
+      },
+      "decision_table": {
+        "A_only_H20_vs_fixed": "GO (-73.7% val / -75.8% test, 2 seeds)",
+        "frozen_gain_retention": "NEGATIVE -> frozen MPC unusable",
+        "scheduled_propagation": "fails at H>=10 -> scheduled propagation also unusable",
+        "reencoding_predictor": "usable, gain real (-73.7%)",
+        "rank_r": 2,
+        "conditional_shuffle": "PASS",
+        "rho": ">1 (marginally unstable)",
+        "product_growth": "~1.04/step"
+      },
+      "open_for_gpt": "controller architecture: (i) re-encoding MPC vs (ii) stabilized latent (DEC-018 becomes MPC-usability prerequisite); bounded-modulation parameterization; common-P beta*; r=2 finalization; real-time cost of per-step encoder"
+    }
+  }
+}

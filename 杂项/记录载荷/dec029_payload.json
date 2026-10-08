@@ -1,0 +1,10 @@
+{
+  "decision": "Reopen the frozen theory text for the four reviewer-validated rigor edits (T1-T4) plus four low-risk clarifications (F5-F8).",
+  "rationale": "Both an external Major-Revision review and a second independent theory review converge on the same four rigor interfaces (operating-set condition, joint-variable Taylor notation, empirical-claim wording, measured-state definition). The theory-close condition explicitly allows reopening when a reviewer points out a new mathematical/rigor problem. None of the edits change any theorem statement value, numeric diagnostic, or result; they are clarifying/additive.",
+  "scope": "Transformer-Koopman/论文/新版本/Main.tex only",
+  "not_changed": [
+    "all frozen diagnostics (epsilon_k 0.345, d_abs, d_M, product norms, L_F 1.445, M_F 0.007, RMSE, RTI runtime)",
+    "Theorem 1 bound form, Proposition 2/3 bounds, Corollary 1 form",
+    "model/controller structure"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "command_id": "tW2-rev",
+  "expected_revision": 395,
+  "action": "review.record",
+  "payload": {
+    "id": "REV-THEORY-001",
+    "task_id": "TASK-005",
+    "reviewer": "verification-reviewer",
+    "verdict": "conditional",
+    "scope": "paper_theory_section_v1.md: math correctness + evidence binding. Core math PASS; 4 HIGH evidence-binding fixes required (P mismatch, metric mismatch, L_F object, Prop.3 diagnostic). All applied in v2.",
+    "evidence_refs": {
+      "files": [
+        ".project-log/docs/paper_theory_section_v1.md",
+        ".project-log/docs/paper_theory_section_v2.md"
+      ]
+    }
+  }
+}

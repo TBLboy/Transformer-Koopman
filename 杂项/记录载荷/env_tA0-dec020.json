@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "command_id": "tA0-dec020",
+  "expected_revision": 317,
+  "action": "record.create",
+  "payload": {
+    "id": "DEC-020",
+    "kind": "decision",
+    "status": "active",
+    "title": "阶段② 方向改为 D：更换建模范式（放宽 DEC-015 的 Koopman 约束）",
+    "payload": {
+      "class": "C",
+      "decided_by": "user",
+      "reason": "跨四轮 R18/N6/M12/Q7 在“必须保留有限维 Koopman 线性闭合”前提下无候选存活；P2 闭合误差小且不可后验反馈重塑、动态全阶，P1 残差恒在 im(B)。用户裁定更换建模范式。",
+      "decision": "阶段② 不再要求建模范式为有限维 Koopman 线性闭合；允许 contraction/LPV/低维非线性核混合/耗散-无源/可解释残差等范式。继续由外部 GPT 提出路线，本地验证。",
+      "supersedes_partial": "DEC-015 的“必须保留 Koopman 连接”一项",
+      "revised_gate_doc": ".project-log/docs/phase2_gate_update_v0.2.md",
+      "reversible": true,
+      "signals": [
+        "conclusion"
+      ],
+      "notes": [
+        "放宽的是范式约束，不降低证据要求：新路线须显式论证范式必要性并回应 T4 四个经验事实。",
+        "禁止伪创新清单不变；DEC-018（阶段③ 镇定前提）不变；代码/配置/论文仍冻结。",
+        "外部构思方在 fan 2401.08153 等边界外的非 Koopman 范式空间重新出题。"
+      ]
+    }
+  }
+}

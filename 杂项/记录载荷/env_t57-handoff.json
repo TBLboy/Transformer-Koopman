@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t57-handoff",
+  "expected_revision": 280,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "P1 输入=力矩；P1-only 主线被 arXiv:2509.17010 占据。delta 2（保无源 lifting）可证伪最小版本未通过：P1 可辨识 PD 惯量 M≻0，但富 EL 模型残差 val RMSE≈0.35（相对力矩std 0.37~0.48，R²≈0.77~0.86）。残差结构分析：滞后1自相关 0.56~0.65（非白噪声），与加速度≈0、与速度弱相关 → 残差是结构化未建模动力学，不能靠噪声分离复活，需更强结构辨识。由此 delta 1（有限数据闭环界）与 delta 3（统一界）也会被同一残差支配而空泛。当前无候选通过硬门槛。建议进入 C 级决策：补采数据 vs 缩小论文范围（P1-only/P2-only 增量）vs 投入更强结构辨识。"
+  }
+}

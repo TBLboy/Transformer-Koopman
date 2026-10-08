@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tX5-handoff",
+  "expected_revision": 387,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "Round-16（GPT 第十六轮 v1.0）完成：**路线级研究 CLOSED（DEC-024）**。**matched oracle（唯一剩余离线控制实验）通过**：同一 plant 下 N=5 Δ_RTI_SP=−1.04%（oracle 0.1635 vs RTI-SP 0.1618）、Δ_RTI_RE=−1.05%；N=8 Δ_RTI_SP=−0.37% → **RTI-SP 正式 PASS**（≪5–8% 门槛）。**关键澄清**：同 plant 下 N=8→N=5 使 exact 与 RTI **同步**退化 ~8–9%（oracle_sched +8.9%/oracle_reencode +9.3%/rti_sp +8.2%）→ 早先 '+16.8%' 系 N/oracle 不匹配假象，非 RTI 近似损失。**Theory Diagnostics 完成**：ε_k median 0.345；d_M(H) 0.120/0.390/0.574/0.928（H=1/5/10/20）；乘积范数 1.046/1.247/1.541/2.304（无收缩）；经验 L_F≈1.45>1；Prop.2 bound≥actual（保守 4.7–18.7×，Thm.1 sanity PASS）；线性化余项 M_F≤0.27（Prop.3 成立）。产出 phase2_round16_matched_oracle_theory_v1.md + phase2_gpt_handoff_v14.md；记录 DEC-024 / PHASE2-GATE16-MATCHED-ORACLE-001 / PHASE2-GATE16-THEORY-DIAG-001 / EV-PHASE2-GATE16-MATCHED-ORACLE-001。**下一步**：(1) 待 GPT 回复 handoff v14 确认最终真机配置与理论封稿；(2) **P2 真机 E1–E5 可开始（用户执行）**——multi-setpoint / circle / figure-eight / unseen / speed shift；真机完整 loop 接入后若 p95 ≳180ms 再开 runtime 优化；(3) 理论侧正式化 Prop.1/2、Thm.1、Prop.3 → 论文理论章节。GOAL-001 门禁仍拒绝（真机结果尚未产生）。"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ30-audit",
+  "expected_revision": 421,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-THEORY-RIGOR-AUDIT-001",
+    "title": "Theory rigor audit: 2 real defects fixed (Prop.3 mean-value, Cor.1 wording), 5 verified citations added; 5 wording/positioning questions for GPT",
+    "status": "complete",
+    "payload": {
+      "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+      "artifact_sha256": "5b465c04d36cecde6dc197e3f289bebbb88e299b43bfe9db8a905a6df908708a",
+      "scope": "Rigorous audit of the theory text (definitions, propositions, theorem, corollary, remarks, assumption, references) - proofs must be genuine and closed, not casually generated.",
+      "audit_verdict_per_result": {
+        "Prop.1 Finite-History Markovization": "proof present and correct (shift + context + transition composition)",
+        "Prop.2 Latent Rollout Error Propagation": "proof present and correct (insert-subtract + triangle inequality + unrolling)",
+        "Thm.1 Finite-Horizon Prediction Error Bound": "proof present and correct given (A1)-(A3); finite-horizon form only (L_F>1)",
+        "Cor.1 Physical-Space Prediction Bound": "proof ADDED; coordinate wording FIXED (current state = LAST n coords of history block, not first n)",
+        "Prop.3 RTI Local Approximation": "proof FIXED: the single-t mean-value form is invalid for vector-valued maps; replaced by the integral Taylor remainder + operator-norm bound; A3 restated in terms of the second-derivative operator norm",
+        "Remark (spectral insufficiency)": "assertion correct; CITATIONS ADDED (Rota-Strang 1960; Daubechies-Lagarias 1992; Jungers 2009)"
+      },
+      "defects_fixed": [
+        "Prop.3 proof: mean-value form -> integral Taylor remainder (rigorous)",
+        "Cor.1: missing proof added + 'first n' -> 'last n coordinates of the history block' wording fix",
+        "Def.2: 'bounded below' -> 'the quantity for which Proposition 2 provides an upper bound'",
+        "Assumption A3: bounded Hessian -> bounded second-derivative operator norm ||D^2 F|| <= M_F"
+      ],
+      "citations_added": [
+        "rota1960joint: G.-C. Rota and G. Strang, Nederl. Akad. Wetensch. Proc. Ser. A 63 (Indag. Math. 22), 379-381, 1960",
+        "daubechies1992sets: I. Daubechies and J. C. Lagarias, Linear Algebra Appl. 161, 227-263, 1992",
+        "jungers2009joint: R. M. Jungers, The Joint Spectral Radius, LNCIS 385, Springer, 2009",
+        "diehl2005realtime: M. Diehl, H. G. Bock, J. P. Schloeder, SIAM J. Control Optim. 43(5), 1714-1736, 2005",
+        "gros2020rti: S. Gros et al., Int. J. Control 93(1), 62-80, 2020"
+      ],
+      "static_checks": {
+        "missing_bibitem_for_cite": "none",
+        "dangling_refs": "none",
+        "env_mismatch": "none",
+        "brace_balance": 0,
+        "dollar_parity": "even",
+        "proof_blocks": "5/5",
+        "cite_keys_used": 39,
+        "bibitems": 50
+      },
+      "open_questions_for_gpt": [
+        "Q1 relation between epsilon (Thm.1) and epsilon_k (Prop.2): distinct quantities; table reports only epsilon_k. Add a short remark?",
+        "Q2 should the definition of F* (re-encode) vs F_Theta (propagate) be made explicit so readers see that (A1)'s epsilon absorbs the encode/propagate gap?",
+        "Q3 Def.1 (HCLTK) sits in Methodology while GPT's frozen chain writes Prop.1 -> Def.1 -> Prop.2; move it?",
+        "Q4 assumption numbering: single block (A1)(A2)(A3) vs separate Assumption 1/2/3?",
+        "Q5 should Prop.2 state explicitly that z_hat is the propagated latent z^P?"
+      ],
+      "reports": [
+        ".project-log/docs/phase2_theory_rigor_audit_v1.md",
+        "Desktop/GPT讨论_阶段③_第十八轮后_理论严谨性审计与修正_2026-10-06.md"
+      ],
+      "not_verified": "no LaTeX toolchain -> not compiled; static structural checks only."
+    }
+  }
+}

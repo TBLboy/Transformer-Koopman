@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ2-task006",
+  "expected_revision": 407,
+  "action": "task.create",
+  "payload": {
+    "id": "TASK-006",
+    "goal_id": "GOAL-001",
+    "title": "论文新版本撰写（论文/新版本/）：理论部分优先，IEEEtran 模板（strict）",
+    "extensions": {
+      "implementer": "vibe-main",
+      "owner": "user",
+      "risk_class": "strict"
+    }
+  }
+}

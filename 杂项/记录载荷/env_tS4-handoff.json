@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tS4-handoff",
+  "expected_revision": 358,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "第十一轮（GPT 深度重规划 v1.1，A+ = Response-Structured History-Conditioned Transformer-Koopman）验证完成。① A/B/AB 结构消融（P2 现有数据，加法 context 基线上叠加低秩调制）：B-only 大幅优于 A-only（H=20：−67% vs −42%，相对 base），证实 GPT 修正——history 主要调制控制通道 B(c) 而非 A；AB 仅比 B-only 好 7.6–9.4%（灰区）。② matched-state history test：相同 x、相似 u、不同 history 的下一步响应差异是相似 history 的 3.24×（n=199）——强动机。③ prior-art：2606.23957/2505.00354 真实；MamKO(ICLR2025) 未在 arXiv 检索到；其余期刊 DOI 无法独立核实；GPT 文献图方向正确。产出 phase2_gpt_round11_routeAplus_validation_v1.md；记录 PHASE2-GPT-ROUND11-APLUS-001 / PHASE2-APLUS-EXPERIMENTS-001 / EV-PHASE2-GPT-ROUND11-APLUS-001。结构推荐：优先 B-only（≈AB 的 90%，且更简洁、更易与 generic 时变 Koopman 划界）；若真实 pipeline 上 AB 稳定 >8–10% 再切 AB。待用户裁定（延续前轮）：(1) 更新 DEC-021 解读（接受工程型 novelty 定位）；(2) 阶段③范围（重采 P2 + 真机闭环）与代码/论文冻结、DEC-022 的边界；(3) B-only vs AB 结构终选。下一步按 GPT §60：在**真实 latent pipeline** 上跑 fixed/A-only/B-only/AB 结构 gate + history-shuffle + modulation-nullification + matched-state，再决定是否进入阶段③。GOAL-001 门禁仍拒绝；代码/配置/论文冻结。"
+  }
+}

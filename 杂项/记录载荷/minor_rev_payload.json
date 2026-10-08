@@ -1,0 +1,27 @@
+{
+  "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+  "artifact_sha256": "c8a21abb91ee7ffbd0c78a23846b38f3fff3df5b595c123a234fb55d0a017c97",
+  "recompiled_pdf": "Transformer-Koopman/论文/新版本/build/Main.pdf",
+  "recompiled_pdf_sha256": "aa411ef55a5826872ff43560ec8f1e0e9e605a55441e04901c32b76e70361753",
+  "recompiled_pdf_bytes": 303433,
+  "pages": 12,
+  "review": "Third external theory review (Minor Revision). Its 'previous errors fixed' table re-confirms that the second-version review was a misreading (it claims epsilon_k / eq.(53) / eq.(51)-numbering were 'fixed', but none of those were ever changed by the round-19/T1-T4 edits).",
+  "must_fix_applied": {
+    "1_context_defined": "Definition 2 now defines the scheduled context c_{k+i}=C_phi(Xhat_{k+i}) re-computed from the predictor's own rollout.",
+    "2_assumption2_prereqs": "Assumption 2 now states that the bound holds whenever C_phi, g, and c->A(c) are Lipschitz on Omega and the lifted state is bounded there (standing regularity conditions), instead of the informal 'inherits' phrasing.",
+    "3_def3_positioning": "Section V-C now states Definition 3 is an algorithmic design rather than a theoretical result; no statement below uses L_R and no bound is claimed from minimizing it.",
+    "4_assumption1_trajectory": "Assumption 1 now additionally requires that the reference and predicted trajectories remain in Omega over the horizon, used explicitly in Theorem 1.",
+    "5_remove_redundant_alias": "Removed the redundant 'zhat := z^P' alias in Proposition 2 (it was declared and never used; the training-side binding remains in Section IV-B)."
+  },
+  "suggested_applied": {
+    "thm1_epsilon_note": "Theorem 1 now states explicitly that epsilon is the uniform model-mismatch bound of Assumption 1, not the trajectory-wise defect epsilon_k.",
+    "sec4c_explicit": "Section IV-C now writes ||w_k||_2 = epsilon_k explicitly and notes both are at the encoder-consistent latent."
+  },
+  "not_applied": [
+    "2x2 counterexample for Remark 2 (optional)",
+    "abstract wording 'finite-horizon prediction consistency only' (optional)",
+    "tighter empirical bound for Corollary 1 (optional)"
+  ],
+  "compile": "Tectonic 0.17.0; 12 pages; only remaining warning is the pre-existing 0.87pt overfull at the Corollary 1 equation; no new overfull, no undefined macros.",
+  "verdict": "Applied; values and theorem statements unchanged. Theory package now at 'Minor Revision addressed' level."
+}

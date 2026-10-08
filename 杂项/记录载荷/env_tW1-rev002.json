@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "command_id": "tW1-rev002",
+  "expected_revision": 405,
+  "action": "review.record",
+  "payload": {
+    "id": "REV-THEORY-002",
+    "task_id": "TASK-005",
+    "reviewer": "verification-reviewer",
+    "verdict": "go",
+    "scope": {
+      "artifact": ".project-log/docs/paper_theory_section_v2.md",
+      "type": "targeted re-verification after REV-THEORY-001 (conditional)",
+      "high_items_closed": [
+        "P mismatch",
+        "bound/actual metric mismatch",
+        "Cor.1 L_F object",
+        "Prop.3 diagnostic"
+      ],
+      "verdict_detail": "PASS with minor fixes; all 4 HIGH closed and independently re-computed; no mathematical claim broken",
+      "minor_fixes_applied": [
+        "N1 bind eps q90/q99 to source",
+        "N2 stop calling the P=8 diagnostic model the deployment predictor",
+        "N3 relabel the oracle-vs-RTI row"
+      ],
+      "recommendation": "raise REV-THEORY-001 to go for the theory-section content"
+    },
+    "evidence_refs": [
+      "EV-PHASE2-THEORY-SECTION-003"
+    ]
+  }
+}

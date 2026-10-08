@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ1-dec027",
+  "expected_revision": 406,
+  "action": "record.create",
+  "payload": {
+    "kind": "decision",
+    "id": "DEC-027",
+    "title": "论文写作位置与模板：论文/新版本 + 论文/草稿 的 IEEEtran 模板",
+    "status": "active",
+    "payload": {
+      "level": "B",
+      "basis": "用户明确指令（2026-10-06）",
+      "decision": "后续论文写作统一在 `Transformer-Koopman/论文/新版本/` 进行；模板沿用 `Transformer-Koopman/论文/草稿/` 的 IEEEtran 模板（IEEEtran.cls）。已将必要资源复制到新版本：IEEEtran.cls、pictures/（Figure1-3.pdf）、bibtex/，并以 Main34.tex 为基线生成 Main.tex。",
+      "consequence": "新版本 Main.tex 已从旧路线（固定 A + hierarchical LQR + UUB）改写为新路线（history-conditioned low-rank A(c) + rollout-aware scheduled training + RTI-SP MPC + finite-horizon theory）。旧草稿保留不动。"
+    }
+  }
+}

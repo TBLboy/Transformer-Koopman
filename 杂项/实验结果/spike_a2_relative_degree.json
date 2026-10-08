@@ -1,0 +1,132 @@
+{
+  "output_map": "C = [I2, 0] (measured light point)",
+  "input_block_on_output": [
+    [
+      -0.016017859801650047,
+      0.0011274112621322274
+    ],
+    [
+      0.0010507184779271483,
+      0.018142133951187134
+    ]
+  ],
+  "input_block_on_output_rank": 2,
+  "input_block_on_output_singular_values": [
+    0.018177511516865467,
+    0.01605185339629654
+  ],
+  "first_full_rank_relative_degree": 1,
+  "relative_degree_steps": [
+    {
+      "r": 1,
+      "matrix": "C A^0 B",
+      "rank": 2,
+      "singular_values": [
+        0.018177511516865467,
+        0.01605185339629654
+      ],
+      "condition_number": 1.1324244663896168,
+      "full_rank": true
+    },
+    {
+      "r": 2,
+      "matrix": "C A^1 B",
+      "rank": 2,
+      "singular_values": [
+        0.03300440147219993,
+        0.02757140490297666
+      ],
+      "condition_number": 1.1970518581966316,
+      "full_rank": true
+    },
+    {
+      "r": 3,
+      "matrix": "C A^2 B",
+      "rank": 2,
+      "singular_values": [
+        0.04279770957090727,
+        0.0325328175332959
+      ],
+      "condition_number": 1.3155242249493364,
+      "full_rank": true
+    },
+    {
+      "r": 4,
+      "matrix": "C A^3 B",
+      "rank": 2,
+      "singular_values": [
+        0.048734133152673796,
+        0.02804926799909255
+      ],
+      "condition_number": 1.7374475923667756,
+      "full_rank": true
+    },
+    {
+      "r": 5,
+      "matrix": "C A^4 B",
+      "rank": 2,
+      "singular_values": [
+        0.05289756945302461,
+        0.009177642345686013
+      ],
+      "condition_number": 5.763742741390367,
+      "full_rank": true
+    },
+    {
+      "r": 6,
+      "matrix": "C A^5 B",
+      "rank": 2,
+      "singular_values": [
+        0.05818759907786848,
+        0.03287273321501474
+      ],
+      "condition_number": 1.7700870413565453,
+      "full_rank": true
+    },
+    {
+      "r": 7,
+      "matrix": "C A^6 B",
+      "rank": 2,
+      "singular_values": [
+        0.12707310530404095,
+        0.04969472274294112
+      ],
+      "condition_number": 2.557074439500541,
+      "full_rank": true
+    },
+    {
+      "r": 8,
+      "matrix": "C A^7 B",
+      "rank": 2,
+      "singular_values": [
+        0.2717100516608905,
+        0.047688990421613404
+      ],
+      "condition_number": 5.697542540924649,
+      "full_rank": true
+    },
+    {
+      "r": 9,
+      "matrix": "C A^8 B",
+      "rank": 2,
+      "singular_values": [
+        0.47458964045318786,
+        0.03331062930350475
+      ],
+      "condition_number": 14.247393410945085,
+      "full_rank": true
+    },
+    {
+      "r": 10,
+      "matrix": "C A^9 B",
+      "rank": 2,
+      "singular_values": [
+        0.7182164252911791,
+        0.001020223406336935
+      ],
+      "condition_number": 703.9795605845802,
+      "full_rank": true
+    }
+  ],
+  "warning": "Relative degree of the exported linear checkpoint; not evidence that the learned latent is physically valid or that a nonlinear relative degree is preserved."
+}

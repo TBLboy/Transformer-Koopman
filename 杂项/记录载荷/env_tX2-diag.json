@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "command_id": "tX2-diag",
+  "expected_revision": 384,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE16-THEORY-DIAG-001",
+    "title": "Theory Diagnostics：ε_k/d_M/乘积范数/经验 L_F/bound/线性化余项，全部与 Prop.1/2、Thm.1、Prop.3 一致",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_round16_matched_oracle_theory_v1.md",
+      "document_sha256": "5ab032c7306b0e23f096485c4fa04824ecd4b9c8198b69fa650d0450adce5bef",
+      "model": "A_openloop r=2 scheduled propagation (frozen deployment predictor)",
+      "eps_k": {
+        "median": 0.345,
+        "q90": 0.516,
+        "q95": 0.567,
+        "q99": 0.655,
+        "max": 0.8
+      },
+      "dM": {
+        "H1": 0.12,
+        "H5": 0.39,
+        "H10": 0.574,
+        "H20": 0.928
+      },
+      "prod_norm": {
+        "H1": 1.046,
+        "H5": 1.247,
+        "H10": 1.541,
+        "H20": 2.304
+      },
+      "dF_dxi": {
+        "median": 1.445,
+        "q90": 1.448,
+        "q95": 1.45,
+        "q99": 1.451,
+        "max": 1.452
+      },
+      "bound_over_actual": {
+        "H1": 4.71,
+        "H5": 7.95,
+        "H10": 12.1,
+        "H20": 18.7
+      },
+      "lin_remainder_M_F": {
+        "1e-3": 0.272,
+        "1e-2": 0.015
+      },
+      "rti_runtime_ms": {
+        "p50": 78,
+        "p95": 120
+      },
+      "interpretation": "product norm grows (no contraction) matching dM growth -> §14; empirical L_F~1.45>1 -> Thm.1 finite-horizon applies; bound>=actual (Thm.1 sanity PASS); small linearization remainder (Prop.3); nonzero eps_k confirms train/deploy distribution gap (§15)."
+    }
+  }
+}

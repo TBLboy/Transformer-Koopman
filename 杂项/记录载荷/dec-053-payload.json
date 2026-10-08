@@ -1,0 +1,10 @@
+{
+  "authority": "C",
+  "user_approval": "approved",
+  "date": "2026-10-06",
+  "context": "在开发机上运行 PC 端（milk-milk-go/pc）以继续开发。本机默认 python 为 2.7.14，唯一 conda 为 4.4.10（2017 年），项目需 Python 3.11（安装包内置 python311）。已安装的正式版以 Windows 服务 MilkWeighBackend 开机自启，占用 8011。",
+  "decision": "使用 uv 在 D:\\Project\\辅料称重防错系统\\.venv 创建 CPython 3.11.15 环境并安装 pc/server/requirements.txt；开发版后端固定监听 8011（与 vite 代理/Android/安装包一致）；停用并禁用自启服务 MilkWeighBackend 以释放 8011；演示主数据通过 MILK_DEMO_ASSETS_DIR 指向 pc/data/uploads 灌入。",
+  "rationale": "旧 conda 4.4.10 无法可靠创建 python=3.11；uv 已装且快速。8011 是项目统一端口，README 的 8000 已过时。pc/server/demo_assets 不存在，演示图实际位于 pc/data/uploads。",
+  "consequences": "正式版服务已停止且不再开机自启（可手动恢复：Set-Service MilkWeighBackend -StartupType Automatic; Start-Service MilkWeighBackend）。后端测试 143 通过 / 6 失败，其中 5 个 test_restore 为 Windows 平台相关，待排查。",
+  "alternatives": "保留服务并用其它端口（需改 vite.config.ts 代理）；继续用旧 conda（不可行）。"
+}

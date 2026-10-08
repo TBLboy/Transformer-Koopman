@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "command_id": "tY1-task005",
+  "expected_revision": 389,
+  "action": "task.create",
+  "payload": {
+    "id": "TASK-005",
+    "goal_id": "GOAL-001",
+    "title": "论文理论章节撰写：Prop.1/2、Thm.1、Cor.1、Prop.3 正式化与成稿（strict）",
+    "extensions": {
+      "implementer": "vibe-main",
+      "owner": "user",
+      "risk_class": "strict"
+    }
+  }
+}

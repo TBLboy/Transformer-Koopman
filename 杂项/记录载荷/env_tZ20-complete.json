@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ20-complete",
+  "expected_revision": 417,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-THEORY-COMPLETENESS-001",
+    "title": "Theory package completeness audit: 6 frozen results all have proofs; mechanism figure added; Experiments section still empty",
+    "status": "complete",
+    "payload": {
+      "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+      "artifact_sha256": "39f1e5f06bd6c0ea55d6892fab3fbea4df0466eb72a2cfa8935642c2c52ee6f8",
+      "frozen_structure_check": {
+        "Prop.1 Finite-History Markovization": "statement + proof (present)",
+        "Def.1 HCLTK (r=2)": "present, in Methodology section (not inside the theory section)",
+        "Prop.2 Latent Rollout Error Propagation": "statement + proof (present)",
+        "Thm.1 Finite-Horizon Prediction Error Bound": "statement + proof (present)",
+        "Cor.1 Physical-Space Prediction Bound": "statement + proof (proof ADDED this round)",
+        "Prop.3 RTI Local Approximation": "statement + proof (proof ADDED this round)",
+        "Def.2 Latent Rollout Inconsistency": "present",
+        "Def.3 Rollout-Aware Scheduled Objective": "present",
+        "Remark (decoded-feedback only)": "present",
+        "Remark (spectral insufficiency)": "present",
+        "Assumption A1-A3": "present",
+        "Numerical validation table": "present (Tab. diagnostics)",
+        "Mechanism figure": "ADDED this round (Fig. fig:mechanism)"
+      },
+      "changes_this_round": [
+        "generated the mechanism figure from gate16_diag_fix.json (normalized ‖ΠA‖₂ / d_M(H) / e_x(H) vs H=1,5,10,20) -> pictures/Figure_mechanism.pdf (+png)",
+        "inserted \\begin{figure} with label fig:mechanism into §Numerical Validation, with the 'consistent with ... not causal proof' wording required by GPT §9, and referenced it in the observations paragraph",
+        "added the missing proof block for Proposition 3 (mean-value form + A3)",
+        "added the missing proof block for Corollary 1 and corrected its coordinate wording (the current physical state is the LAST n coordinates of the history block, not the first n)",
+        "static re-check: env pairing ok, no dangling refs, braces balanced, dollars even, 5/5 proof blocks"
+      ],
+      "proof_count": {
+        "begin_proof": 5,
+        "end_proof": 5
+      },
+      "open_gaps": [
+        "Experiments section is empty -> Section~\\ref{sec:experiments} cross-references currently point to an empty section (user deferred this until the theory is fully confirmed).",
+        "Def.1 sits in the Methodology section while GPT's frozen chain lists Prop.1 -> Def.1 -> Prop.2; confirm with GPT whether Def.1 must move into the theory section or an explicit forward reference suffices.",
+        "Figures 1-3 not yet adapted to the new architecture (user deferred).",
+        "Chinese/English version conversion not started (GPT §16).",
+        "Not compiled: no LaTeX toolchain in this environment."
+      ]
+    }
+  }
+}

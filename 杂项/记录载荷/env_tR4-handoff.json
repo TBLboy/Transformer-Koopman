@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tR4-handoff",
+  "expected_revision": 353,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "第十轮（GPT 务实转向 v1.0）验证：对首选路线 A（History-Conditioned Low-Rank Koopman + Response-Corrected MPC）做核心建模 gate（A-Gate 1）。在现有 P2 数据上用观测空间代理做自洽多步 rollout：noctx `(u,x)` / 加法 context `(u,x,φ)` / 低秩算子调制 `J(φ)u+W[x;φ]+b`(r=3)。结果：mult vs noctx 在 H=1/5/10/20 分别改善 79%/64%/47%/38%；mult vs add 改善 33%/37%/52%/59%（且加法式在 H≥10 开环发散，调制式全程稳定）。→ A-Gate 1（门槛 10–15%）大幅通过，路线 A 的核心假设（history 应调制算子而非只构造 state）在现有数据上成立。prior-art 抽查：2606.23957（AFT-Koopman，latent memory + dynamic re-encoding）真实→路线 C 核心被占；2505.00354（Deep Koopman MPC 软体机器人真机）真实→占位。GPT 文献图准确。产出 phase2_gpt_round10_routeA_validation_v1.md；记录 PHASE2-GPT-ROUND10-ROUTEA-001 / PHASE2-ROUNDA-EXPERIMENTS-001 / EV-PHASE2-ROUND10-ROUTEA-001。待用户裁定的 C 级问题：(1) 第十轮主动下调 novelty 门槛，与 DEC-021（控制器创新为首要）冲突，需更新其解读；(2) 路线 A 依赖重采 P2 数据 + 真机闭环（阶段③），与代码/论文冻结及 DEC-022（禁止新增观测——重采相同观测非新传感器，但仍是显著范围变化）的边界需澄清；(3) 本验证为观测空间代理，需阶段③用真实 pipeline 复现。初步判决：技术上可行，二区/三区工程论文可期；是否推进取决于用户拍板。GOAL-001 门禁仍拒绝；代码/配置/论文冻结。"
+  }
+}

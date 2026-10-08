@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "command_id": "tW0-gate14d",
+  "expected_revision": 377,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE14D-RTI-001",
+    "title": "Gate-14D：RTI-SP N=5 p95=78ms（Strong GO），RTI-RE 128ms（GO）；1 次迭代足够",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_gate14d_v1.md",
+      "document_sha256": "f423da08dc20f6b7067b278b0659125b1596fd855d1248d65a95454f12615718",
+      "scope": "Gate-14D: RTI-SQP real-time MPC, RTI-RE vs RTI-SP, N-sensitivity, iteration count",
+      "N8_iter1": {
+        "RTI_RE": {
+          "rmse": 0.1438,
+          "degradation_vs_oracle_pct": 5.8,
+          "total_p50_ms": 292,
+          "total_p95_ms": 347
+        },
+        "RTI_SP": {
+          "rmse": 0.1498,
+          "degradation_vs_oracle_pct": 10.2,
+          "total_p50_ms": 179,
+          "total_p95_ms": 261
+        }
+      },
+      "N5_iter1": {
+        "RTI_RE": {
+          "rmse": 0.1528,
+          "total_p50_ms": 117,
+          "total_p95_ms": 128
+        },
+        "RTI_SP": {
+          "rmse": 0.1588,
+          "total_p50_ms": 69,
+          "total_p95_ms": 78
+        }
+      },
+      "N5_iter2": {
+        "RTI_RE": {
+          "rmse": 0.1554,
+          "total_p95_ms": 651
+        },
+        "RTI_SP": {
+          "rmse": 0.1624,
+          "total_p95_ms": 349
+        },
+        "verdict": "no accuracy gain, 2x slower -> reject"
+      },
+      "runtime_gate": {
+        "RTI_SP_N5": "Strong GO (<100ms, 78ms)",
+        "RTI_RE_N5": "GO (100-150ms, 128ms)",
+        "both_N8": "NO-GO (>=180ms)"
+      },
+      "perf_gate": {
+        "RTI_SP_vs_oracle": "FAIL (+10.2% N8 / +16.8% N5 vs 5-8% gate)",
+        "RTI_RE_vs_oracle_N8": "PASS (+5.8%)",
+        "caveat": "oracle ref is N=8; N=5 oracle would be worse -> N=5 degradation overestimated"
+      },
+      "verdict": "Conditional GO: runtime passes (RTI-SP N=5 78ms); accuracy borderline (proxy plant-limited + N-mismatched oracle). RTI-SP ~1.6x faster than RTI-RE. N is the decisive knob.",
+      "open_for_gpt": "accept RTI-SP N=5 1-iter for hardware?; re-measure N=5 matched oracle?; optimize rollout impl?; proceed to P2 hardware?"
+    }
+  }
+}

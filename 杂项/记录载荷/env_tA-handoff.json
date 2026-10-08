@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tA-handoff",
+  "expected_revision": 305,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "已推进 GPT 第二轮 N1–N6 报告：完成 L1/L2 prior-art 对拍 + 负面扫描 + 两组廉价证伪实验，产出 phase2_gpt_n_routes_validation_v1.md 与独立交接稿 phase2_gpt_handoff_v2.md。结论：N1 部分可行但概念被 2603.27677（控制等价最优性/Hamiltonian 结构）+ 经典闭环降维占；N2 换名为 bisimulation/闭环降维且对静态反馈平凡；N3 需与反馈线性化划界；N4 在 P1 退化（r_n≈0）；N5 未验证；N6 被 Koopman 反馈线性化占。实验：P2 不可达缺陷 97% 落在 ker(K)（一步 policy-null），但 ker(K) 非 A-不变（开环 t=3 敏感度>1），闭环下有界；P1 残差 100% 在 im(B)。残余：N1（含可证 Γ_H）> N3。下一步：等待 GPT 依据交接稿 v2 返回第三轮机制级路线，返回后按同法验证。GOAL-001 门禁仍拒绝完成；DEC-018 未满足；代码/配置/论文冻结。"
+  }
+}

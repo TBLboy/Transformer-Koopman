@@ -1,0 +1,34 @@
+{
+  "compiler": "Tectonic 0.17.0 (x86_64-pc-windows-msvc)",
+  "compiler_path": "C:\\Users\\12187\\AppData\\Local\\Temp\\opencode\\tectonic\\tectonic.exe",
+  "command": "tectonic --keep-logs --outdir build Main.tex (workdir=Transformer-Koopman/论文/新版本)",
+  "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+  "artifact_sha256": "d05220a24ce43733f0fefabf12e1f9ec80954532a2a11c6ee9b341762d13836b",
+  "output_pdf": "Transformer-Koopman/论文/新版本/build/Main.pdf",
+  "output_pdf_sha256": "bbfe2cd701f78a89b25ac4aee7d1600dc683d4935ddc90a8913b2fee970e71cc",
+  "pages": 12,
+  "pdf_bytes": 301037,
+  "resolves_leftover": "round-20 leftover (b): previously 'no LaTeX toolchain locally, uncompiled'",
+  "compile_fixes": [
+    "added undefined math macros to preamble: \\newcommand{\\vc}{\\mathbf{c}}, \\mV, \\mS",
+    "Prop.2 proof -> align* (3 lines) to remove overfull hbox",
+    "Thm.1 proof -> align* (4 lines) to remove overfull hbox",
+    "training/deployment distribution equation -> gathered (2 lines)",
+    "augmented-state equation -> gathered (2 lines)",
+    "Assumption 2 quantifier moved out of the equation body"
+  ],
+  "remaining_warnings": {
+    "overfull": "Main.tex:831 Overfull 0.86623pt (Cor.1 eq, visually negligible)",
+    "underfull": "several underfull hboxes (cosmetic)",
+    "fonts": "TU/ptm/* shapes undefined -> Tectonic substitutes; final IEEE submission should use the official IEEE template / full TeX Live"
+  },
+  "static_checks": {
+    "bibitems": 50,
+    "cite_keys_used": 39,
+    "dangling_refs": "none",
+    "env_mismatch": "none",
+    "proof_blocks": "5/5"
+  },
+  "verdict": "PASS (typesetting QA): 12-page PDF built cleanly; theory section + diagnostics table render correctly; frozen theory text unchanged",
+  "no_content_change": true
+}

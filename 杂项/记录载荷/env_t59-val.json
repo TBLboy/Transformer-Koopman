@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "command_id": "t59-val",
+  "expected_revision": 284,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-ROUTE-VALIDATION-001",
+    "title": "GPT R1-R18 逐条验证：R1 部分可行、R2 高危、R3 需补理论、R4-R18 多为换名",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_route_validation_v1.md",
+      "document_sha256": "009c820048c5db414fbe6f5042437c3384a453878fec40877ec6c5703a7b327c",
+      "scope": "validate GPT routes R1-R18 + combos; verification and feedback only",
+      "verdicts": {
+        "R1": "partially feasible; narrow real delta = unreachable residual as representation-learning loss + multi-step reachable alignment; precedents cover only feedforward/certificate use",
+        "R2": "not feasible as main theorem (high risk); LQR covariant similarity-invariance known since 1984; fixing Q = choosing a gauge",
+        "R3": "partially feasible; needs control-oriented theorem; overlaps DEKC arXiv:2506.08319 and discrepancy modeling arXiv:2203.05164",
+        "R4": "renaming (SPC/DeePC; arXiv:2601.11901 condensed multi-step EDMD)",
+        "R5": "partial renaming (actuated/transverse; P2 kernel not excited -> A9 dead)",
+        "R6": "renaming (Koopman Gramian balanced truncation arXiv:1709.08712)",
+        "R7": "partial renaming (LQG balanced truncation Jonckheere-Silverman 1983)",
+        "R9": "partial renaming; residual = coordinate-invariant control-relevant metric",
+        "R10": "auxiliary only",
+        "R13": "renaming (Markov realization Ho-Kalman; arXiv:2602.14537 N-step predictability <-> CAP)",
+        "R14": "partial renaming; residual = new computable Koopman-specific control-relevant error metric",
+        "R15": "renaming (reference governor; project I2 already killed)",
+        "R16": "partial renaming (BCPO arXiv:2507.19437 observation vs control sufficiency)",
+        "R17": "narrative layer only",
+        "R18": "renaming as independent contribution (invariance proximity arXiv:2311.13033; SafEDMD Cor 3.2)"
+      },
+      "combo_verdicts": {
+        "Combo A (R1+R15+R18)": "mixed; only R1 has a real delta",
+        "Combo B (R2+R9+R4)": "not recommended (R2 high risk + R4 renaming)",
+        "Combo C (R3+R12+R18)": "P1-fit but needs R3 control theorem",
+        "Combo D (R4+R13+R2)": "not recommended"
+      },
+      "best_remaining_space": [
+        "R1 delta: unreachable residual as representation-learning loss + multi-step reachable-subspace alignment",
+        "coordinate-invariant control-relevant closed-loop bound (intersection of R7/R9/R14/R18)"
+      ],
+      "evidence_level": "L2 (abstract + fragments); L3 full-text comparison NOT done",
+      "next": "L3 full-text prior-art comparison prioritized at arXiv:2601.11901, 2602.14537, 2311.13033, 2307.15368, 1709.08712, 2209.08637, 2402.03145, 2507.19437; then decide route vs C-level direction"
+    }
+  }
+}

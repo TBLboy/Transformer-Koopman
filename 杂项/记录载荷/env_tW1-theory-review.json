@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "command_id": "tW1-theory-review",
+  "expected_revision": 394,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-THEORY-SECTION-REVIEW-001",
+    "title": "理论章节 v1 独立复核：数学正确，证据绑定有 4 项 HIGH 问题，已全部修订入 v2",
+    "status": "complete",
+    "payload": {
+      "artifact": ".project-log/docs/paper_theory_section_v1.md",
+      "reviewer": "verification-reviewer",
+      "overall": "pass-with-fixes",
+      "verdict_math": "core mathematics (Prop.1, Prop.2, Thm.1, Cor.1, Prop.3, Rem.1) correct and internally consistent; proofs valid; hypotheses sufficient at finite-horizon scope; no global-stability/manifold overclaim",
+      "failures": "evidence binding and interpretation",
+      "HIGH": [
+        "P mismatch: doc said P=4, diagnostics JSON says P=8 (resolved: platform2.yaml history_length=8 is the experiment config; deployed ckpt is P=4/n_layers=3 from old experiment_006 - separate ALN-type issue)",
+        "bound/actual metric mismatch: absolute epsilon vs normalized d_M (fixed: like-for-like absolute comparison 1.65-6.57x)",
+        "Cor.1 used per-step product constant (~1.045) instead of augmented-map L_F=1.445 (fixed: 53-48374x, reported as extremely loose)",
+        "Prop.3 diagnostic invalid: remainder noise-floor-limited at delta=1e-3; quoted M_F violated (fixed: delta^2 scaling verified, M_F~0.007)"
+      ],
+      "MEDIUM": [
+        "S3.13 RTI row category error (fixed: Prop.3 NOT validated by oracle comparison)",
+        "F* not defined on augmented space (fixed: convention stated)",
+        "empirical vs certified not disclosed (fixed: assumption A4 + S3.11 item 4)"
+      ],
+      "LOW": [
+        "define epsilon_0 (fixed)",
+        "remove/define w_k (fixed: removed)",
+        "mean-value form (fixed)",
+        "scope Prop.1 (fixed)"
+      ],
+      "fixes_applied_in": ".project-log/docs/paper_theory_section_v2.md"
+    }
+  }
+}

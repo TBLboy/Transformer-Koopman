@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "command_id": "tZA-zexp",
+  "expected_revision": 345,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-Z-EXPERIMENTS-001",
+    "title": "Z0/Z1/Z2 便宜证伪：常数增益 minimax 确认；ERCRC 尾部更差；几何中位聚合无收益",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_z_routes_validation_v1.md",
+      "document_sha256": "ba0b67fd967be837657cead72fcfb3cc3ddd8da5a001adc85743c4ffbbe88b0c",
+      "scripts": [
+        "V_Z1.py",
+        "V_Z2.py"
+      ],
+      "Z0_numerical": {
+        "P2": {
+          "kappa": 12.22,
+          "const_adv_N6": 0.3738,
+          "cheb_adv_N6": 33.41,
+          "theory": 0.3738
+        },
+        "P1": {
+          "kappa": 114.25,
+          "const_adv_N6": 0.9003,
+          "cheb_adv_N6": 335.21,
+          "theory": 0.9003
+        }
+      },
+      "Z1_errc": {
+        "P2_const_q95": 0.0266,
+        "P2_errc_q95": 0.1923,
+        "P2_errc_mem_max": 281.2,
+        "P1_const_q95": 0.2041,
+        "P1_errc_q95": 0.4753
+      },
+      "Z2_geomed": {
+        "P2_single_q95": 408.93,
+        "P2_geomed_q95": 396.33,
+        "P1_single_q95": 6.056,
+        "P1_geomed_q95": 5.908
+      },
+      "interpretation": "Z1 and Z2 provide no tail-robustness benefit on actual response Jacobians; Z0 confirms best constant gain is minimax under adversarial time-varying sector."
+    }
+  }
+}

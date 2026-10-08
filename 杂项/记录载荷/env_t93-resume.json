@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t93-resume",
+  "expected_revision": 315,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "已推进 GPT 第四轮 Q0–Q6 报告：完成机制级 prior-art 对拍 + 廉价证伪实验 T4-1…T4-6，产出 phase2_gpt_q_routes_validation_v1.md 与独立交接稿 phase2_gpt_handoff_v4.md。判决：Q0（线性 prefeedback 不变性）精确成立但属平凡线性代数恒等式，非贡献；Q1/Q6 在 P2 被杀死（连全秩非线性漂移仅降 0.25%、残差秩不变；Q1 唯一退路 lifting+feedback 联合重训=被拒原路线且被 Fan 2401.08153 占）；Q2 被杀死（残差块 Hankel 秩 99%=97/100，无低阶动态，D7 低秩仅瞬时协方差）；Q3 弱（ρ_E 最优 0.9675、闭环 ρ=1.0，经典 eigenstructure assignment）；Q4 层级坍缩；Q5 子空间可复现但动态全阶+不可反馈重塑；Q6 依赖 Q1–Q3 全败。P1：非线性 prefeedback 降 RMSE 31% 但残差仍 100% 在 im(B)、秩 3（=标准输入通道辨识）。新增 prior-art 边界：Fan 2401.08153（smooth prefeedback + generalized feedback linearizability）、Strässer 2509.02839（Annual Reviews in Control 2026，error bounds→closed-loop guarantees 综述）、2510.05359、2606.10344。跨四轮元结论：R(18)/N(6)/M(12)/Q(7) 无候选存活；P2 闭合误差小、不可反馈后验重塑、且全阶动态；P1 残差恒在 im(B)。同数据+同门禁下边际收益趋零。下一步：向用户呈报，并就阶段② 目标本身做 C 级决策（A 收紧为严谨基线论文 / B 放宽门禁 / C 更换数据-平台 / D 更换建模范式；团队倾向 A 或 D）。等待用户裁决；未裁决前不出新构思。GOAL-001 门禁仍拒绝；DEC-018 未满足；代码/配置/论文冻结。"
+  }
+}

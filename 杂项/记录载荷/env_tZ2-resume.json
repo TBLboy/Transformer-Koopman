@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ2-resume",
+  "expected_revision": 393,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-005",
+    "next_action": "TASK-005（论文理论章节撰写，strict）v1 完成。产出 `.project-log/docs/paper_theory_section_v1.md`：Def.1（history-conditioned low-rank Koopman 族, r=2）、Prop.1（有限历史 Markov 化, augmented state ξ）、Def.2（latent rollout 不一致 d_M）、Prop.2（误差传播界）、Rem.1（谱稳定不足：ρ<1 ⇏ 时变乘积收缩）、Def.3（rollout-aware 训练定位）、Thm.1（有限时域误差界，不要求 L_F<1）、Cor.1（物理空间误差, L_C=1）、Prop.3（RTI 局部二阶余项）、§3.11 范围/非目标、§3.12/§3.12.1 数值验证。数值：ε_k median 0.345；d_M 0.120/0.390/0.574/0.928；乘积范数 1.046/1.247/1.541/2.304；经验 L_F≈1.45；Thm.1 bound 保守 4.7–18.7×；Cor.1 物理 bound 保守 52–413×（已如实标注 valid-but-loose）；物理 RMSE 0.0108/0.0222/0.0297/0.0419。**诚实边界**：仅有限时域；不含全局稳定性/公共 Lyapunov/递归可行性；Prop.1 仅对预测器内部 rollout 成立；Prop.3 为经典 Taylor 余项。记录 PHASE2-THEORY-SECTION-001 / EV-PHASE2-THEORY-SECTION-001。**下一步**：(1) 独立复核（verification-reviewer，后台进行中）→ 按意见修订至 v2；(2) 修订后交 GPT 讨论理论章节；(3) 真机实验推迟（DEC-025）。"
+  }
+}

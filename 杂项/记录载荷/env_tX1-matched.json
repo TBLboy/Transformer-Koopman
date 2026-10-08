@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "command_id": "tX1-matched",
+  "expected_revision": 383,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE16-MATCHED-ORACLE-001",
+    "title": "N-matched oracle：Δ_RTI_SP=-1.04% → RTI-SP 正式 PASS；退化主因是 horizon 非 RTI 近似",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_round16_matched_oracle_theory_v1.md",
+      "document_sha256": "5ab032c7306b0e23f096485c4fa04824ecd4b9c8198b69fa650d0450adce5bef",
+      "scope": "N-matched exact oracle vs RTI (same plant), N=5 and N=8",
+      "plant": "DirectNN trained once and saved (plant_dnn.pt), val_loss 0.000285",
+      "N5": {
+        "oracle_sched": 0.1635,
+        "rti_sp": 0.1618,
+        "delta_rti_sp_pct": -1.04,
+        "oracle_reencode": 0.1582,
+        "rti_re": 0.1565,
+        "delta_rti_re_pct": -1.05,
+        "rti_sp_p50_ms": 78,
+        "rti_sp_p95_ms": 120
+      },
+      "N8": {
+        "oracle_sched": 0.1502,
+        "rti_sp": 0.1496,
+        "delta_rti_sp_pct": -0.37,
+        "oracle_reencode": 0.1447,
+        "rti_re": 0.1439,
+        "delta_rti_re_pct": -0.6,
+        "rti_sp_p50_ms": 200,
+        "rti_sp_p95_ms": 215
+      },
+      "horizon_effect": "same plant N=8->N=5: oracle_sched +8.9%, oracle_reencode +9.3%, rti_sp +8.2% -> all controllers degrade ~8-9% -> earlier +16.8% was N/oracle mismatch artifact",
+      "verdict": "Delta_RTI <= 0 (<<5-8% gate) -> RTI-SP PASS; matched oracle complete, no catastrophic result -> P2 hardware GO (GPT §22)"
+    }
+  }
+}

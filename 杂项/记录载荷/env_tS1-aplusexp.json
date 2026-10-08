@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "command_id": "tS1-aplusexp",
+  "expected_revision": 355,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-APLUS-EXPERIMENTS-001",
+    "title": "A+ 结构 gate：A/B/AB 消融 + matched-state history test",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_round11_routeAplus_validation_v1.md",
+      "document_sha256": "19bc2a45f4790a255ebe10a60ec3e33a43b74e0806001290cd6552f0b8668e8f",
+      "scripts": [
+        "V_APLUS.py"
+      ],
+      "ablation": "On top of additive-context base, B-modulation beats A-modulation decisively (H20: -67.3% vs -41.8%); AB adds only 7.6-9.4% over B-only.",
+      "matched_state": "Same current state + similar command, different history -> 3.24x larger next-step response difference (n=199).",
+      "interpretation": "History-conditioned control-channel B(c) modulation is the empirically dominant mechanism; strong motivation for A+ (RSHC-TK)."
+    }
+  }
+}

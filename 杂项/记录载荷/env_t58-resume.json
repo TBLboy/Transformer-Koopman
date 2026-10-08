@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t58-resume",
+  "expected_revision": 282,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "已接收 GPT 18 条路线报告，按用户要求只做验证与反馈。已跑三项便宜测试：Test A（R2 前提）gauge 病理成立：预测完全不变(1.5e-13)，固定 Q 的 LQR 在病态 gauge 下控制律/闭环显著改变、condT=1e6 时 DARE 失败；但本质是已知 LQR 协变不变性，固定 Q 只是选定 gauge → R2 新颖性弱。Test B（R1 前提）参考不可达缺陷成立：约 16~21% lifted 参考增量落在 im(B) 外（仅一阶，多步未验证）。Test C（R3 前提）P1 残差可预测：AR(1) 改善 17~25%。prior-art：R1 delta 窄但实在（关键=把不可达残差作表示学习损失+多步可达）；R2 风险最高（1984 已知结果，需新不变量）；R3 需面向控制的定理。R4-R18 prior-art 复核进行中。下一步：汇总 R1-R18 逐条可行性验证报告。"
+  }
+}

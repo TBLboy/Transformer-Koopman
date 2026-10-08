@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tT4-handoff",
+  "expected_revision": 366,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "阶段③ 结构 gate 完成（DEC-023 解冻代码后首个实质实现）：在**真实 latent 管线**（PatchTSTEncoder→z=[x;h](d=10)、z'=Az+Bu、decoder=前2维）上，新增 context encoder（[x_history;u_history]→c∈R^16）+ 低秩调制（r=3），同流程训练 fixed/A/B/AB，两 seed。结果：A-only 支配（H20 val −73.7%/−74.3%），B-only ≈ fixed（seed0 长时域更差 −5~−8%），AB ≈ A-only（无增益）；部署 EDMD(P=4) 锚点 H20=0.1588 ≈ fixed 基线（可比）。证伪通过：modOFF H20 恶化 11.4×、uhZERO 11.1×。**结论：locus=A，不是 B；选 A-only**——第十/十一轮基于观测空间代理的 B-locus 推断不迁移（代理结构上无法表达 A 调制）。产出 phase2_gate_stage3_context_modulation_v1.md + phase2_gpt_handoff_v10.md；记录 PHASE2-STAGE3-STRUCT-GATE-001 / PHASE2-STRUCTGATE-EXPERIMENTS-001 / EV-PHASE2-STAGE3-STRUCT-GATE-001。下一步（待 GPT 回复 handoff v10 §6）：(1) 确认 locus=A 定稿 A+；(2) 调制有界性/稳定性界形式（配合 DEC-018 的 ρ(A)≤rho_max + 非平凡 T1′ 界）；(3) r 与 c 维度是否扫描；(4) 剩余 gate 项（latent matched-state、CB(c) 谱/PD、跨样本 history-shuffle）；(5) 阶段③ 实现清单与真机实验方案（用户执行）。GOAL-001 门禁仍拒绝；DEC-018 未满足（当前调制未加界）。"
+  }
+}

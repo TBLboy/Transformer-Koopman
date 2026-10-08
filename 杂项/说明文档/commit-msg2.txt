@@ -1,0 +1,5 @@
+补充前端构建说明：pc/dist 未纳入版本控制
+
+- docs/dev-environment.md 第 5 节拆分为「构建后由 8011 托管」与「Vite 热更新」两种方式
+- 明确 pc/dist/ 被 gitignore，新克隆仓库需先 npm run build，否则 8011 根路径只返回 JSON
+- 常见问题表新增对应条目

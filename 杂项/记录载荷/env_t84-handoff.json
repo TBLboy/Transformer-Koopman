@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t84-handoff",
+  "expected_revision": 311,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "已推进 GPT 第三轮 M1–M12/C1–C4 报告：完成机制级 prior-art 对拍 + 6 条负向扫描 + 廉价证伪实验 D1–D7，产出 phase2_gpt_m_routes_validation_v1.md 与独立交接稿 phase2_gpt_handoff_v3.md。判决：M1（D1 V*=0，屏蔽支路死）、M4（D5 约束从不激活）、M9（D2 任务族秩 2→10）被经验杀死；M2（D3 仅 ~4×缩减，=经典匹配）、M3（D4 corr(DWR,ΔJ)=1 是线性模型伴随精确性，=标准协态）、M7（D6 无预测增益）降级；M5/M12 经验存活（D7 缺陷低秩，有效秩 90%=2/99%=4），但撞 2602.14537(CAP)/2603.15091(PAD)/2603.29001(principal 剪枝)/2605.24666(PageRank)，且新增撞车 2608.11808（Koopman+HJB 误差界+闭环稳定+最优性间隙）。负向扫描：goal-oriented Koopman=0、Koopman output nulling invariant subspace=0；Koopman disturbance decoupling=4、dual-weighted residual control=26（全 PDE/ROM）。无任何 M 路线过 6 条硬门禁。残余：C2(M5/M12) > C3(M3) > C1(塌缩为 M2)。下一步：等待 GPT 依据交接稿 v3 返回第四轮（要求聚焦闭环/随控制器变化的机制）；返回后按同法验证。GOAL-001 门禁仍拒绝完成；DEC-018 未满足；代码/配置/论文冻结。"
+  }
+}

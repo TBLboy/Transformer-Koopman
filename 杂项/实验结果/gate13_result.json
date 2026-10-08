@@ -1,0 +1,14 @@
+{
+  "gate13D": {
+    "n_pairs": 600,
+    "eps_u": 0.5,
+    "cur_state_dist_mean": 0.026750415563583374,
+    "prev_u_dist_mean": 0.09855916351079941,
+    "next_step_err_normal": 0.0076316785998642445,
+    "next_step_err_swapped": 0.050569966435432434,
+    "err_ratio": 6.6263227462768555,
+    "dA_orig_vs_swapped_mean": 0.0230867862701416,
+    "dA_orig_vs_swapped_q95": 0.060838375240564346,
+    "A0_fro": 3.1755402088165283
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "command_id": "tR1-routeAexp",
+  "expected_revision": 350,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-ROUNDA-EXPERIMENTS-001",
+    "title": "路线 A 建模 gate 实验：低秩 context 调制 vs 加法 vs 无 context 的自洽多步 rollout",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_round10_routeA_validation_v1.md",
+      "document_sha256": "28a86355426df776d5f7ccf23142ed762128b8df61b6f1a8cefbae4d037c85b9",
+      "scripts": [
+        "V_A_GATE2.py",
+        "V_A_GATE3.py"
+      ],
+      "P2_self_consistent_rollout": {
+        "mult_lowrank_r3": {
+          "H1": 0.0346,
+          "H5": 0.1799,
+          "H10": 0.3691,
+          "H20": 0.6051
+        },
+        "additive_context": {
+          "H1": 0.0514,
+          "H5": 0.2848,
+          "H10": 0.7605,
+          "H20": 1.4706
+        },
+        "noctx": {
+          "H1": 0.1647,
+          "H5": 0.5048,
+          "H10": 0.6972,
+          "H20": 0.982
+        }
+      },
+      "interpretation": "History context is highly predictive; multiplicative low-rank operator modulation dominates additive context and remains stable at long horizon. Supports Route A modeling premise."
+    }
+  }
+}

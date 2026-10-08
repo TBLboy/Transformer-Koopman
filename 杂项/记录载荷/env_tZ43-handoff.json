@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ43-handoff",
+  "expected_revision": 428,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-006",
+    "next_action": "TASK-006（论文新版本，strict）进行中。**目标**：只做论文理论部分的文字内容（含证明/定理/参考文献），实验与绘图暂停，继续与 GPT 迭代直至理论文字定稿。**第十九轮裁定已执行**：Proof Audit = PASS。M1 已加 ε vs ε_k Remark（rem:eps_vs_epsk）；M2 已在 Thm.1 前显式定义 F*（reference augmented transition，非 plant）；M3 已拆为 Assumption 1/2/3 并更新全部引用；M4 已统一 z^P/z^E 记号（Prop.2 声明 ẑ≡z^P，Cor.1/Thm.1 前文同步）；Q3 Def.1 保留在 Methodology，理论节加 'Recall ...' 开场；§14 补 d_k=0 简化。**ε_k 冲突已解决（GPT §17）**：根因是两个旧脚本采样步长不同（stride 1 → 0.3454；stride 4 → 0.3473）。新建单一事实源脚本 `gate16_diag_final.py`（统一 stride 1）→ **ε_k median = 0.345（与冻结值一致）**，q95 = 0.567。依赖量同步更新：d_abs 0.346/1.122/1.645/2.663；Prop.2 比值 1.64/2.77/4.22/6.52×；Cor.1 文本 53–47750×。表格已更新并加采样脚注。d_M/prod/L_F/M_F/RMSE/RTI 不变。静态检查：引用无缺失、无悬空引用、环境配对、括号/美元符平衡、5/5 证明块。记录 PHASE2-ROUND19-EDITS-001 / EV-...-001。**下一步**：(1) 把回执交 GPT 确认统一 stride-1 数值集是否取代第十八轮 §21，并确认训练节 ẑ 是否也统一为 z^P；(2) 按裁定做最后语言整理；(3) 理论文字冻结后再考虑实验/图/翻译。"
+  }
+}

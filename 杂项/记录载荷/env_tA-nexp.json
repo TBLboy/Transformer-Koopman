@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "command_id": "tA-nexp",
+  "expected_revision": 303,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-N-EXPERIMENTS-001",
+    "title": "N 路线廉价证伪实验：P2 97% policy-null 缺陷、P1 残差 100% 在 im(B)",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_n_routes_validation_v1.md",
+      "document_sha256": "b7ca84824a7050cff5f95181ead7618efbc1c064d2017a5572f6422e18d8f41a",
+      "scripts": [
+        "N_P2_policy_null.py",
+        "N_P1_residual.py"
+      ],
+      "P2_policy_null": {
+        "n_latent": 10,
+        "m_input": 2,
+        "rank_K": 2,
+        "policy_null_dim": 8,
+        "defect_energy_frac_policy_null_kerK": {
+          "train_mean": 0.973,
+          "train_median": 0.984,
+          "val_mean": 0.974
+        },
+        "defect_energy_frac_policy_relevant_rowK": {
+          "train_mean": 0.0267
+        },
+        "defect_policy_sensitivity": {
+          "train_mean": 0.0204
+        },
+        "horizon_openloop_A^t_sensitivity": {
+          "t0": 0.104,
+          "t1": 0.268,
+          "t2": 0.624,
+          "t3": 1.309,
+          "t5": 4.301
+        },
+        "horizon_closedloop_sensitivity": {
+          "t0": 0.104,
+          "t1": 0.083,
+          "t3": 0.058,
+          "t5": 0.011
+        },
+        "finding": "one-step defect ~97% policy-null; ker(K) NOT A-invariant (open-loop sens>1 at t=3); bounded under closed loop"
+      },
+      "P1_residual": {
+        "A_spectral_radius": 0.9855,
+        "rank_B": 3,
+        "residual_energy_frac_in_im_B": 1.0,
+        "position_dims_energy": 5.03e-06,
+        "velocity_dims_energy": 0.3145,
+        "policy_sensitivity_via_LQR_K": 0.573,
+        "finding": "residual 100% in im(B) -> r_n ~ 0; N4 split degenerate on P1"
+      }
+    }
+  }
+}

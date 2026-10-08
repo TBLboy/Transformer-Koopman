@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tA3-handoff",
+  "expected_revision": 320,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "用户 C 级决策 D（DEC-020）：阶段② 更换建模范式，放宽 DEC-015“必须保留有限维 Koopman 闭合”约束，继续由外部 GPT 出路线。依据：第四轮 Q0–Q6 验证后，P2 闭合误差小(归一化 RMSE 0.008)且不可后验反馈重塑（连 rank-10 全秩非线性漂移仅降 0.25%、残差秩不变）、obstruction 动态全阶（Hankel 秩 99%=97/100），P1 残差恒在 im(B)。产出：phase2_gate_update_v0.2.md（修订门禁：范式实质改变 + 显式论证必要性 + 回应 T4 四个经验事实 + 控制器结构改 + P1/P2 锚点 + 可证定理 + prior-art 双划线 + 数据可实现/最小传感集）与独立交接稿 phase2_gpt_handoff_v5.md（请求第五轮：≤6 条范式级路线）。下一步：等待 GPT 依据交接稿 v5 返回第五轮范式级路线；返回后按同法（prior-art + 廉价实验 + 门禁 v0.2 对拍）验证。GOAL-001 门禁仍拒绝；DEC-018 未满足；代码/配置/论文冻结。"
+  }
+}

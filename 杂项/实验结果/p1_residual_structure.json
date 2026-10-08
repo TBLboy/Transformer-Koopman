@@ -1,0 +1,30 @@
+{
+  "joint_1": {
+    "residual_std": 0.34417072236101404,
+    "residual_mean": 0.003421595557158617,
+    "lag1_autocorr": 0.6532438824412483,
+    "corr_with_acc": 0.020948508694252868,
+    "corr_with_dq": 0.2709269896366838,
+    "corr_with_sign_dq": 0.020075924713714194,
+    "corr_with_pred": 0.04725875459206551
+  },
+  "joint_2": {
+    "residual_std": 0.42081886807690777,
+    "residual_mean": 0.022453585338192514,
+    "lag1_autocorr": 0.5912642597595695,
+    "corr_with_acc": 0.003199077656031862,
+    "corr_with_dq": 0.17171197635220972,
+    "corr_with_sign_dq": 0.009447192123928517,
+    "corr_with_pred": 0.006355636048265432
+  },
+  "joint_3": {
+    "residual_std": 0.2597626945137743,
+    "residual_mean": 0.0024816599246874657,
+    "lag1_autocorr": 0.5573769500797434,
+    "corr_with_acc": -0.0010945784501523513,
+    "corr_with_dq": 0.18441735952094768,
+    "corr_with_sign_dq": -0.051950480522968065,
+    "corr_with_pred": -0.03791512775047207
+  },
+  "warning": "Residual structure diagnostics; high lag-1 autocorrelation or correlation with states indicates unmodeled dynamics rather than white measurement noise."
+}

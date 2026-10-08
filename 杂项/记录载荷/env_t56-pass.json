@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "command_id": "t56-pass",
+  "expected_revision": 275,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-DELTA2-PASSIVITY-001",
+    "title": "delta 2 保无源 lifting 可证伪最小版本：未通过",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_delta2_passivity_minimal_v0.1.md",
+      "document_sha256": "a9f8ec2b2fd8ddc7d5c3289797fb6d4a1fed6b45c1df2251a4f479c8e7ecbace",
+      "hypothesis": "A passivity-preserving lifting with PD inertia and non-vacuous dissipativity margin can be constructed for P1, enabling a passive-controller closed-loop guarantee.",
+      "sampling": {
+        "dt_s": 0.004,
+        "rate_hz": 250
+      },
+      "constant_M_model": {
+        "val_rmse_per_joint": [
+          0.48050584529062645,
+          0.5630576900275885,
+          0.3322826731708466
+        ],
+        "torque_std_per_joint": [
+          0.9186093640786607,
+          0.9185555670100428,
+          0.546099734724709
+        ],
+        "M_eigenvalues": [
+          0.000754657710259067,
+          0.0014688208905796142,
+          0.002160583390313845
+        ],
+        "M_positive_definite": true,
+        "M_condition_number": 2.862997834570773
+      },
+      "rich_EL_model": {
+        "n_blocks": 75,
+        "val_rmse_per_joint": [
+          0.34418772994785735,
+          0.421417469054225,
+          0.2597745485936561
+        ],
+        "val_rmse_over_std": [
+          0.3746834545857999,
+          0.45878277176629156,
+          0.47569066980889396
+        ],
+        "approx_R2": [
+          0.8596,
+          0.7895,
+          0.7737
+        ]
+      },
+      "verdict": "delta 2 minimal version does NOT pass: PD inertia exists, but EL residual (37-48% of torque std) prevents a non-vacuous passivity margin. Not a mathematical disproof; a data/modeling limitation.",
+      "revival_conditions": [
+        "separate measurement noise from dynamics and show residual is mostly noise",
+        "stronger structural identification (current-torque map, friction, flexibility) to reduce EL residual",
+        "show passivity margin numerically exceeds residual bound and yields a NEW closed-loop theorem"
+      ],
+      "scripts": [
+        "C:/Users/12187/AppData/Local/Temp/opencode/spike_p1_passivity.py",
+        "C:/Users/12187/AppData/Local/Temp/opencode/spike_p1_passivity_v2.py",
+        "C:/Users/12187/AppData/Local/Temp/opencode/p1_dt_noise_check.py"
+      ]
+    }
+  }
+}

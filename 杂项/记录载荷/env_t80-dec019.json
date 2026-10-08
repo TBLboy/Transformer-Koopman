@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "command_id": "t80-dec019",
+  "expected_revision": 294,
+  "action": "record.create",
+  "payload": {
+    "kind": "decision",
+    "id": "DEC-019",
+    "status": "active",
+    "title": "阶段② 下一步：把 L3 验证反馈回传外部构思方(GPT)重出路线",
+    "payload": {
+      "class": "standard",
+      "files_touched": 2,
+      "minimum_verification": [
+        "回传稿自包含，含机制级占位、复现数据与下一轮要求"
+      ],
+      "notes": [
+        "选项：①继续在残余空间深挖 ②回传外部构思方重出路线 ③调整阶段②目标 ④暂停先做 DEC-018",
+        "用户选择②：回传 GPT 重出路线（符合'验证方只验证+反馈、不构思新路线'约束）",
+        "产出：.project-log/docs/phase2_gpt_feedback_v1.md"
+      ],
+      "reason": "GPT 18 条路线 L3 后无任何一条可作阶段② 主结果；由外部构思方在机制级重构路线，验证方保持不构思",
+      "reversible": true,
+      "signals": [
+        "conclusion"
+      ]
+    }
+  }
+}

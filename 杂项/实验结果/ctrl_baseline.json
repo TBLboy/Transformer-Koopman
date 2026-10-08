@@ -1,0 +1,28 @@
+{
+  "P1": {
+    "n": 74640,
+    "val_rmse_unrestricted_vec": 0.3776858150959015,
+    "val_rmse_context_only": 0.63707035779953,
+    "val_rmse_potential": 0.3863154351711273,
+    "inverse_replay_median_abs_err": 3.5137250423431396,
+    "inverse_replay_median_rel_err": 5.906384468078613,
+    "inverse_replay_median_residual": 9.712082373880548e-07,
+    "model_residual_at_true_u": 0.49469804763793945,
+    "model_sv_min_at_true_u": 0.3594779372215271,
+    "model_sv_max_at_true_u": 1.8910517692565918,
+    "model_cond_at_true_u": 5.401639938354492
+  },
+  "P2": {
+    "n": 20720,
+    "val_rmse_unrestricted_vec": 0.11200365424156189,
+    "val_rmse_context_only": 0.15827441215515137,
+    "val_rmse_potential": 0.11292817443609238,
+    "inverse_replay_median_abs_err": 35339.69921875,
+    "inverse_replay_median_rel_err": 89206.3046875,
+    "inverse_replay_median_residual": 0.9642529487609863,
+    "model_residual_at_true_u": 0.11715518683195114,
+    "model_sv_min_at_true_u": 0.11431266367435455,
+    "model_sv_max_at_true_u": 0.38213303685188293,
+    "model_cond_at_true_u": 2.6120693683624268
+  }
+}

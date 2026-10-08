@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "command_id": "tV1-gate14exp",
+  "expected_revision": 373,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE14-EXPERIMENTS-001",
+    "title": "Gate-14 实验：稳定化/开环训练/DirectNN/闭环控制代理/实时性",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_gate14_v1.md",
+      "document_sha256": "1a74d5531bc8d71a8c080e3ce1b4e86a172c88bac3ba04c0ddd138111d3f90fe",
+      "scripts": [
+        "gate14_stabilize.py",
+        "gate14a_manifold.py",
+        "gate14_directnn.py",
+        "gate14c_control.py",
+        "gate14c2_plantsens.py"
+      ],
+      "artifacts": [
+        "gate14_result.json",
+        "gate14a_result.json",
+        "gate14_directnn_result.json",
+        "gate14c_result.json"
+      ],
+      "gate14A": "d_M grows 0.19->1.45, corr with RMSE 0.49-0.57; open-loop training reduces defect and error 0.287->0.037.",
+      "gate14B": "Budgeted low-rank + rho<=0.99 does NOT rescue propagation (R_prop 0.368->1.568); open-loop (scheduled) training rescues it (0.368->0.041) even without rho penalty.",
+      "direct_nn": "DirectNN H20 0.2596 vs Koopman 0.0439 at equal params.",
+      "gate14C": "Closed-loop proxy (plant=DirectNN): C1 frozen fails (0.2135 vs 0.136); C0~C2 (~3% gain).",
+      "gate14E": "Oracle SLSQP med 2965ms; RTI required."
+    }
+  }
+}

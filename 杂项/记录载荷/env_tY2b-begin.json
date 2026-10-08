@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "command_id": "tY2b-begin",
+  "expected_revision": 390,
+  "action": "task.begin",
+  "payload": {
+    "task_id": "TASK-005",
+    "run_id": "RUN-005",
+    "next_action": "撰写论文理论章节 v1：Prop.1/2、Thm.1、Cor.1、Prop.3 正式化（含证明）+ 数值诊断验证 + 范围/非目标声明。基于 GPT 第十六轮 §9–§21 框架与已完成的 Theory Diagnostics。"
+  }
+}

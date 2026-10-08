@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ9-zroutes",
+  "expected_revision": 344,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-Z-ROUTES-001",
+    "title": "GPT 第九轮 Z0/Z1/Z2 验证：Z0 成立，Z1/Z2 被否；现有观测内控制器搜索正式封闭",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_z_routes_validation_v1.md",
+      "document_sha256": "ba0b67fd967be837657cead72fcfb3cc3ddd8da5a001adc85743c4ffbbe88b0c",
+      "scope": "GPT round-9 Z0/Z1/Z2 validation under DEC-022 (no new observations)",
+      "verdicts": {
+        "Z0 NFATSR": "CONFIRMED numerically (const adversarial N6 == (q*)^N exactly; Chebyshev amplified 89x/372x). Elementary proof, adjacent to regret-optimal control -> modest novelty, better as one section of a characterization paper.",
+        "Z1 ERCRC": "KILLED - tail error worsens (P2 q95 0.192 vs 0.027; P1 q95 0.475 vs 0.204), memory grows unbounded (max 281), naive clip not better. All 3 self-set kill criteria met.",
+        "Z2 REIC": "KILLED - geometric-median aggregation improves inverse-command error only ~2.5-5% (threshold 20%); failures correlated; prior-art mature."
+      },
+      "round9_outcome": "no controller route passes gate v0.3; but Z0 is a valid negative/limit result",
+      "lockdown_chain": "bulk strongly monotone + constraints inactive + no output/task nullspace + no low-order residual dynamics + Newton/secant occupied + polynomial acceleration killed by time-variation + best constant gain minimax-optimal + tail-robust recycling ineffective + inverse aggregation ineffective + robust/DLS/IQC/Hinf/funnel/sliding/conformal classical + new observations forbidden (DEC-022)",
+      "conclusion": "Under current observations and gate v0.3, no empirically-motivated non-classical controller route remains.",
+      "recommended": "A' characterization/impossibility paper (no new observations required): learned response geometry + no-free-acceleration + empirical falsification of Y3/Z1/Z2 + constant-gain response feedback more robust than deployed Koopman+LQR."
+    }
+  }
+}

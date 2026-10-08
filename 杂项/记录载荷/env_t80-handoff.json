@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t80-handoff",
+  "expected_revision": 296,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "用户决定（DEC-019）：把 L3 验证反馈回传外部构思方 GPT，要求其以机制级（可证命题/假设）差异重出路线；验证方不构思新路线。已产出回传稿 phase2_gpt_feedback_v1.md（含 R1–R18 机制级占位、Test A/B/B′/C 复现数据、R16 负面扫描、对下一轮 7 条具体要求）。下一步：等待 GPT 新路线报告返回后，继续按同法做 L1/L2/L3 验证（先机制级对拍，再便宜证伪实验）。GOAL-001 门禁仍拒绝完成；DEC-018 未满足。"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".project-log/docs/phase2_round16_matched_oracle_theory_v1.md",
+    ".project-log/docs/phase2_gpt_handoff_v14.md"
+  ],
+  "requirements": [],
+  "tasks": [
+    "TASK-004"
+  ]
+}

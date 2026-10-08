@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "command_id": "t80-mroutes",
+  "expected_revision": 307,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-M-ROUTES-001",
+    "title": "GPT 第三轮 M1-M12/C1-C4 验证：M1/M4/M9 死、M2/M3/M7 降级、M5/M12 唯一经验残余",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_m_routes_validation_v1.md",
+      "document_sha256": "26141a1d771921ff8abb45e081d28bec2c83a41a52b2e5ff66fc182f0015cc50",
+      "scope": "GPT round-3 routes M1-M12 / C1-C4 validation (prior-art + negative scan + cheap experiments D1-D7)",
+      "verdicts": {
+        "M1 Defect-Coherent Koopman": "KILLED - D1 shows V*=0 (no output-nulling/controlled-invariant subspace on P2); geometric disturbance decoupling classical",
+        "M2 Projected Harmful-Error Certificate": "DOWNGRADED - D3 only ~4x radius reduction, benign=imB (classical matched); collides 2603.15091/2608.11808",
+        "M3 Dual-Weighted Goal-Oriented": "DOWNGRADED - D4 corr(DWR,dJ)=1.0 is exactness of linear-model adjoint (=standard LQR costate); DWR classical PDE/ROM",
+        "M4 KKT-Coherent MPC": "KILLED - D5 |u|max 65.3<<300, constraints never active",
+        "M5/M12 CAP-Core+Obstruction": "SURVIVES EMPIRICALLY - D7 low-rank obstruction (rank 2-4/10); but occupied by CAP 2602.14537, PAD 2603.15091, 2603.29001, 2605.24666",
+        "M6 almost decoupling": "KILLED - Hinf + Koopman residual = ordinary robust control",
+        "M7 matched virtual input": "DOWNGRADED - D6 no predictability gain",
+        "M8 shielding horizon": "KILLED - finite-horizon observability Gramian",
+        "M9 task-family envelope": "KILLED - D2 strategy-null rank 2->10 within 10 tasks",
+        "M10/M11": "unassessed"
+      },
+      "prior_art_negative_scans": {
+        "Koopman disturbance decoupling": 4,
+        "dual-weighted residual control": 26,
+        "goal-oriented Koopman": 0,
+        "Koopman output nulling invariant subspace": 0,
+        "Koopman goal-oriented error certificate": 0,
+        "Koopman invariant subspace control": 28
+      },
+      "key_new_collisions": [
+        "2608.11808 (Koopman+HJB error bounds + closed-loop stability + optimality gap)",
+        "2603.29001 (principal-vector subspace pruning)",
+        "2605.24666 (PageRank invariant subspaces)"
+      ],
+      "gate_result": "no M route passes all 6 hard-gate criteria",
+      "residual": "C2 (M5/M12 low-rank obstruction) > C3 (M3 classical DWR) > C1 (collapsed to M2; M9/M1-shielding killed)",
+      "user_directive": "validate + feedback only, do not invent new routes"
+    }
+  }
+}

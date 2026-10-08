@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "command_id": "tC1-wexp",
+  "expected_revision": 327,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-W-EXPERIMENTS-001",
+    "title": "W 轮 T6-0/1/2/3：常数输出反射使 P2 单调(99.67%)、index1 稳定、势模型不损精度",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_w_routes_validation_v1.md",
+      "document_sha256": "dc46a1fc85093a321f4b91af756bbed1816d216a20bc67ab6e56fb13f8694d9f",
+      "scripts": [
+        "V_T6.py"
+      ],
+      "P2_T6_0_signature": {
+        "pd_symJ": 0.0,
+        "pd_symS0J_constant_diag(-1,1)": 0.99667,
+        "pd_symScJ_adaptive": 0.99778,
+        "n": 900
+      },
+      "P2_T6_1_inertia": {
+        "(1,1,0)_index1": 899,
+        "(0,2,0)": 1,
+        "(2,0,0)": 0,
+        "eigenframe_circ_std_deg": 3.16
+      },
+      "P2_T6_2_orientation": {
+        "det_pos_frac": 0.00222,
+        "det_neg_frac": 0.99778,
+        "sigma_min_median": 0.00098
+      },
+      "P2_T6_3_integrability": {
+        "potential_gradient_val_rmse": 0.01881,
+        "unrestricted_vector_val_rmse": 0.01957
+      },
+      "interpretation": "P2 response is near-integrable, stable Morse index 1, locally invertible, and monotone under a CONSTANT output reflection S0=diag(-1,1); the 'saddle' is a fixed output-orientation convention."
+    }
+  }
+}

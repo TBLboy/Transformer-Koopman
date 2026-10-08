@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "command_id": "tA-nroutes",
+  "expected_revision": 302,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-ROUTES-N-001",
+    "title": "GPT 第二轮 N1-N6 路线验证：概念被占/退化，N1/N3 残余",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_n_routes_validation_v1.md",
+      "document_sha256": "b7ca84824a7050cff5f95181ead7618efbc1c064d2017a5572f6422e18d8f41a",
+      "scope": "GPT round-2 routes N1-N6 validation (prior-art + cheap experiments)",
+      "verdicts": {
+        "N1 policy-null defect / Gamma_H": "partial, concept occupied by 2603.27677 (control-equivalent optimality via Hamiltonian structure) + closed-loop model reduction",
+        "N2 Riccati quotient": "renamed (bisimulation / closed-loop balanced reduction); triviality risk for static feedback (Z/ker K ~ R^m)",
+        "N3 policy-neutral CAP": "partial, must distinguish from feedback linearization (2210.05046, 2211.07112)",
+        "N4 policy-relevant residual": "degenerate on P1 (r_n ~ 0)",
+        "N5 CAP obstruction rank": "partial, unverified",
+        "N6 closed-loop Koopman embedding": "renamed (Koopman feedback linearization 2211.07112/2210.05046/2504.11959)"
+      },
+      "negative_scans": {
+        "policy/control-equivalent": 30,
+        "bisimulation+optimal control": 2,
+        "closed-loop model reduction/balancing": 1,
+        "feedback linearization+Koopman": 6
+      },
+      "residual": "N1 (closed-loop/multi-step policy-equivalent with provable Gamma_H) > N3 (PolicyLinearizable ⊋ Exact) > rest"
+    }
+  }
+}

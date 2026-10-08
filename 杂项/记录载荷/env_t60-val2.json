@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "command_id": "t60-val2",
+  "expected_revision": 287,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-ROUTE-VALIDATION-002",
+    "title": "GPT R4-R18 第二遍 prior-art：R16 残余空间最大、多条撞车坐实",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_route_validation_addendum_r4r18_v0.1.md",
+      "document_sha256": "509e3c1bf540f9c12845d518aa65996dc0df4a78ba92c030a277f76f2749d3f5",
+      "second_prior_art_pass_R4_R18": true,
+      "residual_space_ranking": "R16 > R15 ~ R18 > R14 > R5 > R4/R7/R13 > R6/R9/R10",
+      "R16": "largest remaining space: port control-sufficiency to Koopman linear latent + optimality theorem + dual-encoder; no direct Koopman precedent found",
+      "strengthened_collisions": {
+        "R4": "Koopman-SPC arXiv:2405.01292; Khatri-Rao multi-step arXiv:2606.02938",
+        "R5": "arXiv:2509.17010 actuated/unactuated decoupling",
+        "R6": "ICLR 2026 Koopman controllability Gramian regularization",
+        "R9": "M_h = finite-horizon observability Gramian (classical)",
+        "R10": "arXiv:2607.05718 input-Jacobian regularization",
+        "R13": "Ho-Kalman/ERA; DMD=ERA equivalence"
+      },
+      "global_top_residual": [
+        "R1 (unreachable residual training loss + multi-step reachable)",
+        "R3 (residual dynamics + control theorem)",
+        "R16 (control-sufficient Koopman dual encoder)"
+      ],
+      "evidence_level": "L2/fragments; L3 not done",
+      "disagreement": "R16 residual space: pass1 medium vs pass2 largest; negative search not conclusive",
+      "next": "L3 full-text comparison; re-scan for goal-conditioned / control-sufficient Koopman"
+    }
+  }
+}

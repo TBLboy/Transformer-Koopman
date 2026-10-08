@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".project-log/docs/paper_theory_section_v2.md",
+    ".project-log/docs/paper_theory_section_v1.md"
+  ],
+  "requirements": [],
+  "tasks": [
+    "TASK-005"
+  ]
+}

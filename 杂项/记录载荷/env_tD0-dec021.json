@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "command_id": "tD0-dec021",
+  "expected_revision": 331,
+  "action": "record.create",
+  "payload": {
+    "id": "DEC-021",
+    "kind": "decision",
+    "status": "active",
+    "title": "阶段② 目标轴切换：控制器设计创新为首要，建模创新可选",
+    "payload": {
+      "class": "C",
+      "decided_by": "user",
+      "reason": "用户澄清：真正想做的创新在控制器设计上，建模创新可有可无。过去七轮 R/N/M/Q/V/W 全部优化模型/表示，控制器始终是 B†+LQR 或简单逆控制，控制器设计空间从未被系统搜索。",
+      "decision": "阶段② 首要贡献改为控制器设计实质新颖（新架构/律/算法 + 可证定理）；建模可用标准件（现有 Transformer-Koopman 或已刻画响应算子），不要求建模新颖。据此发布门禁 v0.3（控制器中心）。",
+      "revised_gate_doc": ".project-log/docs/phase2_gate_update_v0.3.md",
+      "reversible": true,
+      "signals": [
+        "conclusion"
+      ],
+      "notes": [
+        "保留既有约束事实：Koopman 闭合不可塑、P2 响应几何为经典（单调[固定输出反射]/近可积/局部可逆/低歧义）、约束不激活、无输出零空间。",
+        "两条数据分支：①现有数据；②最小新增观测（C1 中段 marker / C2 差分绳长 / C3 张力-电流 proxy）。",
+        "禁止伪创新清单不变；DEC-018/019/020 保持；代码/配置/论文冻结。"
+      ]
+    }
+  }
+}

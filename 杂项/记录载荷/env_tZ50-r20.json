@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ50-r20",
+  "expected_revision": 429,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-ROUND20-EDITS-001",
+    "title": "GPT round-20: theory text FROZEN; sec.17 training/theory notation binding added; theory-section language polish applied",
+    "status": "complete",
+    "payload": {
+      "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+      "artifact_sha256": "d8487a59bbfdaa062cb506b61682d29ce05c2713440c38ad5efed08228e4ae42",
+      "gpt_round20_status": "THEORY ROUTE CLOSED / PROOF AUDIT PASS / NUMERICAL CONSISTENCY PASS / THEORY TEXT FROZEN",
+      "round20_actions": {
+        "Q-A": "adopted: the unified stride-1 diagnostic set (gate16_diag_final.json) replaces round-18 sec.21 for the epsilon-dependent rows; already applied in the paper table",
+        "Q-B_sec17": "ADDED the semantic binding sentence in the training section: 'During rollout training, z_hat_{k+i} denotes the recursively predicted latent state and therefore corresponds to the propagated latent state z^P_{k+i} used in the theoretical analysis.' Training keeps z_hat; theory keeps z^P/z^E.",
+        "language_polish": [
+          "theory section opener rewritten as 'This section develops a finite-horizon theory for ... i.e. ...' (was 'We recall ...')",
+          "'propagated recursively rather than re-encoded' -> 'instead of being re-encoded at every step'",
+          "'governed by two independent factors: the local defect' -> 'governed by two factors: the local one-step defect'",
+          "'This supports the local validity' -> 'This result supports the local validity'"
+        ]
+      },
+      "static_checks": {
+        "missing_bibitem_for_cite": "none",
+        "dangling_refs": "none",
+        "env_mismatch": "none",
+        "brace_balance": 0,
+        "dollar_parity": "even",
+        "proof_blocks": "5/5",
+        "cite_keys_used": 39,
+        "bibitems": 50
+      },
+      "known_cosmetic_issue": "the manuscript still carries revision color markers from the previous draft: \\textcolor{red} x20, \\textcolor{blue} x5, \\color{red} x10 (mostly in the methodology/training sections, not the theory section). These are formatting markers, not content; they should be removed before submission. Not removed unilaterally because they may be intentionally kept for GPT review.",
+      "remaining_track_items": [
+        "LaTeX compilation (typesetting QA, not a gate): full compile + bibtex + second pass + warning inspection + PDF visual check - no LaTeX toolchain locally",
+        "final history-length P configuration audit (P=8 per platform2.yaml and all experiments; deploy ckpt P=4 is stale legacy) - already audited (PHASE2-CONFIG-AUDIT-001 / DEC-028), pending the actual P=8 model training + deploy re-export",
+        "Experiments/Results/Discussion sections",
+        "Figures 1-3 adaptation; mechanism figure already generated",
+        "Chinese/English version"
+      ]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "command_id": "tW1-gate14dexp",
+  "expected_revision": 378,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE14D-EXPERIMENTS-001",
+    "title": "Gate-14D 实验：RTI-SQP 实时性（RTI-RE vs RTI-SP, N=8/5, 1/2 iter）",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_gate14d_v1.md",
+      "document_sha256": "f423da08dc20f6b7067b278b0659125b1596fd855d1248d65a95454f12615718",
+      "scripts": [
+        "gate14d_rti.py"
+      ],
+      "artifacts": [
+        "gate14d_result.json",
+        "gate14d_result_N5.json",
+        "gate14d_result_N5_it2.json"
+      ],
+      "method": "RTI-SQP 1-iter: warm start -> nominal rollout -> autograd Jacobian linearization -> LTV-QP (L-BFGS-B, box) -> apply first step.",
+      "RTI_RE": "re-run full PatchTST encoder each stage (A-only r2 model).",
+      "RTI_SP": "rollout-trained scheduled propagation (latent propagated, context rescheduled; A_openloop model); no PatchTST per stage.",
+      "findings": "RTI-SP 1.6x faster than RTI-RE; N=5 brings RTI-SP to Strong GO (78ms); 2 iterations do not improve RMSE and double runtime.",
+      "solver_fail_pct": 0.0
+    }
+  }
+}

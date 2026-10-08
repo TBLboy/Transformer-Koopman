@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "command_id": "tV0-gate14",
+  "expected_revision": 372,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GATE14-ANALYSIS-001",
+    "title": "Gate-14：manifold defect PASS；稳定化 FAIL 但开环训练修复 scheduled 传播；Koopman 胜 DirectNN 5.9×；控制增益仅 ~3%",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_gate14_v1.md",
+      "document_sha256": "1a74d5531bc8d71a8c080e3ce1b4e86a172c88bac3ba04c0ddd138111d3f90fe",
+      "scope": "Gate-14: manifold defect, stabilization rescue, open-loop training, direct NN baseline, control proxy, runtime",
+      "gate14A_manifold_defect": {
+        "R_prop_dM_H1_5_10_20": [
+          0.19,
+          0.64,
+          0.94,
+          1.45
+        ],
+        "R_prop_err_H1_5_10_20": [
+          0.0075,
+          0.042,
+          0.107,
+          0.287
+        ],
+        "corr_dM_err_H5_10_20": [
+          0.54,
+          0.57,
+          0.49
+        ],
+        "verdict": "PASS"
+      },
+      "gate14B_stabilization": {
+        "baseline_A_r2": {
+          "R_reencode_H20": 0.0439,
+          "F_prop_H20": 1.412,
+          "R_prop_H20": 0.368,
+          "rho": 1.032
+        },
+        "one_step_rho099": {
+          "R_reencode_H20": 0.0486,
+          "F_prop_H20": 1.817,
+          "R_prop_H20": 1.568,
+          "rho": 0.989
+        },
+        "openloop_rho099": {
+          "R_reencode_H20": 0.0403,
+          "F_prop_H20": 1.138,
+          "R_prop_H20": 0.0412,
+          "rho": 0.989
+        },
+        "openloop_norho": {
+          "R_reencode_H20": 0.043,
+          "F_prop_H20": 1.129,
+          "R_prop_H20": 0.0418,
+          "rho": 1.03
+        },
+        "verdict": "stabilization alone FAILS (stable route closed); open-loop training RESCUES scheduled propagation (0.368->0.041, 9x), independent of rho"
+      },
+      "direct_nn": {
+        "val_H20": 0.2596,
+        "A_only_val_H20": 0.0439,
+        "params": [
+          6570,
+          6714
+        ],
+        "verdict": "Koopman 5.9x better"
+      },
+      "gate14C_control": {
+        "C0_fixed": 0.1367,
+        "C2_aonly": 0.136,
+        "C2b_aol_sched": 0.1411,
+        "C1_frozen": 0.2135,
+        "plant_sensitivity_C2_vs_C0_pct": {
+          "dnn": 2.7,
+          "aonly": 3.8,
+          "fixed": -8.5
+        },
+        "verdict": "C1 fails; A-only control gain only ~3% (<< 10% gate); modeling gain does not translate proportionally to closed-loop gain"
+      },
+      "gate14E_runtime_ms": {
+        "C0": [
+          2965,
+          5502
+        ],
+        "C2": [
+          3533,
+          4213
+        ],
+        "C2b": [
+          2349,
+          2818
+        ],
+        "C1": [
+          952,
+          1273
+        ],
+        "verdict": "oracle SLSQP FAIL (>200ms); RTI needed"
+      },
+      "open_for_gpt": "how to handle ~3% control gain vs 10% gate; adopt open-loop-trained scheduled predictor?; implement RTI (14D)?; hardware timing"
+    }
+  }
+}

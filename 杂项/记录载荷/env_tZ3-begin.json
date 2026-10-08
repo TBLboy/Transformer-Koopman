@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ3-begin",
+  "expected_revision": 408,
+  "action": "task.begin",
+  "payload": {
+    "task_id": "TASK-006",
+    "run_id": "RUN-006",
+    "next_action": "论文新版本 Main.tex：已完成标题/摘要/贡献/引言/方法论(Def.1)/新理论章节(Prop.1,Def.2,Prop.2,Rem.1,Def.3,Thm.1,Cor.1,Prop.3,scope,diagnostics)/RTI-SP 控制器/结论的改写；结构检查通过。待办：实验章节、相关工作总结、图1-3 适配、参考文献补充。"
+  }
+}

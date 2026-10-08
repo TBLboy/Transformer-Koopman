@@ -1,0 +1,54 @@
+{
+  "per_joint": {
+    "joint_1": {
+      "residual_std_val": 0.34417072236101404,
+      "acf_lag1..5": [
+        0.6509135659121271,
+        0.4182709147398346,
+        0.30302604369776936,
+        0.17813304946415928,
+        0.10669174831445871
+      ],
+      "AR1_one_step_val_rmse": 0.2605945133969342,
+      "AR1_improvement_over_white": 0.24287855304949268,
+      "AR2_one_step_val_rmse": 0.2607100171426821,
+      "AR2_improvement_over_white": 0.24255735557640834,
+      "AR4_one_step_val_rmse": 0.25984300439333435,
+      "AR4_improvement_over_white": 0.2451097933657358
+    },
+    "joint_2": {
+      "residual_std_val": 0.42081886807690777,
+      "acf_lag1..5": [
+        0.5775179273022849,
+        0.3695366629376224,
+        0.31859358614467037,
+        0.26136698570686656,
+        0.2157653736754599
+      ],
+      "AR1_one_step_val_rmse": 0.3395139627817283,
+      "AR1_improvement_over_white": 0.19423677367018644,
+      "AR2_one_step_val_rmse": 0.33860586200410375,
+      "AR2_improvement_over_white": 0.19640766262258402,
+      "AR4_one_step_val_rmse": 0.33491453023002205,
+      "AR4_improvement_over_white": 0.20508752856023182
+    },
+    "joint_3": {
+      "residual_std_val": 0.2597626945137743,
+      "acf_lag1..5": [
+        0.5650135628185541,
+        0.4081632410773611,
+        0.37063692091453004,
+        0.32290978618725996,
+        0.2932188587915942
+      ],
+      "AR1_one_step_val_rmse": 0.21568620557616927,
+      "AR1_improvement_over_white": 0.1697328583777974,
+      "AR2_one_step_val_rmse": 0.21394139439727783,
+      "AR2_improvement_over_white": 0.1764377171736634,
+      "AR4_one_step_val_rmse": 0.21144056481747822,
+      "AR4_improvement_over_white": 0.18600273913237786
+    }
+  },
+  "method": "AR(p) fit on train residual, evaluated on val residual; baseline predicts 0 (white)",
+  "verdict": "If AR improvements are substantial, residual has predictable dynamics (R3 supported)."
+}

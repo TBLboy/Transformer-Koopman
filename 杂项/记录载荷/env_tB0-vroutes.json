@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "command_id": "tB0-vroutes",
+  "expected_revision": 321,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-V-ROUTES-001",
+    "title": "GPT 第五轮 V1-V6 验证：P1 强单调成立；P2 为近对称鞍点，V1/V2/V3 被杀死",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_v_routes_validation_v1.md",
+      "document_sha256": "a61078960f6679b7cdfbd3cfed5493d26c55ac49e65c41ccad430b8962b97d3e",
+      "scope": "GPT round-5 routes V1-V6 validation (paradigm-level, non-Koopman) via T5-A/B/C/E",
+      "verdicts": {
+        "V1 CSMRO": "KILLED on P2: local response Jacobian symmetric part 99.71% indefinite (saddle), PD 0.29%, ND 0%; P1 supports (92.57% PD)",
+        "V2 CMPD (convex potential/Legendre dual)": "KILLED on P2: near-symmetric (curl 0.05) but indefinite -> saddle potential, not convex",
+        "V3 MMICR (maximal monotone relation)": "KILLED on P2: monotone operators require PSD symmetric part; saddle is not monotone",
+        "V4 FMOSI": "not tested; prior-art very high (Chen-Fliess/Volterra); backup only",
+        "V5 AFISC": "premise weak: conditional ambiguity only 0.21 (not dominant); needs new probing data",
+        "V6 MSIC": "out of frozen-data scope; strategic fallback"
+      },
+      "key_findings": [
+        "P1 control response is strongly monotone (92.57% PD symmetric part) consistent with M(q)>>0",
+        "P2 control response is a near-symmetric saddle: 99.71% indefinite, PD 0.29%, ND 0%, curl 0.05",
+        "P2 sign asymmetry: corr(u,d) diagonal = [-0.61, +0.62]",
+        "P2 is nearly deterministic (ambiguity 0.21) and locally invertible (sigma_min 9.6e-4) but NOT monotone/convex",
+        "No single invertible-response geometry unifies P1 and P2"
+      ],
+      "meta": "After R(18)/N(6)/M(12)/Q(7)/V(6), still no candidate survives gate v0.2.",
+      "user_directive": "validate + feedback only, do not invent new routes"
+    }
+  }
+}

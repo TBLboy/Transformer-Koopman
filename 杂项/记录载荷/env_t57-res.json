@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "command_id": "t57-res",
+  "expected_revision": 278,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-DELTA2-RESIDUAL-001",
+    "title": "delta 2 残差结构：结构化未建模动力学，不能靠噪声分离复活",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_delta2_residual_structure_v0.1.md",
+      "document_sha256": "8c50772055257fdc8a13a08cc057c7fc8c6e93b679fe1d2b2ac729c75c06b566",
+      "lag1_autocorrelation": {
+        "joint1": 0.6532438824412483,
+        "joint2": 0.5912642597595695,
+        "joint3": 0.5573769500797434
+      },
+      "corr_with_acc": {
+        "joint1": 0.0209,
+        "joint2": 0.0032,
+        "joint3": -0.0011
+      },
+      "corr_with_dq": {
+        "joint1": 0.2709,
+        "joint2": 0.1717,
+        "joint3": 0.1844
+      },
+      "verdict": "EL residual is structured (high lag-1 autocorrelation ~0.56-0.65), not white noise. delta 2 cannot be revived by noise separation; requires stronger structural identification.",
+      "implication": "delta 1 (finite-data closed-loop bound) and delta 3 (unified bound) would be dominated by the same structured residual and yield vacuous bounds unless the residual is modeled.",
+      "script": "C:/Users/12187/AppData/Local/Temp/opencode/p1_residual_structure.py"
+    }
+  }
+}

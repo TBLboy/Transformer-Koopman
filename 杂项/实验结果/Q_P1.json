@@ -1,0 +1,27 @@
+{
+  "baseline_rmse": 0.133326,
+  "baseline_rank90": 2,
+  "baseline_rank99": 3,
+  "baseline_imB_frac": 1.0,
+  "resid_eig_norm": [
+    0.6975,
+    0.23479,
+    0.06771,
+    0.0,
+    0.0,
+    -0.0
+  ],
+  "nonlinear_prefeedback_rank_m": {
+    "rmse": 0.091715,
+    "rank90": 2,
+    "rank99": 3,
+    "imB_frac": 1.0
+  },
+  "full_nonlinear_drift_rank_n": {
+    "rmse": 0.0957,
+    "rank90": 2,
+    "rank99": 3,
+    "imB_frac": 0.9999
+  },
+  "note": "P1 fully observed; z=x. If nonlinear alpha absorbs gravity (input-channel) the residual drops but this is standard nonlinear identification."
+}

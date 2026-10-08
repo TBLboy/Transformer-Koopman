@@ -1,0 +1,12 @@
+修复 Windows 下备份恢复失败，统一开发环境为 uv
+
+- 修复恢复备份在 Windows 报 WinError 32 的根因：SQLite 连接句柄未释放，
+  os.replace 无法替换被打开的文件
+  - 新增 app/db/session.py::release_database_handles()，恢复前释放连接池
+  - POST /operations/restore 先关闭请求 Session 再释放句柄
+- 测试：所有 sqlite3 连接改用 contextlib.closing 显式关闭，消除句柄泄漏
+  （with sqlite3.connect 只提交事务，不关闭连接）
+- seed.py：演示素材默认路径回退到 <data_dir>/uploads，与打包脚本取源一致
+- test_select_directory：改用平台无关的真实临时目录断言
+- 新增 docs/dev-environment.md（uv 复现步骤）与 pc/server/requirements.lock
+- README：端口 8000 改为 8011，改为 uv 环境说明

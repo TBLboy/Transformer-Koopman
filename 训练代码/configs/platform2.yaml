@@ -1,0 +1,244 @@
+# ============================================================
+# 实验基本设置
+# ============================================================
+experiment:
+  name: "patchtst_koopman_baseline"
+  seed: 42
+  device: "cuda"
+  precision: "float32"  # float32 (单精度) / float64 (双精度)
+  # 以下三项显式声明，避免依赖 utils/seed.py 的静默默认值（ALN-004）
+  deterministic: false
+  cudnn_benchmark: true
+  amp: true
+  allow_tf32: true
+  float32_matmul_precision: "high"
+  log_dir: "./results/logs"
+  save_dir: "./results/models"
+
+# ============================================================
+# 数据相关参数
+# ============================================================
+data:
+  # 数据路径（指向文件夹）；相对 训练代码/ 解析（见 DEC-010）
+  data_dir: "../数据备份/软体平台数据/处理后的数据"
+
+  # 文件名
+  train_file: "train.npz"
+  val_file: "val.npz"
+  test_file: "test.npz"
+
+  # 数据维度
+  state_dim: 2          # n: 状态维度 (3个关节位置 + 3个关节速度)
+  control_dim: 2        # m: 控制输入维度 (3个关节力矩)
+
+  # 预处理
+  normalize_state: true
+  normalize_control: true
+
+# ============================================================
+# PatchTST编码器参数
+# ============================================================
+encoder:
+  # 历史窗口
+  history_length: 8    # P: 历史时刻数
+  patch_length: 2       # p: 每个patch的长度
+
+  # 模型维度
+  latent_dim: 10            # d: 潜在空间维度（与训练好的模型一致）
+  d_model: 16          # Transformer模型维度
+
+  # Transformer结构
+  n_layers: 1           # L: Transformer层数（增加）
+  n_heads: 2            # 多头注意力的头数
+  d_ff: 64             # 前馈网络维度
+  dropout: 0.1
+
+  # Readout方式
+  readout_method: "mean"  # mean / max / last
+
+# ============================================================
+# Koopman动力学参数
+# ============================================================
+koopman:
+  # 稳定性约束：rho_max 是 SVD 投影/裁剪的奇异值上界
+  rho_max: 0.9999
+
+# ============================================================
+# 训练参数
+# ============================================================
+training:
+  # 训练方法选择
+  method: "edmd"        # edmd / end_to_end
+
+  # ============ EDMD方法参数 ============
+  edmd:
+    # 预训练阶段（训练编码器和降维矩阵）
+    pretrain:
+      enabled: true           # 是否预训练编码器
+      num_epochs: 500         # 预训练轮数（再增加）
+      batch_size: 2048        # RTX 4060 8GB 优化
+      learning_rate: 0.0010   # 再降低学习率
+      early_stopping: true
+      patience: 100            # 增加patience
+      min_delta: 0.00001
+
+      # 三项损失权重
+      loss_weights:
+        prediction: 1.0        # λ₁: 原始空间预测损失
+        latent: 1.0            # λ₂: 升维空间预测损失
+        consistency: 1.0       # λ₃: 一致性约束损失
+
+    # EDMD计算参数
+    compute:
+      regularization: 0.0001    # Tikhonov正则化
+      svd_clipping: false     # 关闭SVD限制
+      batch_size: 2048         # 编码时的batch size
+
+    # 降维矩阵学习
+    decoder:
+      method: "least_squares" # least_squares / gradient
+      regularization: 0.000001
+
+  # ============ 传统EDMD方法参数（对照组，无神经网络） ============
+  traditional_edmd:
+    # 升维函数配置
+    lifting_function:
+      type: "polynomial"  # polynomial / rbf
+      params:
+        degree: 2         # 多项式阶数（type=polynomial时使用）
+        # rbf_centers: null  # RBF中心点（type=rbf时使用）
+        # rbf_sigma: 1.0     # RBF宽度（type=rbf时使用）
+
+    # EDMD计算参数
+    compute:
+      regularization: 0.000001    # Tikhonov正则化
+      svd_clipping: false         # 是否应用SVD限制
+      batch_size: 1024            # 编码时的batch size
+
+  # ============ 端到端方法参数 ============
+  end_to_end:
+    # 训练参数
+    batch_size: 2048
+    num_epochs: 500
+    learning_rate: 0.0001
+
+    # 学习率调度
+    scheduler: "step"         # step / cosine / none
+    scheduler_params:
+      step_size: 100
+      gamma: 0.9
+
+    # 早停
+    early_stopping: true
+    patience: 90
+    min_delta: 0.00001
+
+    # 梯度裁剪
+    grad_clip: 1.0
+
+    # SVD约束
+    svd_projection:
+      enabled: false           # 是否在每步后应用SVD投影
+      frequency: 1            # 每N步投影一次（1表示每步都投影）
+
+    # 损失函数权重
+    loss_weights:
+      prediction: 1.0         # 预测误差权重
+      stability: 1.0          # 稳定性约束权重
+      regularization: 0.001   # 正则化权重
+
+  # ============ 通用参数 ============
+  # 设备和并行
+  num_workers: 4              # DataLoader的worker数量（RTX 4060 建议 4）
+
+# ============================================================
+# MLP-Koopman 参数（对照基线）
+# ============================================================
+mlp_koopman:
+  # ── 编码器结构 ──────────────────────────────────────────────
+  latent_dim: 8             # d: 升维后的潜在空间维度（与训练好的模型一致）
+  hidden_dims: [128, 64, 32]   # MLP 隐藏层维度列表（与训练好的模型一致）
+  activation: "relu"        # relu / tanh / elu
+  dropout: 0.1
+
+  # ── 训练方式 ────────────────────────────────────────────────
+  training_method: "end_to_end"   # edmd / end_to_end（与训练好的模型一致）
+
+  # ── EDMD 训练参数 ────────────────────────────────────────────
+  edmd:
+    pretrain:
+      enabled: true
+      num_epochs: 300
+      batch_size: 1024
+      learning_rate: 0.0003
+      early_stopping: true
+      patience: 50
+      min_delta: 0.00001
+      loss_weights:
+        prediction: 1.0
+        latent: 0.5
+        consistency: 0.5
+
+    compute:
+      regularization: 0.000001
+      batch_size: 1024
+
+  # ── 端到端训练参数 ───────────────────────────────────────────
+  end_to_end:
+    num_epochs: 300
+    batch_size: 1024
+    learning_rate: 0.0003
+    early_stopping: true
+    patience: 50
+    min_delta: 0.00001
+    grad_clip: 1.0
+
+# ============================================================
+# LSTM-Koopman 参数（时序对照基线）
+# ============================================================
+# 补齐项，修复 ALN-003：run_all.py 调度 train_lstm_koopman.py × platform2.yaml，
+# 但本配置原先缺少此段，导致 LSTMKoopmanModel._patch_config 抛 KeyError: 'lstm_koopman'。
+# 键名逐一取自 LSTMEncoder（latent_dim/hidden_size/n_layers/dropout/bidirectional）
+# 与 MLPKoopmanTrainer（training_method/edmd/end_to_end）实际读取的键。
+# 取值来源：编码器结构键沿用 platform1.yaml 的 lstm_koopman；edmd/end_to_end 训练块
+# 沿用本文件 mlp_koopman 的对应块；latent_dim 取 8 与本文件 mlp_koopman 同尺度。
+# 注意：这些数值属 阶段② 理论方法讨论范围，尚未冻结（见 DEC-003 / DEC-004）。
+lstm_koopman:
+  # ── 编码器结构 ──────────────────────────────────────────────
+  latent_dim: 8             # d: 升维后的潜在空间维度（与本文件 mlp_koopman 同尺度）
+  hidden_size: 64           # LSTM 隐藏层维度（沿用 platform1.yaml）
+  n_layers: 2               # LSTM 层数（沿用 platform1.yaml）
+  dropout: 0.1              # LSTM 层间 dropout（沿用 platform1.yaml）
+  bidirectional: false      # 是否双向 LSTM（沿用 platform1.yaml）
+
+  # ── 训练方式 ────────────────────────────────────────────────
+  training_method: "end_to_end"   # edmd / end_to_end（与本文件 mlp_koopman 一致）
+
+  # ── EDMD 训练参数 ────────────────────────────────────────────
+  edmd:
+    pretrain:
+      enabled: true
+      num_epochs: 300
+      batch_size: 1024
+      learning_rate: 0.0003
+      early_stopping: true
+      patience: 50
+      min_delta: 0.00001
+      loss_weights:
+        prediction: 1.0
+        latent: 0.5
+        consistency: 0.5
+
+    compute:
+      regularization: 0.000001
+      batch_size: 1024
+
+  # ── 端到端训练参数 ───────────────────────────────────────────
+  end_to_end:
+    num_epochs: 300
+    batch_size: 1024
+    learning_rate: 0.0003
+    early_stopping: true
+    patience: 50
+    min_delta: 0.00001
+    grad_clip: 1.0

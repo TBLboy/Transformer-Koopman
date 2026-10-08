@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tZD-handoff",
+  "expected_revision": 348,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "第九轮（Z0/Z1/Z2，禁止新增观测）验证完成：Z0（时变 sector 下无免费加速）数值确认——常数增益对抗 N=6 收缩精确等于 ((κ-1)/(κ+1))^N（P2 0.3738、P1 0.9003），Chebyshev 被放大 89×/372×，解释第八轮 Y3 失败；Z1（ERCRC 误差回收剪切）被否——尾部误差更差（P2 q95 0.192 vs 0.027）、记忆发散（max 281）、naive clip 不优，三条 kill 判据全中；Z2（逆命令几何中位聚合）被否——改善仅 2.5–5%（门槛 20%）。产出 phase2_gpt_z_routes_validation_v1.md；记录 PHASE2-GPT-Z-ROUTES-001 / PHASE2-Z-EXPERIMENTS-001 / EV-PHASE2-GPT-Z-ROUTES-001。累积结论（第 1–9 轮）：在当前观测 + 门禁 v0.3 下，不再存在有经验动机的非经典控制器路线（完整封锁链见报告 §5）。唯一存活资产=Z0 边界结果 + 响应几何表征。建议方向：转 A′『表征/不可能性』论文（无需新增观测，满足 DEC-022）：学习响应几何 + no-free-acceleration + Y3/Z1/Z2 经验否证 + 直接响应反馈比已部署 Koopman+LQR 更稳健。是否满足 DEC-021（控制器创新为首要）需用户裁定。下一步：等待用户就『A′ 论文 vs 其他』拍板。GOAL-001 门禁仍拒绝；DEC-018 未满足；代码/配置/论文冻结。"
+  }
+}

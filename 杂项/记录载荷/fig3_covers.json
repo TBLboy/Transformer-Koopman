@@ -1,0 +1,11 @@
+{
+  "files": [
+    "Transformer-Koopman/论文/新版本/pictures/Figure_mechanism.pdf",
+    "Transformer-Koopman/论文/新版本/build_v2/Main.pdf",
+    "Transformer-Koopman/论文/新版本/Main.tex"
+  ],
+  "requirements": [],
+  "tasks": [
+    "TASK-006"
+  ]
+}

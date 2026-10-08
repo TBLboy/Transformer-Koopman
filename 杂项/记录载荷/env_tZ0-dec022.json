@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ0-dec022",
+  "expected_revision": 340,
+  "action": "record.create",
+  "payload": {
+    "id": "DEC-022",
+    "kind": "decision",
+    "status": "active",
+    "title": "用户裁定：控制器设计不得以新增观测为前提；第九轮禁止以转 C 作答",
+    "payload": {
+      "class": "C",
+      "decided_by": "user",
+      "reason": "用户在第八轮 0/6 后质疑：控制器设计为何要新增观测才行。判定 GPT 第六/七轮提出的『A′ 或 C』中，C（新增观测）不应作为控制器设计的前提。",
+      "decision": "阶段② 控制器工作必须留在现有观测内；第九轮交 GPT 的请求（v9b）明确禁止建议新增观测（C1/C2/C3），要求 GPT 要么给出仅用现有观测、非经典包装、可廉价证伪的控制器路线（机制或保证/目标层面均可），要么给出『为何在该对象上不存在此类贡献』的严谨不可能性论证。新增观测仅作为最后手段，不得替代对控制方法本身的思考。",
+      "reversible": true,
+      "signals": [
+        "conclusion"
+      ],
+      "notes": [
+        "明确了卡点不是可观测性，而是『该控制问题太古典、太容易』：响应 bulk 强单调+良态，常数增益已近最优（oracle 余量 1.25–2×），故新机制无赢的空间。",
+        "保留路径：若第九轮给出不可能性论证，则诚实结论可能收敛到 A′（响应几何表征/证伪论文），但需与 DEC-021（控制器创新为首要）协调后再定。",
+        "产出：phase2_gpt_handoff_v9b.md（禁止新增观测版交接稿）+ phase2_response_geometry_characterization_seed_v0.1.md。"
+      ]
+    }
+  }
+}

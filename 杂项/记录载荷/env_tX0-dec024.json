@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "command_id": "tX0-dec024",
+  "expected_revision": 382,
+  "action": "record.create",
+  "payload": {
+    "kind": "decision",
+    "id": "DEC-024",
+    "title": "路线级研究 CLOSED：冻结 RTI-SP/N=5/1-iter，停止架构/控制器/runtime 搜索",
+    "status": "active",
+    "payload": {
+      "level": "C",
+      "basis": "GPT 第十六轮裁定（用户转发）+ matched oracle 实证 RTI-SP PASS",
+      "decision": "阶段②/③ 路线级研究正式 CLOSED。模型冻结（A-only, r=2, fixed B/C, history-conditioned transition, rollout-aware scheduled training）；控制器冻结（HC-RKMPC + RTI-SP, N=5, 1 SQP iteration）。停止：B-only/AB/bilinear/mixture/stable-Koopman/higher-rank/新 encoder；2+ SQP 迭代；N=8 硬件路线；runtime 深度优化（当前 p95 78–120ms ≪ 200ms）。",
+      "consequence": "唯一剩余离线控制实验（N=5 matched oracle）已完成并通过 → P2 真机 E1–E5 可开始（用户执行）。理论侧并行做 Theory Diagnostics（已完成）→ 正式化 Prop.1/2、Thm.1、Prop.3 → 论文理论章节。",
+      "reopen_condition": "仅当 matched oracle 或真机出现灾难性反例，或完整真机 loop p95 ≳180ms 时才重开对应子问题。",
+      "evidence": "phase2_round16_matched_oracle_theory_v1.md; phase2_gpt_handoff_v14.md"
+    }
+  }
+}

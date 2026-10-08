@@ -1,0 +1,19 @@
+{
+  "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+  "artifact_sha256": "01fc1955894bd8f8ae1fd4c8d1211ccabbf54604e9736ed12da2f7f873788fe8",
+  "artifact_bytes": 82357,
+  "recompiled_pdf": "Transformer-Koopman/论文/新版本/build/Main.pdf",
+  "recompiled_pdf_sha256": "cd5f126ac1af1b3a2ba091a23ba990dd285fbf49298e228d883e1a9a3dbf8df8",
+  "recompiled_pdf_bytes": 304115,
+  "pages": 12,
+  "review": "Fourth external review (Method-Theory Consistency): core theory PASS, proofs PASS w/ minor fixes, method-theory consistency NOT CLOSED (Priority 1), conditional pass.",
+  "priority2_applied": {
+    "1_thm1_ek0": "Theorem 1 e_k=0 condition tightened: requires the same measured history AND the corresponding encoder-consistent latent state (Xhat_k=X_k and z^P_k=g_theta(X_k)), not merely 'starts from a true measurement'.",
+    "2_assumption1_domain": "Assumption 1 mismatch is now quantified over reference augmented states (xi*,u) in Omega.",
+    "3_prop3_linesegment": "Prop.3 proof now bounds ||D^2 F|| on the line segment {bar_eta_i+s delta_eta_i} by Assumption 3, instead of claiming it 'on Omega'.",
+    "4_diagnostics_typo": "Diagnostics text now reads 'absolute one-step defects epsilon_k against absolute rollout defects d^abs' (was 'absolute epsilon').",
+    "5_prop3_not_one_iter": "Prop.3 no longer claims one RTI iteration is sufficient; it states local second-order accuracy and attributes single-iteration adequacy to the matched-oracle experiment (also updated in Section VI-C)."
+  },
+  "compile": "Tectonic 0.17.0; 12 pages; only remaining warning is the pre-existing 0.87pt overfull at the Corollary 1 equation; no new overfull, no undefined macros. Values and theorem statements unchanged.",
+  "verdict": "Priority-2 applied; Priority-1 (method-theory unification) is confirmed real and is larger than the reviewer stated (see PHASE2-METHOD-CODE-TRACE-001)."
+}

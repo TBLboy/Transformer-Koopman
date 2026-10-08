@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t55-resume",
+  "expected_revision": 273,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "用户确认 P1 输入=关节力矩/电流指令（第2关节力矩含明显重力偏置），P1 为全状态 EL 系统；选择先评估 P1-only。评估结论：P1-only 主结构（EL+力矩+动量结构+Koopman+鲁棒控制）已被 arXiv:2509.17010 直接占据，另有 Zheng CDC2024、Hancioglu IEEE Access2026 等。最小结构化 lifting spike：原始 affine val RMSE 0.22556 vs 物理结构化 0.22293，几无收益，说明手工物理特征不构成路线。三个可能 delta（有限数据闭环界 / 保无源正定 lifting / 全状态与部分可观测统一界）均未证明非平凡+可检验+prior-art delta。下一步：从三个 delta 中选定一个写出可证伪最小版本；若失败则 P1-only 也不成立，转入补采数据或缩小范围的 C 级决策。"
+  }
+}

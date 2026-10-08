@@ -1,0 +1,22 @@
+{
+  "raw_affine": {
+    "n_features": 10,
+    "train_rmse": 0.2404372492978041,
+    "val_rmse": 0.22556271591053131
+  },
+  "structured_physics": {
+    "n_features": 19,
+    "train_rmse": 0.23675598533242667,
+    "val_rmse": 0.22292837258961862
+  },
+  "structured_physics_h2": {
+    "n_features": 19,
+    "val_rmse": 0.36781751195039136
+  },
+  "structured_physics_h3": {
+    "n_features": 19,
+    "val_rmse": 0.4820584726617948
+  },
+  "p1_input_semantics": "joint torque/current command (user-confirmed); joint-2 torque has large gravity offset",
+  "warning": "Offline regression diagnostics only; not a Koopman/EL theorem and not a control result."
+}

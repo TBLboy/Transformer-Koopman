@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "command_id": "tY1-yexp",
+  "expected_revision": 336,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-Y-EXPERIMENTS-001",
+    "title": "C8 谱界 + 离线 replay：Y3 Chebyshev 在真实时变响应上被常数增益击败；谱信息收益上界 ~1.25-2x",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_y_routes_validation_v1.md",
+      "document_sha256": "d6ad54c966271a94d16f16220737be5f88123d916a8b74267d417ecafa01abe0",
+      "scripts": [
+        "V_C8.py",
+        "V_C8b.py",
+        "V_C8c.py"
+      ],
+      "C8_1_spectral_bounds": {
+        "P1_symJ": {
+          "mu_q05": -7.27,
+          "L_q95": 585.2,
+          "kappa_q": null,
+          "mu_median": 25.21,
+          "L_median": 228.6,
+          "kappa_median": 9.07,
+          "frac_pd": 0.906
+        },
+        "P2_rectified_S0J": {
+          "mu_q05": 0.00055,
+          "L_q95": 0.0065,
+          "kappa_q": 11.84,
+          "mu_median": 0.00097,
+          "L_median": 0.00161,
+          "kappa_median": 1.67,
+          "frac_pd": 0.9967
+        },
+        "P2_unrectified": {
+          "frac_pd": 0.0
+        }
+      },
+      "C8_2_replay_wide_tight": {
+        "P2_wide_kappa12.18": {
+          "N6": {
+            "const_med": 0.047,
+            "cheb_med": 0.142,
+            "cheb_better_frac": 0.235
+          },
+          "oob": 0.106
+        },
+        "P2_tight_kappa1.69": {
+          "N6": {
+            "const_med": 0.0325,
+            "cheb_med": 0.0436,
+            "cheb_better_frac": 0.365
+          },
+          "oob": 0.895
+        },
+        "P1_wide_kappa114.8": {
+          "N6": {
+            "const_med": 0.144,
+            "cheb_med": 1.656,
+            "cheb_better_frac": 0.023
+          },
+          "oob": 0.092
+        },
+        "P1_tight_kappa8.21": {
+          "N6": {
+            "const_med": 0.269,
+            "cheb_med": 1.366,
+            "cheb_better_frac": 0.168
+          },
+          "oob": 0.882
+        }
+      },
+      "interpretation": "No fixed spectral interval is both tight and accurate; open-loop spectral acceleration (Chebyshev) is structurally worse than best constant gain on this time-varying signed response operator. Per-window oracle constant gain beats global constant by only ~1.25-2x."
+    }
+  }
+}

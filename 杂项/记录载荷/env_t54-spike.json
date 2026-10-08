@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "command_id": "t54-spike",
+  "expected_revision": 269,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-A2A7-SPIKE-001",
+    "title": "A2/A7 最小可证伪 spike：相对阶平凡、可控谱无隙",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_a2_a7_minimal_spike_v0.2.md",
+      "document_sha256": "46caf09125529115f6e35554c85998f8afb6730455428d4346410a5ff42d34d3",
+      "scripts": [
+        "C:/Users/12187/AppData/Local/Temp/opencode/spike_a2_a7.py",
+        "C:/Users/12187/AppData/Local/Temp/opencode/spike_a2_relative_degree.py"
+      ],
+      "a2": {
+        "input_predictive_gain": "current u reduces val RMSE from 0.148239 to 0.116112 (h=1), 0.283895 to 0.174287 (h=2), 0.401977 to 0.198671 (h=3)",
+        "output_relative_degree_of_exported_model": 1,
+        "CB_full_rank": true,
+        "CB_condition_number": 1.1324244663896168,
+        "verdict": "relative-degree-of-lifting idea is non-trivial only if a lifting sequence that breaks output relative degree can be exhibited; none constructed yet; A2 not established"
+      },
+      "a7": {
+        "controllability_rank": 10,
+        "sigma_min_over_sigma_max": 2.0869751354865798e-07,
+        "verdict": "full rank but ill-conditioned with no defensible spectral cutoff; requires a task-error criterion and a controller change to be non-trivial"
+      },
+      "overall": "A2 and A7 are NOT approved. No new controller structure or non-trivial theorem yet. If neither produces a checkable new condition, escalate to C-level decision: targeted data collection vs scope reduction."
+    }
+  }
+}

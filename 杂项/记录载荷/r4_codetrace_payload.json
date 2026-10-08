@@ -1,0 +1,17 @@
+{
+  "question": "Does the paper's Methodology (Section IV-B) match the actual training implementation?",
+  "method": "Read-only static inspection of the migrated repo 训练代码/ and of the gate14 research surrogate scripts; cross-read against Main.tex Sections IV-B / V-B.",
+  "finding_paper": "Main.tex Section IV-B + Algorithm 1 + Fig.2 describe a THREE-STAGE EDMD pipeline for a FIXED-A model: Stage 0 EDMD warm start of (A,B); Stage 1 joint optimization of (theta,A,B) with five losses (L_x, L_z, L_c, L_multi,x, L_multi,z) and a fixed-A rollout zhat_{k+i}=A zhat_{k+i-1}+B u_{k+i-1}; Stage 2 closed-form EDMD refit of (A,B).",
+  "finding_repo": "The migrated repo 训练代码/ implements ONLY the old fixed-A dense route (models/koopman_dynamics.py single A; edmd_trainer.py 3-stage EDMD). It contains NO context network C_phi, NO g/U/V/A0, NO rank-r, NO scheduled-rollout objective. So Section IV-B literally describes the migrated repo's old-route training, not the paper's claimed model.",
+  "finding_new_route": "The paper's actual new route is implemented as a research surrogate in the gate14 scripts: gate_context_koopman.py (class CtxKoopman) and gate14_stabilize.py (class BudgetedCtxKoopman). Model: PatchTST encoder + context MLP C_phi(in_ctx->64->16) + A(c)=A0+U diag(delta_A*pi*tanh(g(c))) V^T with column-normalized U,V, softmax budget pi, |a_i|<=delta_A, delta_A=0.07, r=2; B=B0 fixed; C=[I_n|0] fixed. Training: initialize from a one-step-trained fixed base (fixed.pt), then minimize an open-loop scheduled-propagation MSE over H=20 where the context is re-computed from the decoded history buffer at every step, optionally plus a spectral-radius penalty relu(rho(A)-rho_max)^2 with rho_max=0.99; the final model uses lam=0 (no rho penalty). No EDMD, no five losses, no Stage-2 refit.",
+  "diagnostics_model": "gate16_diag_final.py loads BudgetedCtxKoopman from gate_states/A_stab_openloop_lam0.0_rho0.99.pt (r=2, P=8, d=10) - i.e. the frozen diagnostics were computed with the surrogate model, not with any migrated-repo model.",
+  "consequence": "The reviewer's Priority-1 (Method != Theory) is correct, and deeper than stated: the fix is to rewrite Section IV-B + Algorithm 1 + Fig.2 caption to the actual new-route training (one-step initialization + rollout-aware scheduled objective, A(c), r=2, B/C fixed, no EDMD), and to update the single external reference to eq:loss_x at line 635.",
+  "open_decision": "Whether to rewrite Section IV-B now, and how to handle Fig.2 (old fixed-A one-step schematic) while figures are paused.",
+  "evidence_paths": [
+    "训练代码/src/patchtst_koopman/models/koopman_dynamics.py",
+    "训练代码/src/patchtst_koopman/training/edmd_trainer.py",
+    "C:/Users/12187/AppData/Local/Temp/opencode/gate_context_koopman.py",
+    "C:/Users/12187/AppData/Local/Temp/opencode/gate14_stabilize.py",
+    "C:/Users/12187/AppData/Local/Temp/opencode/gate16_diag_final.py"
+  ]
+}

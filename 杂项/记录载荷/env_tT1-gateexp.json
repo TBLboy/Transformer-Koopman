@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "command_id": "tT1-gateexp",
+  "expected_revision": 363,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-STRUCTGATE-EXPERIMENTS-001",
+    "title": "结构 gate 实验：真实 latent 管线 A/B/AB 调制 + 证伪 + 部署锚点",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_context_modulation_v1.md",
+      "document_sha256": "96f5e15e6418559305505e4a87a77019ea07b8101cb76f6a2fa9dd744da20e61",
+      "scripts": [
+        "gate_context_koopman.py",
+        "eval_deployed.py"
+      ],
+      "artifacts": [
+        "gate_result.json",
+        "gate_result_s1.json",
+        "gate_states/{fixed,A,B,AB}{,_s1}.pt"
+      ],
+      "setup": "PatchTSTEncoder -> z=[x;h](d=10), z'=Az+Bu, decoder=first2; new context encoder over [x_history;u_history] -> c(16); low-rank modulation r=3; all modes identical training; seeds 0/1",
+      "result": "A-only dominates (H20 -73.7%/-74.3%); B-only ~fixed (or worse at H>=10); AB ~= A-only; deployed EDMD P=4 anchor H20 0.1588 matches fixed baseline",
+      "interpretation": "In the true latent pipeline the history-dependent modulation belongs on the state-transition A(c), reversing the round-11 observation-space proxy conclusion (which could not express A-modulation)."
+    }
+  }
+}

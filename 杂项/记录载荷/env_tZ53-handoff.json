@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ53-handoff",
+  "expected_revision": 432,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-006",
+    "next_action": "TASK-006（论文新版本，strict）进行中。**目标**：论文理论部分的文字内容（含证明/定理/参考文献）；实验与绘图暂停；与 GPT 迭代。**第二十轮裁定已执行**：THEORY ROUTE CLOSED / PROOF AUDIT PASS / NUMERICAL CONSISTENCY PASS / **THEORY TEXT FROZEN**。Q-A = YES（统一 stride-1 数值集取代第十八轮 §21，已在表格落地）；Q-B：训练节保留 ẑ，已按 §17 在训练节首次 rollout latent 处加入语义绑定句（ẑ_{k+i} ≡ 理论 z^P_{k+i}）。另按 Priority 1 完成理论节语言润色（开场句、propagation 措辞、two factors、local validity 等）。静态检查：引用无缺失、无悬空引用、环境配对、括号/美元符平衡、5/5 证明块。记录 PHASE2-ROUND20-EDITS-001 / EV-...-001。**遗留（非理论 Gate）**：(a) 全文仍带旧稿修订颜色标记（\\textcolor{red}×20、\\textcolor{blue}×5、\\color{red}×10，主要在方法/训练节）——投稿前应移除，未擅自删除以免影响 GPT 审阅；(b) 本机无 LaTeX，未编译（排版 QA）；(c) P_final 配置审计已完成（P=8；部署 ckpt P=4 系旧遗留），待训练 P=8 最终模型并重导部署资产；(d) Experiments/Results/Discussion、图 1–3、中英转换。**下一步**：按 GPT §24 优先级——P1 理论节语言整理（本轮已做主要部分，可再复核）；P2 P_final 审计（已做）；P3 LaTeX 编译；P4 P2 真机；P5 实验章节。"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "artifact": "Transformer-Koopman/论文/新版本/pictures/Figure_mechanism.pdf",
+  "artifact_sha256": "f1e9e1d38b38fce5282df2d7d50e2bea62a185db44c177802429113b48e760e1",
+  "source_script": "C:\\Users\\12187\\AppData\\Local\\Temp\\opencode\\plot_mechanism_v2.py",
+  "data_source": "gate16_diag_fix.json (stride-4 d_M and transition-product norms, consistent with the Table I footnote)",
+  "defects_fixed": [
+    "y-axis label 'Normalized value (divided by value at H = 1)' was ~2.5 in long, i.e. longer than the 2.5 in figure height -> it was clipped at the top in the compiled PDF; shortened to 'Normalized value' (the normalization is already stated in the caption)",
+    "at H = 1 all three curves equal 1.00, so three '1.00' labels were stacked on the same point; replaced with a single shared '1.00' label",
+    "the blue '1.19' label at H = 5 was clipped below the axes; ylim lowered to 0.15 and label offsets made consistent (blue below its curve, red/green above)",
+    "figure saved with bbox_inches='tight' so no text can be clipped"
+  ],
+  "values_unchanged": {
+    "prod_norm": [
+      1.0,
+      1.192,
+      1.474,
+      2.204
+    ],
+    "dM_norm": [
+      1.0,
+      3.242,
+      4.768,
+      7.712
+    ],
+    "ex_norm": [
+      1.0,
+      2.058,
+      2.761,
+      3.888
+    ]
+  },
+  "recompiled": "Transformer-Koopman/论文/新版本/build_v2/Main.pdf (300624 bytes, 12 pages, sha256 69489d0b...)",
+  "canonical_build_note": "build/Main.pdf could not be overwritten because it is open in a PDF viewer (os error 32); build_v2 is the current review copy",
+  "verdict": "PASS: figure renders cleanly in the single-column layout; no clipping, no overlapping labels; data values unchanged"
+}

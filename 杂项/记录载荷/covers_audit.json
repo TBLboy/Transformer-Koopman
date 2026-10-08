@@ -1,0 +1,12 @@
+{
+  "files": [
+    "Transformer-Koopman/训练代码/configs/platform2.yaml",
+    "Transformer-Koopman/训练代码/deploy/algorithms/tk_assets/model_assets/platform2_metadata.json",
+    "Transformer-Koopman/训练代码/deploy/algorithms/tk_assets/transformer_koopman_model.py",
+    "Transformer-Koopman/训练代码/deploy/algorithms/configs/transformer_koopman_controller.json"
+  ],
+  "requirements": [],
+  "tasks": [
+    "TASK-006"
+  ]
+}

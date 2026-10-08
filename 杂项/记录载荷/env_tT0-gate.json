@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "command_id": "tT0-gate",
+  "expected_revision": 362,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-STAGE3-STRUCT-GATE-001",
+    "title": "阶段③ 结构 gate（真实 latent 管线）：locus=A，非 B；AB 无增益；选 A-only",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gate_stage3_context_modulation_v1.md",
+      "document_sha256": "96f5e15e6418559305505e4a87a77019ea07b8101cb76f6a2fa9dd744da20e61",
+      "scope": "Full latent-pipeline structural gate for A+ (RSHC-TK): A/B/AB low-rank context modulation on real PatchTST-Koopman pipeline, P2 data, 2 seeds",
+      "val_rollout_seed0": {
+        "fixed": {
+          "H1": 0.0234,
+          "H5": 0.0728,
+          "H10": 0.1075,
+          "H20": 0.1689
+        },
+        "A_only": {
+          "H1": 0.009,
+          "H5": 0.0209,
+          "H10": 0.031,
+          "H20": 0.0444
+        },
+        "B_only": {
+          "H1": 0.019,
+          "H5": 0.0688,
+          "H10": 0.1129,
+          "H20": 0.1824
+        },
+        "AB": {
+          "H1": 0.0089,
+          "H5": 0.0212,
+          "H10": 0.0309,
+          "H20": 0.0451
+        }
+      },
+      "val_improve_pct_vs_fixed_seed0": {
+        "A": {
+          "H10": -71.1,
+          "H20": -73.7
+        },
+        "B": {
+          "H10": 5.0,
+          "H20": 8.0
+        },
+        "AB": {
+          "H10": -71.2,
+          "H20": -73.3
+        }
+      },
+      "val_improve_pct_vs_fixed_seed1": {
+        "A": {
+          "H10": -72.2,
+          "H20": -74.3
+        },
+        "B": {
+          "H10": -4.3,
+          "H20": -3.8
+        },
+        "AB": {
+          "H10": -70.6,
+          "H20": -71.7
+        }
+      },
+      "test_rollout_seed0": {
+        "fixed": {
+          "H20": 0.1754
+        },
+        "A": {
+          "H20": 0.0425
+        },
+        "B": {
+          "H20": 0.2017
+        },
+        "AB": {
+          "H20": 0.0456
+        }
+      },
+      "deployed_anchor_edmd_P4": {
+        "val_H20": 0.1588,
+        "test_H20": 0.161,
+        "note": "comparable to end-to-end fixed -> baseline valid"
+      },
+      "falsification_seed0": {
+        "A_modOFF_H20": 0.5072,
+        "A_uhZERO_H20": 0.4927,
+        "AB_modOFF_H20": 0.6059,
+        "AB_uhZERO_H20": 0.4718,
+        "note": "modulation-off and uh-history-zero both degrade H20 by ~11-13x -> gain is from modulation itself and depends on input history"
+      },
+      "verdicts": {
+        "locus_is_A_not_B": "CONFIRMED - A-only -73.7%/-74.3% (2 seeds); B-only ~0 or worse at long horizon; contradicts round-11 observation-space proxy inference",
+        "AB_vs_A_only": "no gain (73.3% vs 73.7% seed0; 71.7% vs 74.3% seed1) -> choose A-only",
+        "why_not_transferable": "observation-space proxy d=J(phi)u can only modulate the input channel; latent A acts on z=[x;h] with h encoding history -> A(c) expresses history-dependent latent dynamics",
+        "falsification": "PASS - gain from modulation (modOFF collapses) + uses input history (uhZERO collapses)"
+      },
+      "open": "boundedness/stability of modulation (needed for DEC-018), rank-r sensitivity, latent matched-state, CB(c) spectrum/PD, cross-sample history-shuffle"
+    }
+  }
+}

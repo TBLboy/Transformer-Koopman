@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ0-theory",
+  "expected_revision": 391,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-THEORY-SECTION-001",
+    "title": "论文理论章节 v1：Def.1/Prop.1/Def.2/Prop.2/Rem.1/Def.3/Thm.1/Cor.1/Prop.3 正式化 + 数值验证",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/paper_theory_section_v1.md",
+      "document_sha256": "92f74e9754fe253f8ab31f427b708cab97981873f664bf6b7f7914c5b8a85535",
+      "scope": "Paper theory section v1: Def.1 (history-conditioned low-rank Koopman family), Prop.1 (finite-history Markovization), Def.2 (latent rollout inconsistency), Prop.2 (error propagation), Rem.1 (spectral stabilization insufficient), Def.3 (rollout-aware training), Thm.1 (finite-horizon error bound), Cor.1 (physical error), Prop.3 (RTI local approximation), scope/non-goals, numerical validation.",
+      "theory_objects": [
+        "history-conditioned low-rank A(c)",
+        "augmented state xi / F_Theta",
+        "latent rollout defect d_M",
+        "transition-product amplification",
+        "rollout-aware objective L_R",
+        "finite-horizon bound",
+        "RTI Taylor remainder"
+      ],
+      "numerical_validation": {
+        "eps_k": {
+          "median": 0.345,
+          "q95": 0.567
+        },
+        "dM": [
+          0.12,
+          0.39,
+          0.574,
+          0.928
+        ],
+        "prod_norm": [
+          1.046,
+          1.247,
+          1.541,
+          2.304
+        ],
+        "L_F": 1.445,
+        "bound_over_actual": [
+          4.71,
+          7.95,
+          12.1,
+          18.7
+        ],
+        "L_C": 1.0,
+        "physical_rmse": [
+          0.0108,
+          0.0222,
+          0.0297,
+          0.0419
+        ],
+        "corollary1_bound_over_actual": [
+          52,
+          139,
+          234,
+          413
+        ]
+      },
+      "honesty_bounds": "All results finite-horizon only; no global Koopman stability, no common Lyapunov, no global asymptotic closed-loop stability, no recursive feasibility. Thm.1 bound and Cor.1 bound reported as valid-but-loose. Prop.1 holds only for the predictor's internal rollout. Prop.3 is classical Taylor remainder, not new SQP theory.",
+      "status": "v1 draft complete; independent verification review delegated (in progress)"
+    }
+  }
+}

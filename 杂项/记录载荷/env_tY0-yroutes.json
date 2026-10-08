@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "command_id": "tY0-yroutes",
+  "expected_revision": 335,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-Y-ROUTES-001",
+    "title": "GPT 第八轮 Y1-Y6 控制器路线验证：0/6 通过门禁 v0.3；Y3 实验被否，Y2 占位",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_y_routes_validation_v1.md",
+      "document_sha256": "d6ad54c966271a94d16f16220737be5f88123d916a8b74267d417ecafa01abe0",
+      "scope": "GPT round-8 controller routes Y1-Y6 validation via C8-1 spectral bounds, C8-2/3 offline replay, L1/L2 prior-art",
+      "gate": "phase2_gate_update_v0.3.md (controller-centric)",
+      "verdicts": {
+        "Y1 RDIC": "fail/weak - repackaging of response-space PI + inverse geometry; Bregman/mirror-descent classical",
+        "Y2 PCMSF": "fail/occupied - arXiv:2606.26188 (continuum arm, Broyden secant + Kalman online Jacobian compensation) + classical resolved-rate Broyden servo",
+        "Y3 CMRC/SARC": "KILLED empirically - Chebyshev gains never beat best constant gain on real time-varying response",
+        "Y4 MPDRC": "KILLED - subset of Y3",
+        "Y5 SARF": "fail - Anderson acceleration = numerical-acceleration transplant (gate-excluded)",
+        "Y6 IPRC": "fail - proximal/resolvent classical (GPT self-labeled fallback)"
+      },
+      "round8_outcome": "0/6 pass gate v0.3",
+      "cumulative": "Rounds 1-8 consistent: on existing observables the searchable mechanism space (modeling AND control) is exhausted (occupied or ineffective on this data).",
+      "reframed_axis_needed": "Round 9 must move OUTSIDE the iterative-inverse / spectral-acceleration / online-Jacobian-adaptation family, else switch to new observable (C1/C2/C3) or characterization/falsification paper (A')."
+    }
+  }
+}

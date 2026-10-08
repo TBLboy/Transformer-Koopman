@@ -1,0 +1,43 @@
+{
+  "P1": {
+    "mu_q05": -7.269018424768127,
+    "L_q95": 585.1740654056642,
+    "kappa_q": null,
+    "mu_median": 25.207031400544185,
+    "L_median": 228.61273616802305,
+    "kappa_median": 9.06940339524025,
+    "frac_lmin_pos": 0.9055555555555556
+  },
+  "P2": {
+    "mu_q05": 0.0005508936239810127,
+    "L_q95": 0.006523578273214381,
+    "kappa_q": 11.841811175943516,
+    "mu_median": 0.0009694908080947532,
+    "L_median": 0.0016147308403080501,
+    "kappa_median": 1.6655452809102183,
+    "frac_lmin_pos": 0.9966666666666667
+  },
+  "P2_unrectified": {
+    "mu_q05": -0.005666235886303406,
+    "L_q95": 0.005668080516933609,
+    "kappa_q": null,
+    "mu_median": -0.001294717507742966,
+    "L_median": 0.0012911746696390607,
+    "kappa_median": null,
+    "frac_lmin_pos": 0.0
+  },
+  "theory_N6": {
+    "P1": {
+      "note": "mu<=0 -> interval invalid"
+    },
+    "P2": {
+      "kappa": 11.841811175943516,
+      "const_gain_1step_rate": 0.8442587285704226,
+      "cheb_1step_equiv_rate": 0.5496705784125435,
+      "const_Nstep_worst": 0.36212070426224957,
+      "cheb_Nstep_worst_theory": 0.05516262763075163,
+      "cheb_Nstep_worst_empirical": 0.05512069572608052,
+      "const_Nstep_worst_empirical": 0.8442587285704226
+    }
+  }
+}

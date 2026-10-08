@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ4-paper",
+  "expected_revision": 409,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-PAPER-DRAFT-001",
+    "title": "论文新版本 Main.tex：新路线（HCLTK + rollout-aware + RTI-SP + finite-horizon theory）改写完成（结构检查通过，未编译）",
+    "status": "complete",
+    "payload": {
+      "artifact": "Transformer-Koopman/论文/新版本/Main.tex",
+      "artifact_sha256": "f435bd619270c35204a9b64ccced183fb380162e3d701c8263d91d4e0fedffe3",
+      "baseline": "Transformer-Koopman/论文/草稿/Main34.tex (copied to 新版本/Main.tex, then revised)",
+      "resources_copied": [
+        "IEEEtran.cls",
+        "pictures/Figure1-3.pdf",
+        "bibtex/"
+      ],
+      "changes": [
+        "title/abstract/keywords rewritten to the new route (history-conditioned low-rank lifting + rollout-aware training + RTI MPC)",
+        "contributions rewritten to the 3 GPT round-17 contributions",
+        "Def.1 (History-Conditioned Low-Rank Koopman Family, r=2) added to methodology; eq:temporal_dynamics now A(c)",
+        "new Sec. Finite-Horizon Theory: Prop.1 (Markovization), Def.2 (rollout inconsistency), Prop.2 (error propagation), Rem.1 (spectral insufficiency), Def.3 (rollout-aware), Thm.1 (finite-horizon bound), Cor.1 (physical), Prop.3 (RTI local), scope/non-goals, diagnostics table",
+        "Sec. Real-Time Predictive Control: RTI-SP scheduled predictor + 1-iteration RTI + matched-oracle table",
+        "old hierarchical-LQR/UUB section removed; modeling-error subsection adapted to A(c)",
+        "conclusion updated"
+      ],
+      "static_checks": {
+        "env_balance": "ok",
+        "dangling_refs": "none",
+        "brace_balance": 0,
+        "dollar_parity": "even"
+      },
+      "not_verified": "LaTeX not installed in this environment -> no compile check (pdflatex/latexmk/tectonic absent); experiments section still empty; figures not yet adapted to the new architecture."
+    }
+  }
+}

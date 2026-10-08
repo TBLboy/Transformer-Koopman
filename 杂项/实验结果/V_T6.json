@@ -1,0 +1,31 @@
+{
+  "P2": {
+    "pd_symJ": 0.0,
+    "pd_symS0J": 0.9966666666666667,
+    "pd_symScJ": 0.9977777777777778,
+    "pd_symSrJ": 0,
+    "n": 900,
+    "eigenframe_circ_std_deg": 3.1601939040963423,
+    "inertia_distribution": {
+      "(2,0,0)": 0,
+      "(1,1,0)": 899,
+      "(0,2,0)": 1,
+      "other": 0
+    },
+    "det_sign": {
+      "frac_pos": 0.0022222222222222222,
+      "frac_neg": 0.9977777777777778
+    },
+    "sigma_min_J": {
+      "median": 0.0009806394818699586,
+      "q05": 0.0005602704866814729,
+      "q95": 0.0032547364127758507,
+      "frac_pos": 1.0,
+      "frac_neg": 0.0
+    }
+  },
+  "T6_3_potential_vs_vector_val_rmse": {
+    "potential_gradient": 0.018812021240592003,
+    "unrestricted_vector": 0.01957058161497116
+  }
+}

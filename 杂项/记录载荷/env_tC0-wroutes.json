@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "command_id": "tC0-wroutes",
+  "expected_revision": 326,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-W-ROUTES-001",
+    "title": "GPT 第六轮 W1-W6 验证：T6-0 审计点成立，第五轮鞍点结论被修正；无新路线",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_w_routes_validation_v1.md",
+      "document_sha256": "dc46a1fc85093a321f4b91af756bbed1816d216a20bc67ab6e56fb13f8694d9f",
+      "scope": "GPT round-6 routes W1-W6 validation via T6-0/1/2/3; T6-0 audit point confirmed -> round-5 conclusion revised",
+      "correction_of_round5": {
+        "round5_claim": "'sign flip cannot rescue, because SJS stays indefinite' - stated for CONGRUENCE (both input and output)",
+        "corrected": "one-sided OUTPUT change d~=Sd gives Jacobian SJ (not SJS); sym(SJ) CAN be positive definite; with stable eigenframe a CONSTANT S0 suffices",
+        "impact": "P2 is NOT an un-saveable saddle; it is monotone under a fixed output reflection S0=diag(-1,1). Round-5 V1 kill is technically overturned; V1's monotone premise holds on P2 up to a constant sign convention."
+      },
+      "verdicts": {
+        "W1 Morse-indexed gradient response": "premise holds (index 1 stable, near-integrable) but constant output reflection makes it monotone -> genuine structure simpler than Morse machinery; over-machinery",
+        "W2 saddle inverse": "premise dissolved (not a genuine saddle)",
+        "W3 degree atlas": "degree stably -1, locally invertible -> certificate trivial",
+        "W4 polar factorization": "premise dissolved (near-integrable + constant-reflection monotone)",
+        "W5 signature rectification": "CONFIRMED as fact correction (constant S0 works) -> sign convention, not novel (as GPT predicted)",
+        "W6 Morse-degree continuation": "built on dissolved saddle premise"
+      },
+      "round6_outcome": "no new route; but a significant fact correction and a cleaner two-platform characterization",
+      "corrected_fact_base": "Both platforms have monotone (P2 up to a fixed output-axis reflection), near-integrable, locally invertible control-response operators.",
+      "user_directive": "validate + feedback only, do not invent new routes"
+    }
+  }
+}

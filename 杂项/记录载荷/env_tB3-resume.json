@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tB3-resume",
+  "expected_revision": 324,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "已推进 GPT 第五轮 V1–V6（非-Koopman 范式）报告：完成机制级 prior-art + 廉价证伪实验 T5-A/B/C/E，产出 phase2_gpt_v_routes_validation_v1.md 与独立交接稿 phase2_gpt_handoff_v6.md。判决：P1 控制响应强单调成立（局部 Jacobian 对称部 92.57% 正定，与 M(q)≻0 一致）；P2 控制响应为近对称鞍点（局部对称部 99.71% 不定、PD 仅 0.29%、ND 0%，符号翻转无法挽救；corr(u,d) 对角 [−0.61,+0.62]）→ V1（强单调）死、V2（凸势/Legendre 对偶）死、V3（极大单调关系）死；V4 prior-art 极高（Chen–Fliess/Volterra）；V5 前提弱（条件歧义仅 0.21）；V6 超冻结数据。P2 近乎确定（歧义 0.21）、近可积（curl 0.05）、局部可逆（σ_min>0）但结构为鞍——不能被任何漂亮定理利用。跨五轮元结论：R(18)/N(6)/M(12)/Q(7)/V(6) 无候选存活；p1 处处满足经典结构，P2 处处不满足，同一机制难以统一两平台。下一步：等待 GPT 依据交接稿 v6 返回方向性判断与第六轮；返回后按同法验证。若 GPT 判断无新机制，则转向‘可逆控制响应几何’严谨表征论文（门禁选项 A 的变体）。GOAL-001 门禁仍拒绝；DEC-018 未满足；代码/配置/论文冻结。"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tV4-handoff",
+  "expected_revision": 376,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "Gate-14（GPT 第十四轮 v1.3）完成。**两个关键负结果**：(1) 稳定化救不了传播——budgeted low-rank+ρ≤0.99 使 R_prop 更差（0.368→1.568），GPT 预判正确，stable-latent 主路线关闭；**但开环（scheduled 传播）训练把 R_prop 从 0.368 修到 0.041（9×，≈重编码），且不压 ρ 也行**（修复来自训练目标）→ 可用更便宜的 scheduled-propagation 预测器替代每步重编码。F_prop（冻结）仍失败。(2) **控制增益只有 ~3%**：闭环代理（plant=独立 DirectNN，N=8 SLSQP oracle）C0 0.1367 vs C2 0.1360（plant 敏感 +2.7~3.8%），远低于 GPT §40 的 10% 门槛——**建模增益(−74%)不能按比例转化为闭环控制增益**（receding-horizon+重锚定抵消了多步优势）；C1 frozen 差 56%（确认不可用）。其余：14A manifold defect PASS（d_M 0.19→1.45，corr 0.49–0.57，证实 GPT 根因）；DirectNN H20 0.2596 vs Koopman 0.0439（5.9×，回答为何用 Koopman）；14E oracle SLSQP med 2965ms/p95 5502ms（FAIL，需 RTI）。产出 phase2_gate_stage3_gate14_v1.md + phase2_gpt_handoff_v12.md；记录 PHASE2-GATE14-ANALYSIS-001 / PHASE2-GATE14-EXPERIMENTS-001 / EV-PHASE2-GATE14-ANALYSIS-001。下一步（待 GPT 回复 handoff v12 §6）：(1) 控制增益仅 ~3% 如何处理（接受 model 为主创新进真机 / 改进离线代理 / 重定位 controller）；(2) 是否采用开环训练的 scheduled-propagation 预测器；(3) 是否实现 14D RTI；(4) 真机时序。GOAL-001 门禁仍拒绝；DEC-018 重新解释（稳定化非主路线）。"
+  }
+}

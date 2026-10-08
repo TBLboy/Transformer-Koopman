@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "command_id": "tS0-aplus",
+  "expected_revision": 354,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-ROUND11-APLUS-001",
+    "title": "第十一轮 A+ 验证：B(c) 是历史依赖主要载体（B-only>>A-only），matched-state 差异 3.24x",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_round11_routeAplus_validation_v1.md",
+      "document_sha256": "19bc2a45f4790a255ebe10a60ec3e33a43b74e0806001290cd6552f0b8668e8f",
+      "scope": "GPT round-11 A+ (RSHC-TK) two core claims validation on existing P2 data",
+      "ablation_rollout_val_rmse": {
+        "base_additive_context": {
+          "H1": 0.059,
+          "H5": 0.419,
+          "H10": 1.0622,
+          "H20": 2.014
+        },
+        "A_only": {
+          "H1": 0.0451,
+          "H5": 0.2392,
+          "H10": 0.6126,
+          "H20": 1.1719
+        },
+        "B_only": {
+          "H1": 0.0415,
+          "H5": 0.2196,
+          "H10": 0.4191,
+          "H20": 0.6583
+        },
+        "AB": {
+          "H1": 0.0361,
+          "H5": 0.1933,
+          "H10": 0.3798,
+          "H20": 0.6081
+        }
+      },
+      "vs_base_pct": {
+        "A": {
+          "H10": -42.3,
+          "H20": -41.8
+        },
+        "B": {
+          "H10": -60.5,
+          "H20": -67.3
+        },
+        "AB": {
+          "H10": -64.2,
+          "H20": -69.8
+        }
+      },
+      "B_vs_AB_pct": {
+        "H1": 12.8,
+        "H5": 12.0,
+        "H10": 9.4,
+        "H20": 7.6
+      },
+      "matched_state_history_test": {
+        "n_pairs": 199,
+        "resp_diff_similar_history": 0.0892,
+        "resp_diff_different_history": 0.2889,
+        "ratio": 3.24
+      },
+      "verdicts": {
+        "claim1_B_is_locus": "CONFIRMED - B-only (H20 -67%) >> A-only (H20 -42%); history modulates the control channel",
+        "claim2_matched_state": "CONFIRMED - same x,u with different history gives 3.24x larger next-response difference",
+        "structure_choice": "AB only 7.6-9.4% better than B-only -> grey zone; recommend B-only first (simpler, more distinct from generic time-varying Koopman)"
+      },
+      "prior_art": "arXiv 2606.23957 and 2505.00354 verified real; MamKO (ICLR 2025) not on arXiv; journal DOIs unverifiable. GPT map directionally correct.",
+      "proxy_caveat": "observation-space proxy, not full latent pipeline; needs Phase-3 reproduction."
+    }
+  }
+}

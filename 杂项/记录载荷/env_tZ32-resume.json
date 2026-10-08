@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "tZ32-resume",
+  "expected_revision": 423,
+  "action": "task.resume",
+  "payload": {
+    "task_id": "TASK-006",
+    "next_action": "TASK-006（论文新版本，strict）进行中。**目标已收敛**：只做论文**理论部分的文字内容**（含证明/定理/参考文献），实验与绘图暂停。**本轮完成理论严谨性逐条审计**：5 个证明块（Prop.1/Prop.2/Thm.1/Cor.1/Prop.3）全部通过审计；**修复 2 处真实缺陷**——(a) Prop.3 的向量值'中值形式'不严格 → 改用积分型 Taylor 余项 + 算子范数界，并统一 A3 口径；(b) Cor.1 坐标措辞错（first n → history 块最后 n 个坐标）并补证明；另修 Def.2 'bounded below' 措辞错误。**补齐 5 条经核实的真实引用**（Rota-Strang 1960 / Daubechies-Lagarias 1992 / Jungers 2009 用于谱稳定 Remark；Diehl 2005 / Gros 2020 用于 RTI）。静态检查：引用无缺失、无悬空引用、环境配对、括号/美元符平衡、5/5 证明块。产出 `phase2_theory_rigor_audit_v1.md` + 桌面 GPT 讨论稿；记录 PHASE2-THEORY-RIGOR-AUDIT-001 / EV-...-001。**待 GPT 裁定 5 项**（均非证明漏洞）：Q1 ε(Thm.1) 与 ε_k(Prop.2) 关系是否加 Remark；Q2 F*（重编码）vs F_Θ（传播）口径差是否显式说明；Q3 Def.1 是否移入理论节；Q4 assumption 编号是否拆分；Q5 Prop.2 是否显式定义 ẑ=z^P。**下一步**：(1) 把审计报告与 5 个问题交 GPT 讨论；(2) 按 GPT 裁定修订理论文字；(3) 理论文字定稿后再考虑实验/图/翻译。"
+  }
+}

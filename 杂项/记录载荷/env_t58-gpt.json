@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "command_id": "t58-gpt",
+  "expected_revision": 281,
+  "action": "record.create",
+  "payload": {
+    "kind": "research",
+    "id": "PHASE2-GPT-ROUTES-001",
+    "title": "GPT 路线验证：Test A/B/C 与 R1-R3 prior-art",
+    "status": "complete",
+    "payload": {
+      "document": ".project-log/docs/phase2_gpt_route_tests_abc_v0.1.md",
+      "document_sha256": "ca08e51f3b2066b9947ac9214880a7b731cf36f6ff6027ee3644004e939787d0",
+      "task": "验证 GPT 报告中的路线，只做验证与反馈，不构思新路线",
+      "gpt_report_routes": [
+        "R1 Reachability-Aligned",
+        "R2 Gauge-Invariant",
+        "R3 Residual-Dynamics",
+        "R4 Output-Predictive",
+        "R5 Actuated/Transverse",
+        "R6 Gramian Norm",
+        "R7 Balanced",
+        "R8 Reference Manifold",
+        "R9 Physical Metric",
+        "R10 Control-effect Jacobian",
+        "R11 P2 Differential Quotient",
+        "R12 Residual Whitening",
+        "R13 Finite-Horizon Realization",
+        "R14 Control-relevant Error",
+        "R15 Joint Reference Generator",
+        "R16 Dual-Encoder",
+        "R17 Cross-Platform",
+        "R18 Closed-loop Defect Decomposition"
+      ],
+      "tests": {
+        "A_gauge_pathology": {
+          "physical_prediction_invariance_error": 1.5e-13,
+          "control_law_rel_diff": {
+            "condT_1": 1e-07,
+            "condT_1e2": "0.37-0.77",
+            "condT_1e4": "1.0-9.2",
+            "condT_1e6": "0.9-1.5"
+          },
+          "physical_tracking_rel_diff": {
+            "condT_1e2": "0.66-0.83",
+            "condT_1e4": "1.3-2.8",
+            "condT_1e6": "~1e87/inf"
+          },
+          "dare_failures_condT_1e6": "3/4",
+          "verdict": "gauge dependence confirmed, BUT it is the known LQR covariant-invariance fact; fixing Q is a gauge choice; R2 novelty weak"
+        },
+        "B_ref_reachability_defect": {
+          "median_relative_defect_train": 0.167,
+          "median_relative_defect_val": 0.162,
+          "mean_relative_defect_train": 0.216,
+          "mean_relative_defect_val": 0.213,
+          "verdict": "first-order unreachable component is ~16-21% of lifted reference increment; R1 premise supported; multi-step not tested"
+        },
+        "C_residual_predictability": {
+          "AR1_improvement_joint1_2_3": [
+            0.243,
+            0.194,
+            0.17
+          ],
+          "AR4_improvement_joint1_2_3": [
+            0.245,
+            0.205,
+            0.186
+          ],
+          "verdict": "residual has predictable dynamics (17-25%); R3 premise supported"
+        }
+      },
+      "prior_art_R1_R2_R3": {
+        "R1": "delta exists but narrow; key delta = use reachability defect as representation-learning loss + multi-step reachable-subspace alignment; precedents: Korda-Mezic Automatica 2018 (arXiv:1611.03537), KTMPC arXiv:2208.12000, ScaRe-Kro arXiv:2601.01076, arXiv:2607.06459",
+        "R2": "HIGH risk: LQR similarity invariance under covariant cost is a 1984 result (Majumdar 1984; Al-Iedani & Gajic 2020); fixing Q = choosing a gauge; physical-output cost (C^T Q C) is the standard fix (KF-LQR arXiv:2201.11640); KEEC arXiv:2312.01544 already enforces 'equivalent predictor -> equivalent control'",
+        "R3": "method overlaps DEKC arXiv:2506.08319 and discrepancy modeling arXiv:2203.05164; needs a control-oriented theorem (identifiability / closed-loop bound / vs DOB-ESO condition)"
+      },
+      "scripts": [
+        "testA_gauge_v2.py",
+        "testA_gauge_v3.py",
+        "testB_ref_defect.py",
+        "testC_residual_ar.py"
+      ]
+    }
+  }
+}

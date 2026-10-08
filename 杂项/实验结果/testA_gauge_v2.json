@@ -1,0 +1,33 @@
+{
+  "alphas": {
+    "alpha_0.01": {
+      "K_relative_diff_mean": 3.426269907306232e-05,
+      "K_relative_diff_max": 0.00016014250969023197,
+      "physical_tracking_relative_diff_mean": 0.00017012410074914293,
+      "physical_tracking_relative_diff_max": 0.0005795456217294225,
+      "closed_loop_spectral_radius_diff_max": 1.5241659039322286e-06
+    },
+    "alpha_0.1": {
+      "K_relative_diff_mean": 0.00018525129430632667,
+      "K_relative_diff_max": 0.0003913951244102503,
+      "physical_tracking_relative_diff_mean": 0.0013505627176833427,
+      "physical_tracking_relative_diff_max": 0.002380280720247744,
+      "closed_loop_spectral_radius_diff_max": 1.0759516955172188e-05
+    },
+    "alpha_1": {
+      "K_relative_diff_mean": 0.0016864796600567014,
+      "K_relative_diff_max": 0.0032460071871910703,
+      "physical_tracking_relative_diff_mean": 0.012668762715248534,
+      "physical_tracking_relative_diff_max": 0.019732381979158102,
+      "closed_loop_spectral_radius_diff_max": 0.000100456173220409
+    },
+    "alpha_10": {
+      "K_relative_diff_mean": 0.012188541044115086,
+      "K_relative_diff_max": 0.021350590490810926,
+      "physical_tracking_relative_diff_mean": 0.07314953117618017,
+      "physical_tracking_relative_diff_max": 0.11490014891796668,
+      "closed_loop_spectral_radius_diff_max": 0.00020825862606155265
+    }
+  },
+  "note": "transformed reference zr'=S zr; physical output y'=C S^{-1} z'=C z'"
+}

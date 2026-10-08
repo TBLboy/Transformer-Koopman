@@ -1,0 +1,8 @@
+{
+  "n_windows": 5220,
+  "H": 10,
+  "corr_raw_defect_vs_dJ": 0.1214879980745212,
+  "corr_DWR_vs_dJ": 0.9999999999999993,
+  "pearson_spearman_note": "Pearson on raw magnitudes",
+  "verdict": "If corr(DWR,dJ) >> corr(raw,dJ), M3 supported; if not, downgrade."
+}

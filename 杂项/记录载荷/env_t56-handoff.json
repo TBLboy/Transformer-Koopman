@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "command_id": "t56-handoff",
+  "expected_revision": 277,
+  "action": "task.handoff",
+  "payload": {
+    "task_id": "TASK-004",
+    "next_action": "P1 输入语义=力矩已确认，P1-only 评估完成：主结构被 arXiv:2509.17010 占据，手工结构化 lifting 无收益。已构造 delta 2（保无源/正定 lifting）可证伪最小版本：P1 可辨识 PD 惯量 M≻0（特征值0.00075/0.00147/0.00216，cond2.86），但含 M(q)/科氏/库仑摩擦的富 EL 模型仍有 val RMSE≈0.35（相对力矩std 0.37~0.48，R²≈0.77~0.86），无法得到非空泛无源裕度 → delta 2 最小版本未通过（是数据/建模限制，非数学证伪）。下一步：要么用噪声分离/更强结构辨识复活 delta 2，要么转 delta 1（有限数据闭环界）或 delta 3（统一界），要么进入补采数据/缩小论文范围的 C 级决策。"
+  }
+}
