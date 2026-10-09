@@ -1,0 +1,73 @@
+% =====================================================================
+% 实验素材_待整合.tex
+% 用途：承接本轮（§III–§VI 逐条核对修订）从正文移出的实验性内容。
+% 状态：NOT part of Main.tex。不参与 Main.tex 编译（无 \documentclass）。
+% 本轮 §VII / §VIII 冻结，故此处内容暂不并入，留待实验章统一修订时整合。
+% 出处均标注原文哈希与所在小节，便于回溯。
+% 移出时基线：Main.tex sha256 = 63B3A34EB839B642ADBFCC78040ED0215F0D3F4A4DE7437EB84E825325BAE959
+% =====================================================================
+
+% ---------------------------------------------------------------------
+% [M1] 原 §VI-C「Real-Time Behavior and Fidelity」（整节移出）
+%      移出理由：外审意见 40 / 42 —— §III–§VI 不应出现实验数值、实验表
+%      与实验预告式论断；实验章本轮冻结，故先落到本文件。
+%      注：表 I 的 p50/p95 与 RMSE 数值本身未改动，仅位置迁出。
+% ---------------------------------------------------------------------
+
+\subsection{Real-Time Behavior and Fidelity}   % <-- 待并入 §VII 时重新定位
+
+Table~\ref{tab:rti} reports the soft-robot closed-loop proxy (plant: an independently trained direct neural predictor; recorded validation references; $N=5$).
+
+\begin{table}[!t]
+\centering
+\caption{One-iteration RTI on the soft-robot proxy ($N=5$). The matched oracle is an exact scheduled NMPC solved to convergence at the \textup{same} horizon and plant.}
+\label{tab:rti}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Controller & RMSE & $\Delta$ vs oracle & p50 / p95 (ms) \\
+\midrule
+Exact scheduled oracle & $0.1635$ & --- & $1465$ / $1931$ \\
+\textbf{RTI-SP (proposed)} & $0.1618$ & $-1.04\%$ & $\mathbf{78}$ / $\mathbf{120}$ \\
+Exact re-encode oracle & $0.1582$ & --- & $1958$ / $2930$ \\
+RTI-RE & $0.1565$ & $-1.05\%$ & $182$ / $253$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three points follow. First, one-iteration RTI-SP tracks the \emph{matched} exact scheduled oracle to within about $1\%$ at $N=5$, i.e. the RTI approximation introduces no meaningful tracking degradation. Second, RTI-SP is roughly $2.3\times$ faster than RTI-RE at the median and $2.1\times$ at $p95$, because it avoids a full Transformer lifting-encoder evaluation per stage, and its $p95$ latency ($120$~ms) is well below the $\sim200$~ms soft-robot sampling period. Third, the small negative $\Delta$ should not be read as RTI outperforming exact NMPC; it is attributable to numerical optimization, warm-starting, finite simulation length, solver tolerance, and receding-horizon trajectory differences. Accordingly, the exact oracle is not a strict RMSE upper bound, which is why the local remainder bound \eqref{eq:rti_remainder} is assessed by its own remainder diagnostic (Section~\ref{subsec:diagnostics}) rather than by this comparison. We note that a longer horizon ($N=8$) tracks slightly better but exceeds the sampling period ($p95=215$~ms) and is therefore not used.
+
+% ---------------------------------------------------------------------
+% [M2] 原 §IV-B 训练/上报协议句（意见 29 移出）
+%      移出理由：方法章不应预先声明实验章的报告口径与消融训练设置。
+%      注：消融设置与 checkpoint 选择口径未改动，仅位置迁出。
+% ---------------------------------------------------------------------
+
+For the reported predictor, the checkpoint with the lowest validation rollout loss over the fine-tuning stage is retained, and no spectral penalty is applied; the ablation of Section~\ref{subsec:schedule_ablation} instead trains each variant for a fixed number of epochs without checkpoint selection.
+
+% ---------------------------------------------------------------------
+% [M3] 原 §V-C 中的经验 Lipschitz 数值句（意见 42 移出）
+%      移出理由：理论章不引用具体实验测量值。
+%      注：该数值在 §VII-B（冻结）中已报告，此处仅留档。
+% ---------------------------------------------------------------------
+
+Since the empirical Lipschitz constant satisfies $\widehat{\mLf}\approx1.45>1$ (Section~\ref{subsec:diagnostics}), we use only the finite-horizon form and do not invoke the asymptotic limit $\epsilon/(1-\mLf)$.
+
+% ---------------------------------------------------------------------
+% [M4] 原 §IV-B 中依赖谱约束的防御性实验论断（意见 27 移出）
+%      移出理由：该论断依赖消融实验结论，属实验内容。
+%      注：§IV-B 现仅保留「激活后不再做闭式 EDMD 重拟合」这一结构性区分。
+% ---------------------------------------------------------------------
+
+Spectral stabilization is not relied upon: constraining $\rho(\mA(\vc))<1$ does not restore scheduled-rollout accuracy.
+
+% =====================================================================
+% 待整合清单（并入 §VII 时的核对项）
+% 1. Table~\ref{tab:rti} 与三段结论 -> §VII-C 或新增小节；需与 §VII 现有
+%    冻结内容去重（§VII-B 已报告 RTI p50 78 / p95 120 ms）。
+% 2. \eqref{eq:rti_remainder} 已在 §VI-B 重新定义，本文件引用需指向正文。
+% 3. [M2]/[M4] 属 §IV-B 方法描述的上报口径，建议并入 §VII-A 实验设置。
+% 4. 遗留待核：表 I 称 matched oracle 为 "exact scheduled NMPC solved to
+%    convergence"，但实现中该 oracle 用 SLSQP(maxiter=30) 近似求解，
+%    并非严格收敛解；整合时应改述为「solved by a nonlinear solver at the
+%    same horizon」或补充收敛性说明。此点本轮不修改（§VII 冻结），仅登记。
+% =====================================================================

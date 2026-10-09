@@ -421,38 +421,38 @@ File: l3backend-xetex.def 2022-02-07 L3 backend support: XeTeX
 ) (Main.aux)
 \openout1 = `Main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 91.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 93.
 LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 9
-1.
+3.
  (ts1cmr.fd
 File: ts1cmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 93.
+LaTeX Font Info:    ... okay on input line 93.
 
 -- Lines per column: 58 (exact).
-LaTeX Info: Redefining \microtypecontext on input line 91.
-Package microtype Info: Applying patch `item' on input line 91.
-Package microtype Info: Applying patch `toc' on input line 91.
-Package microtype Info: Applying patch `eqnum' on input line 91.
-Package microtype Info: Applying patch `footnote' on input line 91.
+LaTeX Info: Redefining \microtypecontext on input line 93.
+Package microtype Info: Applying patch `item' on input line 93.
+Package microtype Info: Applying patch `toc' on input line 93.
+Package microtype Info: Applying patch `eqnum' on input line 93.
+Package microtype Info: Applying patch `footnote' on input line 93.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: No adjustment of tracking.
@@ -461,7 +461,7 @@ Package microtype Info: No adjustment of kerning.
 (mt-ptm.cfg
 File: mt-ptm.cfg 2006/04/20 v1.7 microtype config. file: Times (RS)
 )
-Package hyperref Info: Link coloring OFF on input line 91.
+Package hyperref Info: Link coloring OFF on input line 93.
  (nameref.sty
 Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
  (refcount.sty
@@ -471,9 +471,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count314
 )
-LaTeX Info: Redefining \ref on input line 91.
-LaTeX Info: Redefining \pageref on input line 91.
-LaTeX Info: Redefining \nameref on input line 91.
+LaTeX Info: Redefining \ref on input line 93.
+LaTeX Info: Redefining \pageref on input line 93.
+LaTeX Info: Redefining \nameref on input line 93.
  (Main.out)
 (Main.out)
 \@outlinefile=\write3
@@ -483,26 +483,26 @@ LaTeX Info: Redefining \nameref on input line 91.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 102
+LaTeX Font Info:    Trying to load font information for U+msa on input line 104
 .
  (umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 ) (mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 102
+LaTeX Font Info:    Trying to load font information for U+msb on input line 104
 .
  (umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) (mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-Underfull \hbox (badness 1635) in paragraph at lines 118--119
+Underfull \hbox (badness 1635) in paragraph at lines 120--121
 []\T1/ptm/m/n/10 Many con-ven-tional EDMD [[]8[]] and learned-lifting ap-
  []
 
 
-Underfull \hbox (badness 2181) in paragraph at lines 120--121
+Underfull \hbox (badness 2181) in paragraph at lines 122--123
 []\T1/ptm/m/n/10 We pro-pose Transformer-Koopman, a tem-po-ral lift-ing
  []
 
@@ -510,61 +510,80 @@ Underfull \hbox (badness 2181) in paragraph at lines 120--121
 
 
 ]
-Underfull \hbox (badness 2837) in paragraph at lines 127--128
+Underfull \hbox (badness 2837) in paragraph at lines 129--130
 []\T1/ptm/b/n/10 Scheduled-rollout in-con-sis-tency and deployment-
  []
 
 
-Underfull \hbox (badness 1389) in paragraph at lines 145--146
+Underfull \hbox (badness 1389) in paragraph at lines 147--148
 []\T1/ptm/m/n/10 Recent work has ex-plored Trans-former en-coders with
  []
 
-[2]
+[2] [3]
 File: pictures/Figure1.pdf Graphic file (type pdf)
 <use pictures/Figure1.pdf>
- [3] [4]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 402.
+ [4]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-Underfull \hbox (badness 6825) in paragraph at lines 417--419
+ [5]
+Underfull \hbox (badness 1960) in paragraph at lines 402--403
+\T1/ptm/m/n/10 po-nents obey $[][] \OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 ^^M[]\OT1
+/cmr/m/n/10 (\OT1/cmr/bx/n/10 c\OT1/cmr/m/n/10 )\OMS/cmsy/m/n/10 j ^^T \OML/cmm
+/m/it/10 g[]$ \T1/ptm/m/n/10 for all $\OT1/cmr/bx/n/10 c$\T1/ptm/m/n/10 , their
+
+ []
+
+
+Underfull \hbox (badness 3735) in paragraph at lines 402--403
+\OT1/cmr/bx/n/10 A[] \OT1/cmr/m/n/10 = [][] \OML/cmm/m/it/10 ^^M[]\OT1/cmr/m/n/
+10 (\OT1/cmr/bx/n/10 c\OT1/cmr/m/n/10 ) \OT1/cmr/bx/n/10 U[]V[]$ \T1/ptm/m/n/10
+ with unit-norm columns
+ []
+
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 414.
+
+Underfull \hbox (badness 6825) in paragraph at lines 429--431
 [] []\T1/ptm/b/n/10 Stage 1 (scheduled-rollout fine-tuning): \T1/ptm/m/n/10 Ac-
 ti-vate
  []
 
-File: pictures/Figure2.pdf Graphic file (type pdf)
-<use pictures/Figure2.pdf>
-[5]
-Underfull \vbox (badness 6094) has occurred while \output is active []
 
- [6]
-[7] [8]
-Underfull \hbox (badness 5533) in paragraph at lines 710--712
-\T1/ptm/m/it/10 latent-propagated \T1/ptm/m/n/10 struc-ture (RTI-SP) never re-r
-uns the
+Underfull \hbox (badness 5316) in paragraph at lines 429--431
+\OT1/cmr/bx/n/10 A\OT1/cmr/m/n/10 (\OT1/cmr/bx/n/10 c\OT1/cmr/m/n/10 ) = \OT1/c
+mr/bx/n/10 A[] \OT1/cmr/m/n/10 + \OT1/cmr/bx/n/10 U []\OT1/cmr/m/n/10 (\OML/cmm
+/m/it/10 ^^M[]\OT1/cmr/m/n/10 (\OT1/cmr/bx/n/10 c\OT1/cmr/m/n/10 )) \OT1/cmr/bx
+/n/10 V[]$ \T1/ptm/m/n/10 and ini-tial-ize
  []
 
-[9]
+File: pictures/Figure2.pdf Graphic file (type pdf)
+<use pictures/Figure2.pdf>
+[6]
+Underfull \vbox (badness 1297) has occurred while \output is active []
+
+ [7]
+[8] [9] [10]
 File: pictures/Figure_mechanism.pdf Graphic file (type pdf)
 <use pictures/Figure_mechanism.pdf>
- [10] [11]
-Underfull \hbox (badness 6110) in paragraph at lines 939--940
+ [11]
+Underfull \hbox (badness 6110) in paragraph at lines 927--928
 []\T1/ptm/m/n/8 A. Fo-rootani and R. Ier-vo-lino, ``Learn-able Koopman-enhanced
 
  []
 
 
-Underfull \hbox (badness 3417) in paragraph at lines 939--940
+Underfull \hbox (badness 3417) in paragraph at lines 927--928
 \T1/ptm/m/n/8 Transformer-based time se-ries fore-cast-ing with spec-tral con-t
 rol,''
  []
 
-[12
+[12] [13
 
 ] (Main.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `Main.out' has not changed.
-(rerunfilecheck)             Checksum: CADBF50AB858532B69DD9437B4CA4490;5505.
+(rerunfilecheck)             Checksum: A962BA4ACE9568C442BD5658A3146F14;4579.
  )
-Output written on Main.xdv (12 pages, 139724 bytes).
+Output written on Main.xdv (13 pages, 146508 bytes).
