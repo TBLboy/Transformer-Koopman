@@ -52,6 +52,7 @@
 \newcommand{\mA}{\mathbf{A}}
 \newcommand{\mB}{\mathbf{B}}
 \newcommand{\mC}{\mathbf{C}}
+\newcommand{\mD}{\mathbf{D}}
 \newcommand{\mQ}{\mathbf{Q}}
 \newcommand{\mR}{\mathbf{R}}
 \newcommand{\mP}{\mathbf{P}}
@@ -101,11 +102,11 @@
 \maketitle
 
 \begin{abstract}
-Koopman modeling represents nonlinear dynamics as linear evolution in a lifted space whose accuracy depends on the lifting map and the identified operator. Many conventional EDMD and learned-lifting approaches use instantaneous-state observables with a fixed lifted transition, so they neglect short-term temporal correlations and cannot distinguish how the system evolves from different past trajectories. History-aware lifting recovers that information, but one global lifted transition still forces all history-dependent regimes to share a single evolution law. We propose Transformer-Koopman, where a patch-based Transformer encoder maps a finite history window to a structured lifted state and a low-rank history-dependent term modulates a full-rank nominal transition. We show that a one-step-trained history-conditioned operator develops a training--deployment inconsistency under recursive scheduled propagation that spectral stabilization does not repair, whereas training under the deployment rollout restores long-horizon accuracy. The predictor is integrated into a one-iteration real-time-iteration (RTI) MPC that avoids re-running the full encoder at every stage, achieving a $p95$ latency of 120\,ms under a 200-ms sampling period and tracking a matched exact scheduled NMPC oracle within $1\%$. A finite-horizon theory characterizes the rollout-error propagation and the local RTI approximation, supported by empirical diagnostics. Modeling and real-time control results on a 2-state soft robotic platform support the reported claims; a 6-state manipulator and hardware validation are left for future work.
+Koopman-based modeling provides a structured framework for predicting nonlinear dynamics through linear evolution in a lifted space. However, a fixed lifted transition may be insufficient for systems whose observed evolution depends on recent trajectory history. This paper proposes a history-conditioned Transformer--Koopman framework that combines temporal representation learning with adaptive lifted dynamics. A patch-based Transformer encoder maps finite observation histories into state-preserving lifted representations, while a context-dependent low-rank correction modulates a nominal transition operator using recent state--input histories. The resulting predictor retains linear latent propagation for a given context while allowing the transition dynamics to vary across histories. To address the mismatch between one-step training and recursive prediction, a two-stage learning procedure is developed, combining nominal initialization with rollout-aware fine-tuning under recursively updated contexts. A finite-horizon analysis characterizes latent rollout inconsistency and the propagation of prediction errors. Finally, the learned predictor is incorporated into a real-time iteration model predictive control scheme that updates the context along predicted trajectories without repeatedly evaluating the Transformer encoder within the prediction horizon.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Koopman operator, history-conditioned dynamics, low-rank transition, rollout-aware training, model predictive control, real-time iteration, temporal lifting, Transformer
+Koopman operator, Transformer, history-conditioned dynamics, low-rank modulation, rollout-aware training, model predictive control.
 \end{IEEEkeywords}
 
 % =========================================================
@@ -113,22 +114,31 @@ Koopman operator, history-conditioned dynamics, low-rank transition, rollout-awa
 \label{sec:introduction}
 % =========================================================
 
-Learning predictive models for nonlinear controlled systems is a central problem in system identification and model-based control \cite{ljung1999system, vanoverschee1994n4sid, nelles2020nonlinear}. For controller design, model quality is determined by prediction accuracy and by compatibility with control synthesis; models that are both accurate and structurally suited to control design are therefore of primary interest.
+Learning predictive models for nonlinear controlled systems is a fundamental task in system identification and model-based control \cite{ljung1999system, vanoverschee1994n4sid, nelles2020nonlinear}. For predictive control, a useful model must not only capture the system's evolution but also provide a structure that can be efficiently incorporated into an optimization-based controller. Achieving both objectives remains challenging when the available measurements do not fully characterize the underlying dynamics.
 
-The Koopman framework addresses this by representing nonlinear dynamics as a linear evolution in a lifted space of observable functions \cite{koopman1931hamiltonian, brunton2022modern}. This linear structure enables standard linear prediction and controller design tools \cite{otto2021koopman, korda2018linear}, making Koopman modeling an attractive paradigm for control. Its effectiveness depends critically on the choice of lifting map.
+Koopman-based modeling offers a structured approach by representing nonlinear dynamics through linear evolution in a lifted space of observables \cite{koopman1931hamiltonian, brunton2022modern}. Finite-dimensional approximations of this representation have been widely explored for prediction and control \cite{otto2021koopman, korda2018linear}. However, their effectiveness depends on the choice of observables and the ability of the identified transition model to represent the dynamics encountered during prediction.
 
-Many conventional EDMD \cite{williams2015data} and learned-lifting approaches \cite{lusch2018deep, takeishi2017koopman} use instantaneous-state observables together with a fixed lifted transition, neglecting short-term temporal correlations. Delay-embedding variants enrich the observables with time-shifted measurements \cite{kamb2020timedelay, brunton2017chaos}, and context-aware formulations regenerate the operator from recent data \cite{liu2023koopa, li2025mamko}. Enriching the observables with history supplies temporal information that the current measurement alone does not, but it leaves a second question open: a single time-invariant lifted transition still requires every history-dependent operating regime to share one global linear evolution in the learned coordinates, which can place a strong burden on the lifting map when the effective dynamics vary with recent trajectory context. We therefore separate history dependence into two roles---history is encoded into the lifted state, and a structured low-rank correction selectively adjusts a shared nominal transition. Such distinctions can matter more under recursive multi-step prediction.
+Conventional extended dynamic mode decomposition (EDMD) and several learned-lifting approaches typically construct observables from the instantaneous state and identify a fixed lifted transition \cite{williams2015data, lusch2018deep, takeishi2017koopman}. When the measured state does not provide sufficient information about recent system evolution, incorporating temporal history can improve the representation. Delay-coordinate methods and history-aware learning architectures address this issue by enriching the information available to the predictor \cite{kamb2020timedelay, brunton2017chaos}. Nevertheless, incorporating history into the lifting map does not, by itself, remove the restriction of a single global lifted transition. Different histories may produce different lifted states, but their evolution is still governed by the same operator. History-conditioned dynamics provide an alternative by allowing the transition to depend on recent trajectory information \cite{liu2023koopa, li2025mamko}. This motivates a model that uses history both to construct the lifted representation and to adapt the transition, without abandoning the linear propagation structure of Koopman-based prediction.
 
-We propose Transformer-Koopman, a temporal lifting framework with two components. The first component uses a Transformer encoder to map a finite history window into a structured lifted state that retains the measured physical state. The second identifies the Koopman dynamics from the lifted state: rather than requiring all history-dependent regimes to share a single time-invariant operator, we let the history modulate the lifted transition through a low-rank term, so that the transition can adapt to the recent trajectory while the propagation remains linear in the lifted state for a given context. We further show that a history-conditioned operator trained only on encoder-consistent one-step transitions develops a training--deployment inconsistency under recursive scheduled propagation---predicted latent states alter the predicted history, which in turn reschedules the subsequent transition operators---and that spectral stabilization alone does not repair this failure mode. We therefore train the predictor under the same recursively scheduled rollout used at deployment, which restores long-horizon accuracy.
+A further difficulty arises in recursive multi-step prediction. A predictor trained using one-step transitions constructed from recorded histories is not necessarily trained on the latent states and histories generated by its own recursive rollout. In a history-conditioned model, this discrepancy affects not only the propagated state but also the context used to determine subsequent transition operators. Consequently, accurate one-step predictions do not automatically imply consistent long-horizon behavior. The training procedure should therefore account for the same recursive propagation and context updates used during deployment.
 
-Building on the rollout-trained scheduled predictor, we develop a real-time predictive controller based on a one-iteration RTI-MPC that avoids re-running the full Transformer lifting encoder at every prediction stage, and we establish a finite-horizon theory whose assumptions are assessed by empirical diagnostics on the validation distribution.
+Motivated by these considerations, this paper develops a history-conditioned Transformer--Koopman framework. A patch-based Transformer encoder maps a finite observation history to a state-preserving lifted representation. A separate context mapping extracts information from recent state--input histories and modulates a nominal lifted transition through a low-rank correction. The resulting predictor allows the transition operator to vary with the recent trajectory while retaining linear propagation in the lifted state and current input for a fixed context. To address the mismatch between one-step training and recursive deployment, a two-stage training procedure combines nominal predictor initialization with rollout-aware fine-tuning under recursively updated contexts.
 
-The contributions of this paper are summarized as follows:
+The learned predictor is further incorporated into a real-time iteration model predictive control (RTI-MPC) framework. Within each prediction horizon, the lifted state is propagated recursively and the transition context is updated from the predicted histories, avoiding repeated evaluation of the full Transformer lifting encoder. In addition, a finite-horizon analysis characterizes latent rollout inconsistency and prediction-error propagation, while the local approximation involved in the RTI linearization is examined under appropriate regularity conditions.
+
+The main contributions of this paper are summarized as follows:
 \begin{enumerate}
-\item \textbf{Low-rank history-conditioned modulation of the lifted transition.} We introduce a Koopman model in which finite-history information forms the lifted representation and selectively modulates a full-rank nominal transition through a low-rank history-dependent update, while preserving linear lifted-state propagation for a given context, which is compatible with the scheduled RTI formulation developed later.
-\item \textbf{Scheduled-rollout inconsistency and deployment-consistent training.} We identify a training--deployment mismatch that arises when a one-step-trained history-conditioned Koopman model is recursively propagated with its context rescheduled from predicted histories, and show that spectral stabilization alone does not repair this failure mode. Training under the same scheduled propagation used at deployment restores long-horizon prediction accuracy, to a level close to recurrent re-encoding.
-\item \textbf{Real-time predictive deployment.} The rollout-trained scheduled predictor is integrated into a one-iteration RTI-MPC that avoids a full Transformer lifting encoder evaluation at every prediction stage. The resulting controller tracks a matched exact scheduled NMPC oracle within $1\%$, and a finite-horizon analysis supported by empirical diagnostics characterizes the rollout-error propagation and the local RTI approximation.
+    \item \textbf{History-conditioned low-rank Koopman modeling.}
+    We develop a state-preserving temporal lifting model that combines a Transformer encoder with a history-conditioned low-rank modulation of a nominal lifted transition. This construction separates temporal representation learning from transition adaptation while preserving conditional linearity in the lifted dynamics.
+
+    \item \textbf{Rollout-aware training and finite-horizon consistency analysis.}
+    We formulate a two-stage learning procedure that accounts for recursive latent propagation and context rescheduling during multi-step prediction. A finite-horizon analysis characterizes the discrepancy between recursively propagated and encoder-consistent latent states and establishes conditional bounds on prediction-error propagation.
+
+    \item \textbf{Real-time predictive control integration.}
+    We incorporate the history-conditioned predictor into a one-iteration RTI-MPC scheme that propagates lifted states and updates transition contexts along the prediction horizon without repeatedly evaluating the full Transformer encoder. The controller formulation includes local linearization of the augmented prediction dynamics and an associated approximation-error characterization.
 \end{enumerate}
+
+The remainder of this paper is organized as follows. Section~II reviews related work on Koopman-based modeling, temporal representations, and predictive control. Section~III introduces the necessary preliminaries and formulates the learning problem. Section~IV presents the proposed Transformer--Koopman architecture and its two-stage training procedure. Section~V develops the finite-horizon prediction-consistency analysis. Section~VI describes the real-time predictive control formulation and its RTI implementation. Section~VII presents the experimental evaluation, and Section~VIII concludes the paper.
 % =========================================================
 \section{Related Work}
 \label{sec:related_work}
@@ -136,105 +146,101 @@ The contributions of this paper are summarized as follows:
 
 \subsection{History-Based Koopman Representation}
 
-Koopman operator theory represents nonlinear dynamics as a linear evolution on the observable functions of the state \cite{koopman1931hamiltonian, koopman1932spectra, mezic2005spectral}, enabling the direct application of linear control synthesis to nonlinear systems. Extensions such as DMDc \cite{proctor2016dmdc}, input-aware formulations \cite{proctor2018generalizing, brunton2016invariant}, and Koopman-based MPC \cite{korda2018linear} established the foundation for Koopman control, and later work added learned representations and performance guarantees \cite{han2020deep, shi2022deep, strasser2026overview, duran2025control}. To learn such models from data, EDMD fits observables from a pre-defined dictionary \cite{williams2015data, williams2015kernel, klus2018data}, whereas data-driven methods learn the representations instead \cite{takeishi2017koopman, lusch2018deep, yeung2019learning, morton2019deep}. Many conventional EDMD and learned-lifting approaches use instantaneous-state observables together with a fixed lifted transition, neglecting short-term temporal correlations and limiting long-horizon prediction accuracy.
+Koopman operator theory describes nonlinear dynamical systems through linear evolution of observable functions \cite{koopman1931hamiltonian, koopman1932spectra, mezic2005spectral}. Finite-dimensional approximations, including DMDc and Koopman-based control models, provide structured predictors for control-oriented applications \cite{proctor2016dmdc, proctor2018generalizing, brunton2016invariant, korda2018linear}. Extended dynamic mode decomposition (EDMD) constructs such approximations using prescribed observable dictionaries \cite{williams2015data, williams2015kernel, klus2018data}, while learned-lifting approaches optimize the observable representation from data \cite{takeishi2017koopman, lusch2018deep, yeung2019learning, morton2019deep}.
 
-Two lines relax this restriction. Delay-embedding variants enrich the dictionary with time-shifted measurements or Hankel/HAVOK coordinates \cite{kamb2020timedelay, brunton2017chaos, arbabi2017ergodic, das2019delay}, so the operator acts on a history-augmented state, but history enters only through the observables. Transformers model temporal dependencies through self-attention \cite{vaswani2017attention}, while patch-based tokenization provides an efficient representation of local temporal structure \cite{nie2023time}. In Koopman lifting, where the relevant temporal context is unknown a priori, Transformers can incorporate short-term information from past trajectories.
+When instantaneous measurements do not sufficiently characterize the system dynamics, temporal information can be incorporated through delay-coordinate or Hankel-based representations \cite{kamb2020timedelay, brunton2017chaos, arbabi2017ergodic, das2019delay}. Recurrent architectures provide an alternative means of encoding temporal dependencies and have also been explored within Koopman-based models: temporal autoencoders combine recurrent layers such as long short-term memory (LSTM) and gated recurrent units (GRU) with Koopman lifting for identification and predictive control \cite{shenoy2025temporal}, and deep recurrent Koopman operators address time-delay systems with robust predictive control \cite{han2024robust}. Transformer architectures model temporal interactions through attention, with patch-based tokenization organizing local temporal patterns \cite{vaswani2017attention, nie2023time}. These approaches enrich history-dependent observables, but the use of temporal information in the lifting map does not by itself imply a history-conditioned lifted transition.
 
 \subsection{Context-Dependent Koopman Dynamics and Recursive Prediction}
 
-A history-augmented representation, however, still leaves the transition itself time-invariant. Context-aware and time-varying formulations instead let the effective operator depend on recent data: Koopa computes context-aware operators for non-stationary forecasting \cite{liu2023koopa}, and MamKO generates time-varying Koopman matrices from online history \cite{li2025mamko}. Our formulation separates history dependence into two roles: history is encoded into the lifted state, while a low-rank family identified jointly with the lifting map selectively corrects a shared nominal transition, so that the lifted dynamics remain linear in the lifted state for a given context and provide the conditional-linear structure exploited by the scheduled RTI controller.
+Context-dependent Koopman formulations allow the effective transition to vary with operating conditions or recent observations. Koopa employs context-aware operators for non-stationary forecasting \cite{liu2023koopa}, while MamKO considers Koopman transitions generated from temporal context \cite{li2025mamko}. Related Transformer--Koopman architectures have also been investigated for time-series forecasting \cite{forootani2025deepkoopformer, forootani2026spectral}. Low-rank, state-dependent Koopman transitions have additionally been studied for continuum-robot control \cite{feizi2025deepkoopman}. These developments motivate structured alternatives to a single fixed lifted transition. The present work focuses on combining history-based lifting with a context-conditioned low-rank correction to a shared nominal transition, rather than replacing the entire transition with an unrestricted context-dependent matrix.
 
-Recent work has explored Transformer encoders with Koopman-style latent dynamics for forecasting \cite{forootani2025deepkoopformer, forootani2026spectral}. In particular, \cite{forootani2026spectral} parameterizes the transition as a single low-rank operator with a spectrally constrained diagonal factor on a patch-based Transformer backbone; unlike our full-rank nominal transition modulated by history, it uses a static low-rank transition for forecasting. In contrast, our Transformer is used only for history encoding, while prediction inside the controller is performed by the structured Koopman model. Relatedly, low-rank space-varying transitions have been learned for continuum-robot control, conditioned on the instantaneous state and paired with an infinite-horizon linear-quadratic controller \cite{feizi2025deepkoopman}.
-
-Multi-step objectives have also been used in learned Koopman models to reduce recursive prediction error \cite{lusch2018deep, otto2019linearly, azencot2020forecasting, wu2026multistep}, and are standard in neural system identification more broadly \cite{forgione2021dynonet}, so multi-step loss itself is not the focus here. The additional issue in history-conditioned dynamics is that recursive prediction reschedules future transitions from predicted histories, causing both the latent state and the conditioning context to depart from their one-step training distribution. Our rollout-aware training targets this specific deployment mismatch.
+Recursive prediction introduces a related training challenge. Multi-step objectives have been investigated in learned Koopman models \cite{lusch2018deep, otto2019linearly, azencot2020forecasting, wu2026multistep} and neural system identification \cite{forgione2021dynonet}. Accordingly, multi-step training is not itself the novelty considered here. In a history-conditioned predictor, however, recursive propagation also changes the predicted histories from which subsequent transition contexts are computed. The resulting latent states and contexts may differ from those encountered during one-step training. This motivates training with the same recursive context-update mechanism used for prediction.
 
 \subsection{Real-Time Predictive Control}
 
-Two established strategies reduce the online cost of predictive control. The real-time iteration (RTI) performs a single sequential quadratic programming update per sampling instant around the current nominal trajectory \cite{diehl2005realtime, gros2020rti}, and its nominal stability, suboptimality, and sensitivity-based delay reduction have been analyzed \cite{diehl2005rtistability, zavala2009advancedstep}. Quasi-linear parameter-varying (quasi-LPV) control instead embeds the nonlinear model into a family of linear models indexed by a scheduling variable, so that freezing or iterating the scheduling trajectory yields a sequence of tractable quadratic programs \cite{rugh2000gain, leith1998velocity, cisneros2016qlmpc, cisneros2020qlpv}.
+Real-time iteration (RTI) methods reduce the computational burden of nonlinear model predictive control by performing a single sequential quadratic programming update at each sampling instant \cite{diehl2005realtime, gros2020rti}. Their convergence and stability properties have been studied under appropriate assumptions \cite{diehl2005rtistability, zavala2009advancedstep}. Related quasi-linear parameter-varying formulations represent nonlinear dynamics through linear models indexed by scheduling variables and employ local or iteratively updated predictions for control optimization \cite{rugh2000gain, leith1998velocity, cisneros2016qlmpc, cisneros2020qlpv}.
 
-Our controller inherits the one-iteration RTI structure but differs in where the scheduling signal comes from. Quasi-LPV MPC reads the scheduling variable from the state or velocity, using the previous solution or a planned reference; here the transition is scheduled by a context that a learned encoder extracts from a history window, and during prediction the history is itself produced by the predictor, so the scheduling trajectory is endogenous and cannot be read off the measured state. The context must therefore be re-evaluated along the rolled-out history rather than assumed, and the full Transformer lifting encoder need not be re-run at every prediction stage, letting the single-iteration controller fit inside the sampling period.
+The proposed controller builds on these established ideas but uses a scheduling context computed from finite state--input histories. During multi-step prediction, these histories are recursively updated using the predictor's own outputs, coupling the scheduling sequence to the predicted trajectory. The resulting formulation combines context rescheduling with latent-state propagation and a one-iteration RTI optimization step, without repeatedly evaluating the full Transformer lifting encoder within the prediction horizon.
 
 % =========================================================
 \section{Preliminaries and Problem Formulation}
 \label{sec:preliminaries_and_problem}
 % =========================================================
 
-In this section, we review the controlled Koopman formulation, introduce finite-history lifting, and state the data-driven learning problem considered in this work. The specific Transformer realization and the history-conditioned low-rank transition are developed in Section~\ref{sec:methodology}.
+In this section, we introduce the controlled Koopman representation and formulate the finite-history prediction problem.
 
 % ---------------------------------------------------------
 \subsection{Koopman Modeling and Temporal Lifting}
 \label{subsec:koopman_prelim}
 % ---------------------------------------------------------
 
-Consider a discrete-time controlled nonlinear system with physical state $\vs_k \in \mathbb{R}^{n_s}$,
+Consider a discrete-time nonlinear controlled system
 \begin{equation}
     \vs_{k+1} = f(\vs_k, \vu_k),
     \label{eq:nonlinear_system}
 \end{equation}
-where $\vu_k \in \mathbb{R}^m$ is the control input and $f$ is an unknown nonlinear transition map. Only a measurement of the physical state is available,
+where $\vs_k \in \mathbb{R}^{n_s}$ is the physical state and $\vu_k \in \mathbb{R}^{m}$ is the control input. The available measurement is
 \begin{equation}
-    \vx_k = h(\vs_k) \in \mathbb{R}^n,
+    \vx_k = h(\vs_k) \in \mathbb{R}^{n},
     \label{eq:measurement_map}
 \end{equation}
-with $h:\mathbb{R}^{n_s}\to\mathbb{R}^n$ an unknown measurement map. The predictor is restricted to the measured coordinates $\vx_k$; when $h$ is the identity and $n_s=n$, \eqref{eq:nonlinear_system}--\eqref{eq:measurement_map} reduce to the standard fully observed setting. When the measurement is not a complete state of \eqref{eq:nonlinear_system}, a deterministic first-order map $\vx_{k+1}=F(\vx_k,\vu_k)$ need not exist, which is why finite history is introduced below. Measured state--input trajectories $\{(\vx_k, \vu_k)\}$ are assumed to be available for data-driven modeling.
+where $h:\mathbb{R}^{n_s}\to\mathbb{R}^{n}$ is the measurement map. We learn the predictor from measured state--input trajectories and use finite observation histories to capture temporal information not resolved by individual measurements.
 
-The Koopman framework represents nonlinear dynamics through the evolution of observable functions rather than directly through the state \cite{koopman1931hamiltonian, mezic2005spectral, rowley2009spectral, brunton2022modern}. For a fixed control input $\vu$, the input-parameterized Koopman operator $\mathcal{K}_{\vu}$ acts on a scalar observable $\varphi:\mathbb{R}^{n_s}\to\mathbb{R}$ of the physical state as
+For a fixed input $\vu$, the controlled Koopman operator acts on an observable $\varphi:\mathbb{R}^{n_s}\to\mathbb{R}$ as \cite{koopman1931hamiltonian, mezic2005spectral, rowley2009spectral, brunton2022modern}
 \begin{equation}
     (\mathcal{K}_{\vu}\varphi)(\vs) = \varphi(f(\vs,\vu)).
     \label{eq:koopman_operator}
 \end{equation}
-For each fixed $\vu$, $\mathcal{K}_{\vu}$ is linear in the observable:
+The operator is linear with respect to observables:
 \begin{equation}
     \mathcal{K}_{\vu}(\alpha \varphi + \beta \psi)
     = \alpha \mathcal{K}_{\vu}\varphi + \beta \mathcal{K}_{\vu}\psi.
     \label{eq:koopman_linearity}
 \end{equation}
 
-The Koopman operator is generally infinite-dimensional, so practical computation relies on a finite-dimensional approximation. In EDMD, one selects $d$ scalar observables and stacks them into the lifting map
+Finite-dimensional Koopman models approximate this evolution using a selected set of observables. Since only $\vx=h(\vs)$ is measured, we construct the observables from $\vx$; each component $g_j(\vx)$ corresponds to the physical-state observable $g_j\circ h$. An instantaneous lifting map takes the form
 \begin{equation}
     \vz_k = g(\vx_k) = [g_1(\vx_k), \ldots, g_d(\vx_k)]^\top \in \mathbb{R}^d,
     \label{eq:instantaneous_lifting}
 \end{equation}
-where each $g_j$ is evaluated on the measurement $\vx_k=h(\vs_k)$, so the selected observables are of the form $g_j\circ h$. The lifted dynamics are then approximated by the input-affine linear system
+with the input-affine lifted approximation
 \begin{equation}
-    \vz_{k+1} \approx \mA \vz_k + \mB \vu_k,
+    \vz_{k+1} \approx \mA \vz_k + \mB \vu_k.
     \label{eq:linear_lifted}
 \end{equation}
-where $\mA \in \mathbb{R}^{d\times d}$ is the nominal lifted transition in the selected coordinates and $\mB \in \mathbb{R}^{d\times m}$ maps the current input into the lifted space. Equation~\eqref{eq:linear_lifted} is an input-affine finite-dimensional \emph{surrogate} of the controlled observable evolution, adopted for prediction and control: for a fixed $\vu$, $\mathcal{K}_{\vu}$ acts on observables, whereas $(\mA,\mB)$ parameterizes a linear recursion on a chosen $d$-dimensional dictionary, and $\mA$ is not claimed to equal $\mathcal{K}_{\vu}$. In this work the pair $(\mA,\mB)$ is identified by the gradient-based procedure of Section~\ref{sec:methodology} rather than by a closed-form EDMD regression. Instantaneous-state lifting may miss temporal information that matters for prediction, particularly when the measurement does not by itself characterize the underlying dynamics.
+Here $\mA \in \mathbb{R}^{d\times d}$ approximates the evolution of the selected observables, and $\mB \in \mathbb{R}^{d\times m}$ represents the control-input contribution. Together they define a finite-dimensional approximation of the controlled Koopman evolution in the chosen lifted coordinates.
 
-To incorporate recent trajectory information, we construct the lifting map from a history window of length $P$:
+To incorporate temporal information, we define the state-history window
 \begin{equation}
     \mX_k = [\vx_{k-P+1}, \ldots, \vx_k]^\top \in \mathbb{R}^{P\times n},
     \label{eq:history_window}
 \end{equation}
-and define
+and extend the lifting map to
 \begin{equation}
     \vz_k = g_\theta(\mX_k) \in \mathbb{R}^d.
     \label{eq:temporal_lifting}
 \end{equation}
-The resulting temporal lifting incorporates recent trajectory information into the latent state, and the corresponding nominal lifted dynamics are those of \eqref{eq:linear_lifted}. In this work, $g_\theta$ is implemented using a Transformer encoder; the remaining question is how to accommodate history-dependent variations in the lifted dynamics without abandoning a control-compatible structure.
+This representation incorporates recent measurements into the lifted state. The transition model may additionally depend on the recent trajectory context, as developed in Section~\ref{sec:methodology}.
 
 \subsection{Learning Problem and Design Objectives}
 \label{sec:problem}
 % ---------------------------------------------------------
 
-We assume that the available data consist of recorded state--input trajectories
+The available training data comprise measured state--input trajectories
 \begin{equation}
     \mathcal{D} = \{\tau^{(j)}\}_{j=1}^{N_{\mathrm{tr}}}, \qquad
     \tau^{(j)} = \{(\vx_t^{(j)}, \vu_t^{(j)})\}_{t=0}^{T_j}.
     \label{eq:trajectory_dataset}
 \end{equation}
-where $N_{\mathrm{tr}}$ denotes the number of recorded trajectories and $T_j$ the number of samples in the $j$-th trajectory. For each admissible time index $k$, the state-history window $\mX_k$ is defined by \eqref{eq:history_window}, and the aligned past-input history is
+For each admissible index $k$, the state history $\mX_k$ is defined in \eqref{eq:history_window}, and the past-input history is
 \begin{equation}
     \mU_k^{\mathrm{in}} = [\vu_{k-P+1}, \ldots, \vu_{k-1}]^{\top}
     \in \mathbb{R}^{(P-1)\times m}.
     \label{eq:input_history_problem}
 \end{equation}
-The window therefore contains $P$ measured states together with the $P-1$ completed input--state transitions that produced them, while the current input $\vu_k$ acts separately through the input channel $\mB\vu_k$. Whenever the two histories enter a vector-valued map, they are flattened as $\mathrm{vec}\,\mX_k\in\mathbb{R}^{Pn}$ and $\mathrm{vec}\,\mU^{\mathrm{in}}_k\in\mathbb{R}^{(P-1)m}$.
+The current input $\vu_k$ is applied after the observed history window.
 
-Because the measurement need not form a complete Markov state, the predictor must exploit finite history. Encoding history only in the lifting map, however, still leaves a single global lifted transition shared by every history-dependent regime.
-
-We therefore adopt three design objectives for the predictor: (i) exploit finite history to represent temporal information that the instantaneous measurement does not provide; (ii) let the lifted transition adapt to recent trajectory context while retaining, \emph{for a fixed context}, an input-affine lifted propagation that provides the structure exploited by local linearization and real-time iteration---the scheduled finite-horizon problem itself remains generally nonlinear, because the context depends on the predicted history and hence on preceding control decisions (Section~\ref{sec:control}); and (iii) remain accurate when its own predicted histories are recursively fed back during multi-step prediction. These objectives specify what the predictor must achieve; they do not by themselves single out a unique model class. Section~\ref{sec:methodology} presents the state-preserving lifting and the history-conditioned low-rank transition adopted here to meet them, and Section~\ref{sec:theory} analyzes the finite-horizon behavior of that choice.
+Given the measured state history $\mX_k$, the past-input history $\mU_k^{\mathrm{in}}$, and a future control sequence $\vu_{k:k+H-1}$, the objective is to predict the future measurements $\vx_{k+1},\ldots,\vx_{k+H}$ over a horizon of $H$ steps. The predictor should capture temporal information from the observed history, account for history-dependent variations in the lifted dynamics, and maintain prediction accuracy during recursive multi-step rollout. The proposed model and its training procedure are developed in Section~\ref{sec:methodology}.
 
 % =========================================================
 \section{History-Conditioned Transformer--Koopman Modeling}
@@ -247,24 +253,6 @@ In this section, we instantiate the predictor of Section~\ref{sec:problem} using
 \subsection{Temporal Lifting and Low-Rank Transition}
 \label{sec:temporal_lifting}
 % ---------------------------------------------------------
-
-Fig.~\ref{fig:framework} summarizes the prediction pipeline: a patch-based Transformer encoder maps the history window to a history feature, the feature is concatenated with the current measurement to form the lifted state, and a context-conditioned lifted transition propagates that state forward.
-
-\begin{figure*}[!t]
-    \centering
-    \includegraphics[width=\textwidth]{pictures/Figure1.pdf}
-    \caption{Overall prediction pipeline of the proposed
-    Transformer-Koopman framework. Given a history window $\mX_k$ and
-    the current control input $\vu_k$, the Transformer encoder extracts
-    a history feature $\vh_k$, which is concatenated with the current
-    state $\vx_k$ to form the lifted state
-    $\vz_k = [\vx_k;\,\vh_k] \in \mathbb{R}^d$. The Koopman linear
-    dynamics $\hat{\vz}_{k+1} = \mA(\vc_k)\vz_k + \mB\vu_k$ propagate the
-    lifted state forward, and the predicted next physical state
-    $\hat{\vx}_{k+1} = \mC\hat{\vz}_{k+1}$ is recovered through a
-    fixed linear projection.}
-    \label{fig:framework}
-\end{figure*}
 
 Given the history window $\mX_k \in \mathbb{R}^{P \times n}$, we partition it into $N_p = P/p$ contiguous non-overlapping temporal patches of length $p$, where $p$ is assumed to divide $P$. The $i$th patch is denoted by
 \begin{equation}
@@ -322,126 +310,130 @@ where the first $n$ components of $\vz_k$ are the measured state $\vx_k = h(\vs_
     \vx_k = \mC \vz_k, \qquad \mC = [\mI_n\;\mathbf{0}],
     \label{eq:decoder_projection}
 \end{equation}
-it does not recover components of the physical state $\vs_k$ that the measurement does not observe.
+where $\mC$ extracts the measured coordinates from the lifted state.
 
 Although the temporal lifting provides different latent representations for different histories, a fixed transition $\mA$ still requires all such history-dependent latent states to evolve under one global linear operator. To relax this additional restriction without discarding the conditional-linear structure, we decompose the transition into a shared nominal component and a structured history-dependent correction.
 
 \begin{definition}[History-Conditioned Low-Rank Koopman Family]
 \label{def:hcltk}
-Let the history window be $\mX_k$ \eqref{eq:history_window}, and let $\mU^{\mathrm{in}}_k\in\mathbb{R}^{(P-1)\times m}$ denote the input history over the same window \eqref{eq:input_history_problem}. Define the lifted state and the context vector
+Let the history window be $\mX_k$ \eqref{eq:history_window}, and let $\mU^{\mathrm{in}}_k\in\mathbb{R}^{(P-1)\times m}$ denote the input history over the same window \eqref{eq:input_history_problem}. Define the lifted state and context vector as
 \begin{equation}
 \begin{aligned}
-    \vz_k &= g_\theta(\mX_k) = [\vx_k;\,\vh_k],\\
+    \vz^{E}_k &= g_\theta(\mX_k) = [\vx_k;\,\vh_k],\\
     \vc_k &= C_\phi(\mX_k,\mU^{\mathrm{in}}_k) \in \mathbb{R}^{d_c},
 \end{aligned}
     \label{eq:context_vector}
 \end{equation}
-where $C_\phi$ is a context network and, in the parameterization used here, the two histories of Section~\ref{sec:problem} are concatenated in flattened form into a single input vector of dimension $Pn+(P-1)m$, i.e.\ $C_\phi(\mX_k,\mU^{\mathrm{in}}_k)\equiv\tilde C_\phi\big([\mathrm{vec}\,\mX_k;\mathrm{vec}\,\mU^{\mathrm{in}}_k]\big)$. The lifting map uses the state history to construct a state-preserving representation, whereas the context map additionally uses the past inputs to condition the effective transition on how the current dynamical condition was reached. The model propagates the latent state by
+where $g_\theta$ encodes the state history and $C_\phi:\mathbb{R}^{P\times n}\times\mathbb{R}^{(P-1)\times m}\to\mathbb{R}^{d_c}$ maps the state and input histories to the context vector. The superscript $E$ denotes the encoder-generated latent state, while $P$ denotes the model-propagated latent state. The one-step prediction is
 \begin{equation}
     \hat{\vz}^{P}_{k+1} = \mA(\vc_k)\,\vz^{E}_k + \mB\,\vu_k,
-    \qquad \vz^{E}_k = g_\theta(\mX_k),
     \label{eq:temporal_dynamics}
 \end{equation}
 with the \emph{history-conditioned} transition
 \begin{equation}
-    \mA(\vc) = \mA_0 + \mU\,\mathrm{diag}\big(\gamma_\psi(\vc)\big)\,\mV^\top,
-    \qquad
-    \mathrm{rank}\big[\mA(\vc)-\mA_0\big] \le r .
+    \begin{gathered}
+        \mA(\vc) = \mA_0
+        + \mU\,\mathrm{diag}\bigl(\gamma_\psi(\vc)\bigr)\mV^\top,\\[3pt]
+        \mathrm{rank}\bigl[\mA(\vc)-\mA_0\bigr]\le r.
+    \end{gathered}
     \label{eq:lowrank_A}
 \end{equation}
-Here $\mA_0 \in \mathbb{R}^{d\times d}$ is the shared nominal transition, $\mU,\mV \in \mathbb{R}^{d\times r}$ are the low-rank factors, $\gamma_\psi:\mathbb{R}^{d_c}\to\mathbb{R}^r$ supplies the context-dependent modulation coefficients, and $\mB \in \mathbb{R}^{d\times m}$ is the input matrix, which is \emph{context-independent} (not context-modulated) and shared across all contexts. The integer $r$ bounds the rank of the correction, $\mathrm{rank}[\mA(\vc)-\mA_0]\le r$, and is a model hyperparameter whose value is reported with the experimental configuration.
+Here $\mA_0\in\mathbb{R}^{d\times d}$ is the nominal transition, $\mU,\mV\in\mathbb{R}^{d\times r}$ are low-rank factors, and $\gamma_\psi:\mathbb{R}^{d_c}\to\mathbb{R}^r$ provides the context-dependent coefficients. The input matrix $\mB\in\mathbb{R}^{d\times m}$ is shared across contexts, and $r$ is the maximum correction rank.
 \end{definition}
 
-Three remarks follow. First, \eqref{eq:temporal_dynamics} is a prediction rule rather than a Koopman closure of the encoder: the model-propagated latent $\hat{\vz}^{P}_{k+1}$ is not asserted to equal $g_\theta(\mX_{k+1})$, and the two differ by the one-step residual \eqref{eq:modeling_error}, whose propagation under recursive prediction is analyzed in Section~\ref{subsec:rollout}. Second, context dependence is confined to $\mA(\vc)$: the current input enters through the single global matrix $\mB$, so for a fixed context the lifted propagation \eqref{eq:temporal_dynamics} is input-affine in $(\vz_k,\vu_k)$, which is the structure exploited by the local linearization of Section~\ref{sec:control}; over a multi-step prediction horizon the context depends on the predicted history and therefore on preceding control decisions, so the scheduled finite-horizon problem is generally nonlinear. Third, the low-rank term adds a bounded, structured correction to the nominal transition, and all parameters are optimized jointly with the temporal representation, as described next.
+In recursive prediction, the encoder initializes the latent state once, while subsequent steps propagate $\vz^P$ with the context updated from predicted histories, as specified in \eqref{eq:scheduled_rollout}. The resulting lifting pipeline is illustrated in Fig.~\ref{fig:framework}.
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=\textwidth]{pictures/Figure1.pdf}
+    \caption{Encoder pipeline of the history-conditioned Transformer--Koopman predictor. The history window $\mX_k$ is partitioned into temporal patches and vectorized; each patch is linearly embedded, augmented with positional encoding, and processed by a Transformer encoder whose token outputs are mean-pooled and linearly projected to a history feature $\vh_k$. Concatenating $\vh_k$ with the current measurement $\vx_k$ forms the state-preserving lifted state $\vz_k=[\vx_k;\,\vh_k]$.}
+    \label{fig:framework}
+\end{figure*}
 
 % ---------------------------------------------------------
 \subsection{Training Procedure}
 \label{sec:training}
 % ---------------------------------------------------------
 
-The model of Definition~\ref{def:hcltk} has three trainable modules: the lifting encoder with parameters $\theta$ that produce the lifted state $\vz_k$, the context network with parameters $\phi$ that produce $\vc_k=C_\phi(\mX_k,\mU^{\mathrm{in}}_k)$, and the dynamics module, which comprises the nominal transition $\mA_0$, the low-rank factors $\mU,\mV$, the modulation parameters $\psi$, and the input matrix $\mB$. The input matrix $\mB$ is context-independent---a single global matrix shared across all contexts---but it is optimized jointly with the other parameters rather than held frozen. The projection $\mC$ is structurally fixed throughout training, as in Definition~\ref{def:hcltk}. Let $H_R$ denote the training rollout horizon. Each training sample is a segment of $H_R$ future steps cut from a single recorded trajectory, providing an aligned tuple: the history window $\mX_k$, the past-input history $\mU^{\mathrm{in}}_k$, the future inputs $\vu_k,\ldots,\vu_{k+H_R-1}$, and the future measured states $\vx_{k+1},\ldots,\vx_{k+H_R}$ used as prediction targets. Segments do not cross trajectory boundaries.
+The predictor consists of the lifting encoder $g_\theta$, the context map $C_\phi$, and the dynamics parameters $(\mA_0,\mU,\mV,\psi,\mB)$, with a fixed projection $\mC$. Training proceeds in two stages: nominal one-step pretraining followed by scheduled-rollout fine-tuning, which accounts for the shift from measured-history conditioning during initialization to predicted-history conditioning during recursive deployment.
 
-The history-conditioned transition introduces an additional deployment issue: during one-step training the context is evaluated on measured histories, whereas during recursive prediction it is evaluated on predicted histories, so prediction errors alter the scheduling signal itself. Training therefore proceeds in two stages, which we treat as an optimization schedule rather than a requirement of the model: a nominal one-step initialization, followed by scheduled-rollout fine-tuning of the full history-conditioned family on the \emph{propagated}-latent distribution that arises at deployment.
+For a rollout horizon $H_R$, each training sample comprises the measured histories $(\mX_k,\mU_k^{\mathrm{in}})$, the future input sequence $(\vu_k,\ldots,\vu_{k+H_R-1})$, and the corresponding measured-state targets $(\vx_{k+1},\ldots,\vx_{k+H_R})$, all drawn from the same trajectory.
 
 \textbf{Stage~0 (nominal one-step pretraining).} We initialize the encoder $g_\theta$ and a time-invariant base operator $(\mA_0,\mB)$ by minimizing the one-step physical prediction error over the encoder-generated latent distribution,
 \begin{equation}
-    \mathcal{L}_{\mathrm{init}}
-    =
-    \sum_{k}
-    \big\|\mC\big(\mA_0\,\vz_k+\mB\,\vu_k\big)-\vx_{k+1}\big\|_2^2,
-    \qquad
-    \vz_k=g_\theta(\mX_k).
-    \label{eq:loss_one_step}
+\mathcal{L}_{\mathrm{init}}
+=
+\sum_k
+\|\mC(\mA_0\vz_k+\mB\vu_k)-\vx_{k+1}\|_2^2 .
+\label{eq:loss_one_step}
 \end{equation}
-This stage initializes the temporal encoder and the nominal input-affine predictor using one-step physical-state supervision; it is the only stage optimized exclusively on the encoder-consistent one-step latent distribution, and it corresponds to the fixed (time-invariant) Transformer-Koopman baseline. Because $\mC=[\mI_n\;\mathbf{0}]$ observes only the first $n$ coordinates of the predicted latent, the loss \eqref{eq:loss_one_step} constrains the physical-output rows of $\mA_0$ and $\mB$; the remaining $d-n$ latent rows receive no gradient from this objective and are shaped by the initialization and by the rollout-aware optimization of Stage~1. Fig.~\ref{fig:training_procedure} illustrates the one-step coupling used in this stage.
+where
+\[
+\vz_k=g_\theta(\mX_k).
+\]
+This loss jointly initializes $g_\theta$, $\mA_0$, and $\mB$ using one-step measured-state targets. Since $\mC=[\mI_n\;\mathbf{0}]$, it directly supervises only the first $n$ rows of $\mA_0$ and $\mB$; the remaining rows are learned during Stage~1.
 
 \begin{definition}[Rollout-Aware Scheduled Objective]
 \label{def:rollout_aware}
 Starting from the encoder-initialized latent $\vz^{P}_{k}=g_\theta(\mX_k)$, the scheduled rollout is generated for $i=0,\ldots,H_R-1$ by
 \begin{equation}
-\begin{aligned}
-    \vc_{k+i} &= C_\phi(\hat{\mX}_{k+i},\mU^{\mathrm{in}}_{k+i}),\\
-    \vz^{P}_{k+i+1} &= \mA(\vc_{k+i})\,\vz^{P}_{k+i} + \mB\,\vu_{k+i},\\
-    \hat{\vx}_{k+i+1} &= \mC\,\vz^{P}_{k+i+1},
-\end{aligned}
-\label{eq:scheduled_rollout}
+    \left\{
+    \begin{aligned}
+        &\vc_{k+i} = C_\phi(\hat{\mX}_{k+i},\mU^{\mathrm{in}}_{k+i}),\\
+        &\vz^{P}_{k+i+1} = \mA(\vc_{k+i})\,\vz^{P}_{k+i}
+        + \mB\,\vu_{k+i},\\
+        &\hat{\vx}_{k+i+1} = \mC\,\vz^{P}_{k+i+1}.
+    \end{aligned}
+    \right.
+    \label{eq:scheduled_rollout}
 \end{equation}
-where the windows are then shifted by appending the decoded state and the applied input and dropping the oldest entry, $\hat{\mX}_{k+i+1}=\mathrm{shift}(\hat{\mX}_{k+i},\hat{\vx}_{k+i+1})$ and $\mU^{\mathrm{in}}_{k+i+1}=\mathrm{shift}(\mU^{\mathrm{in}}_{k+i},\vu_{k+i})$. The lifting encoder is thus evaluated only at the start of the rollout, while the context is re-scheduled at every step from the history that the predictor itself has produced. With uniform weights $w_i=1/H_R$, the scheduled objective is
+where the windows are then shifted by appending the decoded state and the applied input and dropping the oldest entry, $\hat{\mX}_{k+i+1}=\mathrm{shift}(\hat{\mX}_{k+i},\hat{\vx}_{k+i+1})$ and $\mU^{\mathrm{in}}_{k+i+1}=\mathrm{shift}(\mU^{\mathrm{in}}_{k+i},\vu_{k+i})$. The rollout starts from $\hat{\mX}_k=\mX_k$ and the observed input history $\mU_k^{\mathrm{in}}$. The lifting encoder is thus evaluated only at the start of the rollout, while the context is re-scheduled at every step from the history that the predictor itself has produced. With uniform weights $w_i=1/H_R$, the scheduled objective is
 \begin{equation}
     \mathcal{L}_R=\sum_k\sum_{i=1}^{H_R} w_i\,\big\|\mC\vz^{P}_{k+i}-\vx_{k+i}\big\|_2^2 .
     \label{eq:loss_rollout}
 \end{equation}
 \end{definition}
 
-At deployment the transition consumes \emph{propagated} latents $\vz^{P}$, whose distribution differs from the encoder-generated one-step distribution on which Stage~0 is fitted. The rollout objective is an algorithmic training mechanism rather than a theoretical guarantee: no statement in Section~\ref{sec:theory} uses $\mathcal{L}_R$, and Section~\ref{sec:theory} analyzes rollout consistency independently through finite-horizon error propagation.
+\textbf{Stage~1 (scheduled-rollout fine-tuning).} We activate the context-conditioned transition \eqref{eq:lowrank_A} and jointly optimize $(\theta,\phi,\mA_0,\mU,\mV,\psi,\mB)$ by minimizing the scheduled objective \eqref{eq:loss_rollout}. The encoder initializes each rollout once; subsequent steps propagate the latent state and update the context using predicted histories according to \eqref{eq:scheduled_rollout}. The projection $\mC$ remains fixed.
 
-\textbf{Stage~1 (scheduled-rollout fine-tuning).} We then activate the low-rank context modulation $\mA(\vc_k)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc_k))\,\mV^\top$ and jointly refine $\theta$, $\phi$, $\mA_0$, $\mU$, $\mV$, $\gamma_\psi$, and the shared input matrix $\mB$ by minimizing the rollout-aware scheduled objective $\mathcal{L}_R$ of Definition~\ref{def:rollout_aware} \eqref{eq:loss_rollout}, in which the rollout \eqref{eq:scheduled_rollout} propagates the latent and \emph{re-schedules} the context from the history that the predictor itself has produced (Section~\ref{subsec:rollout}). Only the projection $\mC$ is structurally fixed. The horizon and weights used in this work are reported with the experimental configuration.
-
-Minimizing $\mathcal{L}_R$ trains the operator on the propagated-latent distribution that arises at deployment, rather than on the encoder-generated one-step distribution; this is the rollout mismatch between encoder-initialized and recursively propagated latent states analyzed in Section~\ref{subsec:rollout}.
-
-The modulation is parameterized with a total absolute budget that limits the magnitude of the context-dependent correction: the columns of $\mU$ and $\mV$ are reparameterized to unit norm, and $\gamma_\psi$ is reparameterized so that its components obey $\sum_{i=1}^{r}|\gamma_{\psi,i}(\vc)|\le g_{\max}$ for all $\vc$, their signs being unconstrained. Both are structural reparameterizations rather than training penalties. Writing $\mA(\vc)-\mA_0=\sum_{i=1}^{r}\gamma_{\psi,i}(\vc)\,\mU_{:,i}\mV_{:,i}^{\top}$ with unit-norm columns $\|\mU_{:,i}\|_2=\|\mV_{:,i}\|_2=1$, the triangle inequality together with $\|\mU_{:,i}\mV_{:,i}^{\top}\|_2=1$ gives
+To bound the context-dependent correction, let the columns of $\mU$ and $\mV$ satisfy $\|\mU_{:,i}\|_2,\|\mV_{:,i}\|_2\le 1$, and parameterize the modulation coefficients as
+\begin{equation}
+    \left\{
+    \begin{aligned}
+        &\gamma_{\psi,i}(\vc)=g_{\max}\pi_i\tanh\!\big([\mW_g\vc+\vb_g]_i\big),\\
+        &\pi_i\ge0,\quad \sum_{i=1}^{r}\pi_i=1.
+    \end{aligned}
+    \right.
+    \label{eq:modulation_budget}
+\end{equation}
+Here $\boldsymbol\pi$ is learned through a softmax parameterization, and the low-rank factor columns are normalized to satisfy the stated bounds. Consequently, $\sum_i|\gamma_{\psi,i}(\vc)|\le g_{\max}$ and
 \begin{equation}
     \|\mA(\vc)-\mA_0\|_2
     \le \sum_{i=1}^{r}\big|\gamma_{\psi,i}(\vc)\big|
     \le g_{\max},
     \label{eq:correction_bound}
 \end{equation}
-uniformly in $\vc$. This bound controls the size of the correction only: it does not imply that $\mA(\vc)$ is well-conditioned, that $\|\mA(\vc)\|_2<1$ or $\rho(\mA(\vc))<1$, or that the scheduled products $\mA_{k+H-1}\cdots\mA_k$ contract, and no stability property is claimed on this basis (Section~\ref{sec:theory}).
-
-The complete procedure is summarized in Algorithm~\ref{alg:training}.
+for every context $\vc$. This bounds the correction magnitude, not the stability of $\mA(\vc)$.The complete procedure is summarized in Algorithm~\ref{alg:training}.
 
 \begin{algorithm}[!t]
-\caption{Transformer-Koopman Training Algorithm}
+\caption{Two-Stage Transformer--Koopman Training}
 \label{alg:training}
 \begin{algorithmic}[1]
-
-\STATE \textbf{Input:} Trajectory dataset $\mathcal{D}$ \eqref{eq:trajectory_dataset}
-\STATE History length $P$; patch length $p$; lifted dimension $d$; rank $r$; rollout horizon $H_R$
-\STATE Rollout weights $w_1,\ldots,w_{H_R}$; epochs $E_0$ (nominal pretraining), $E_1$ (scheduled-rollout fine-tuning)
-
-\STATE \textbf{Output:} Lifting encoder $\theta^{*}$; context $\phi^{*}$; transition parameters $\mA_0^{*},\mU^{*},\mV^{*},\gamma_\psi^{*}$; input matrix $\mB^{*}$
-
-\STATE \textbf{Stage~0 (nominal one-step pretraining):}
-Initialize $\theta$ and $(\mA_0,\mB)$; for $E_0$ epochs, minimize the one-step loss \eqref{eq:loss_one_step} over $(\theta,\mA_0,\mB)$.
-
-\vspace{2pt}
-
-\STATE \textbf{Stage~1 (scheduled-rollout fine-tuning):}
-Activate $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\,\mV^\top$ and initialize $(\phi,\mU,\mV,\psi)$; keep only $\mC$ structurally fixed.
-\FOR{epoch $\ell = 1$ \TO $E_1$}
-    \FOR{each mini-batch $\mathcal{S}$ of length-$H_R$ segments drawn from $\mathcal{D}$}
-        \STATE Initialize the rollout at $\vz^{P}_{k}=g_\theta(\mX_k)$.
+\STATE \textbf{Input:} Trajectory dataset $\mathcal D$; history length $P$; rollout horizon $H_R$; training epochs $E_0,E_1$.
+\STATE \textbf{Stage 0:} Initialize $(\theta,\mA_0,\mB)$ by minimizing \eqref{eq:loss_one_step} for $E_0$ epochs.
+\STATE \textbf{Stage 1:} Initialize $(\phi,\mU,\mV,\psi)$ and activate \eqref{eq:lowrank_A}.
+\FOR{$\ell=1$ \TO $E_1$}
+    \FOR{each mini-batch of length-$H_R$ segments}
+        \STATE Set $\vz_k^P=g_\theta(\mX_k)$, $\hat{\mX}_k=\mX_k$, and initialize $\mU_k^{\mathrm{in}}$ from the recorded history.
         \FOR{$i=0$ \TO $H_R-1$}
-            \STATE Re-schedule the context $\vc_{k+i}=C_\phi(\hat{\mX}_{k+i},\mU^{\mathrm{in}}_{k+i})$ from the rolled-out history.
-            \STATE Propagate $\vz^{P}_{k+i+1}=\mA(\vc_{k+i})\vz^{P}_{k+i}+\mB\vu_{k+i}$ and shift the windows using $\hat{\vx}_{k+i+1}=\mC\vz^{P}_{k+i+1}$.
+            \STATE Evaluate $\vc_{k+i}=C_\phi(\hat{\mX}_{k+i},\mU_{k+i}^{\mathrm{in}})$.
+            \STATE Propagate $\vz_{k+i+1}^P=\mA(\vc_{k+i})\vz_{k+i}^P+\mB\vu_{k+i}$.
+            \STATE Decode $\hat{\vx}_{k+i+1}=\mC\vz_{k+i+1}^P$ and shift the state and input histories.
         \ENDFOR
-        \STATE Form the scheduled objective $\mathcal{L}_R$ \eqref{eq:loss_rollout}.
-        \STATE Update $(\theta,\phi,\mA_0,\mU,\mV,\gamma_\psi,\mB)$ by backpropagation through the rollout.
+        \STATE Update $(\theta,\phi,\mA_0,\mU,\mV,\psi,\mB)$ using \eqref{eq:loss_rollout}.
     \ENDFOR
 \ENDFOR
-
-\RETURN $\theta^{*},\phi^{*},\mA_0^{*},\mU^{*},\mV^{*},\gamma_\psi^{*},\mB^{*}$
-
+\STATE \textbf{Return:} Trained encoder, context network, and dynamics parameters.
 \end{algorithmic}
 \end{algorithm}
 
@@ -450,8 +442,8 @@ Activate $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\,\mV^\top$ and ini
     \includegraphics[width=0.95\textwidth]{pictures/Figure2.pdf}
     \caption{One-step lifting and prediction (nominal pretraining, Stage~0). The
     history window $\mX_k$ is encoded by $g_\theta$ to produce the lifted
-    state $\vz_k$, and the time-invariant base operator $(\mA_0,\mB)$
-    produces the one-step prediction $\hat{\vz}_{k+1}=\mA_0\vz_k+\mB\vu_k$,
+    state $\vz^{E}_k$, and the time-invariant base operator $(\mA_0,\mB)$
+    produces the one-step prediction $\hat{\vz}^{P}_{k+1}=\mA_0\vz^{E}_k+\mB\vu_k$,
     from which $\hat{\vx}_{k+1}$ is recovered via $\mC$. Stage-0 training is
     supervised only through the decoded physical state, by the one-step loss
     \eqref{eq:loss_one_step}; the shifted window $\mX_k^{+}$ indicates the
@@ -468,50 +460,52 @@ Activate $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\,\mV^\top$ and ini
 \label{sec:theory}
 % =========================================================
 
-In this section, we analyze the internal finite-history predictor of Section~\ref{sec:methodology} and its finite-horizon error propagation. Section~\ref{subsec:rollout} bounds the inconsistency that arises when the latent state is propagated recursively instead of being re-encoded, and Section~\ref{subsec:fh_bound} bounds the finite-horizon prediction error of the learned augmented predictor against a recorded reference sequence. All statements are conditional on the regularity assumptions stated below and concern the predictor itself; the scope remark at the end of the section states what is \emph{not} claimed.
+This section analyzes two aspects of the learned predictor: the discrepancy between recursively propagated and re-encoded latent states (Section~\ref{subsec:rollout}), and the accumulation of prediction error relative to recorded observations (Section~\ref{subsec:fh_bound}).
 
-Because the lifted state is a function of a finite window, the predictor can be recast as a first-order system on an augmented state. Define
+The predictor depends on finite state and input histories. By including these histories in an augmented state,
 \begin{equation}
     \vxi_k = \mathrm{col}\big(\mathrm{vec}\,\mX_k,\,\mathrm{vec}\,\mU^{\mathrm{in}}_k,\,\vz_k\big)
     \in \mathbb{R}^{Pn+(P-1)m+d},
     \label{eq:augmented_state}
 \end{equation}
-and consider the predictor's own rollout, in which the newest fed-back state is its decoded output $\hat{\vx}_{k+1}=\mC\vz_{k+1}$. The window update is then a deterministic shift: append the decoded state and the applied input, and drop the oldest entry. Since $\mX_k$ and $\mU^{\mathrm{in}}_k$ are sub-blocks of $\vxi_k$, every argument of that update is a function of $(\vxi_k,\vu_k)$ alone, so composing the shift, the context map, the transition, and the decoder yields a single deterministic map
+its recursive prediction can be expressed as
 \begin{equation}
-    \vxi_{k+1} = \mF_\Theta(\vxi_k, \vu_k).
+    \vxi_{k+1} = \mF_\Theta(\vxi_k,\vu_k).
     \label{eq:augmented_map}
 \end{equation}
-This construction describes the predictor's internal rollout only. If a true measurement $\vx_{k+1}$ is fed back instead, the update also depends on an exogenous quantity and is not a function of $\vxi_k$ alone; and nothing here asserts that the finite measured history Markovizes the physical system \eqref{eq:nonlinear_system}.
+Here \(\mF_\Theta\) combines the context-conditioned latent transition, decoding \(\hat{\vx}_{k+1}=\mC\vz_{k+1}\), and the state and input history shifts of \eqref{eq:scheduled_rollout}. Thus, the predictor's next augmented state is determined by \((\vxi_k,\vu_k)\). This is a first-order representation of the \emph{predictor}, not a Markov assumption on the physical system.
 
 \subsection{Latent Rollout Inconsistency and Its Propagation}
 \label{subsec:rollout}
 
-We now characterize the discrepancy that arises when the latent state is propagated recursively instead of being re-encoded at every step.
+Recursive propagation need not reproduce the latent state obtained by re-encoding the same predicted history. We quantify this difference below.
 
 \begin{definition}[Latent Rollout Inconsistency]
 \label{def:rollout}
-Let $\hat{\mX}_{k+i}$ be the history produced by the predictor's own rollout and let $\vc_{k+i}=C_\phi(\hat{\mX}_{k+i},\mU^{\mathrm{in}}_{k+i})$ denote the scheduled context re-computed from it. Define the encoder-consistent latent and the propagated latent,
+For the predictor-generated history \(\hat{\mX}_{k+i}\), define the re-encoded latent and the propagated latent by
 \begin{equation}
     \vz^{E}_{k+i} = g_\theta(\hat{\mX}_{k+i}), \qquad
     \vz^{P}_{k+i+1} = \mA(\vc_{k+i})\vz^{P}_{k+i} + \mB\vu_{k+i},
 \end{equation}
-and the normalized rollout defect
+where \(\vc_{k+i}=C_\phi(\hat{\mX}_{k+i},\mU^{\mathrm{in}}_{k+i})\). The normalized latent inconsistency is
 \begin{equation}
     d_{\mathcal{M},k+i} = \frac{\big\|\vz^{P}_{k+i}-\vz^{E}_{k+i}\big\|_2}{\big\|\vz^{E}_{k+i}\big\|_2+\epsilon_0},
     \label{eq:defect}
 \end{equation}
-with $\epsilon_0=10^{-6}$ a fixed numerical floor. We also use the absolute defect $d^{\mathrm{abs}}_{k+i}=\|\vz^{P}_{k+i}-\vz^{E}_{k+i}\|_2$, which is the quantity for which Proposition~\ref{prop:propagation} provides an upper bound.
+with the fixed numerical floor \(\epsilon_0=10^{-6}\). Its absolute counterpart is \(d^{\mathrm{abs}}_{k+i}=\|\vz^{P}_{k+i}-\vz^{E}_{k+i}\|_2\).
 \end{definition}
 
-Two properties of this defect are worth stating explicitly. First, because $\vz=[\vx;\vh]$ is state-preserving and the newest entry of $\hat{\mX}_{k+i}$ is the decoded state $\mC\vz^{P}_{k+i}$, the propagated and the encoder-consistent latents share their first $n$ coordinates, $\mC(\vz^{P}_{k+i}-\vz^{E}_{k+i})=\mathbf{0}$; the defect therefore measures the inconsistency of the remaining $d-n$ hidden lifted coordinates rather than a physical multi-step prediction error. Those hidden coordinates still affect future decoded predictions through $\mA(\vc)$, which is why this inconsistency matters. Second, evaluating $\vz^{E}_{k+i}$ requires an additional encoder pass on the predicted history. That pass is an offline diagnostic used to characterize the mechanism; it is not part of the online rollout, in which the context is re-scheduled without re-running the encoder inside the horizon (Section~\ref{sec:control}).
+The re-encoding in this definition is used to assess inconsistency; the deployed rollout does not re-evaluate the encoder at each step. Since the lifting is state-preserving and the predicted history contains the decoded propagated state,
+\(\mC(\vz^{P}_{k+i}-\vz^{E}_{k+i})=\mathbf{0}\).
+The defect therefore lies in the hidden lifted coordinates, which can still influence subsequent physical predictions.
 
 \begin{proposition}[Latent Rollout Error Propagation]
 \label{prop:propagation}
-Let $\vz^{P}_{k}$ denote the recursively propagated latent state and $\vz^{E}_{k}=g_\theta(\hat{\mX}_k)$ the encoder-consistent latent state, and let $d_k\equiv d^{\mathrm{abs}}_k=\|\vz^{P}_k-\vz^{E}_k\|_2$. Define the encoder-consistent one-step defect
+Let \(d_k=d^{\mathrm{abs}}_k=\|\vz^{P}_k-\vz^{E}_k\|_2\), and define the one-step defect on the predicted history as
 \begin{equation}
     \epsilon_k = \big\|\mA(\vc_k)\vz^{E}_k + \mB\vu_k - \vz^{E}_{k+1}\big\|_2 .
 \end{equation}
-Then $d_{k+1}\le\|\mA(\vc_k)\|_2\,d_k+\epsilon_k$, and for any horizon $H$,
+Then \(d_{k+1}\le\|\mA(\vc_k)\|_2d_k+\epsilon_k\). For any horizon \(H\),
 \begin{equation}
     \begin{aligned}
     d_{k+H}\le{}&
@@ -520,120 +514,126 @@ Then $d_{k+1}\le\|\mA(\vc_k)\|_2\,d_k+\epsilon_k$, and for any horizon $H$,
     \end{aligned}
     \label{eq:prop_bound}
 \end{equation}
-where $\mA_{k+j}=\mA(\vc_{k+j})$ is the transition at the scheduled context $\vc_{k+j}=C_\phi(\hat{\mX}_{k+j},\mU^{\mathrm{in}}_{k+j})$ along the same rollout. If the rollout starts from an encoder-consistent latent ($\vz^{P}_k=\vz^{E}_k$, hence $d_k=0$), the first term vanishes and the bound reduces to the second sum alone. The bound is a trajectory-wise recursion: both $\epsilon_k$ and the transition matrices $\mA_{k+j}$ are evaluated along the same rollout, so they depend on the realized trajectory rather than being a priori constants.
+where \(\mA_{k+j}=\mA(\vc_{k+j})\) along the same scheduled rollout, and an empty matrix product is the identity. With encoder-consistent initialization \(\vz_k^P=\vz_k^E\), the term involving \(d_k\) vanishes.
 \end{proposition}
 
 \begin{proof}
-Let $\ve_k=\vz^{P}_k-\vz^{E}_k$ denote the latent error. Subtracting the encoder-consistent update from the propagation rule $\vz^{P}_{k+1}=\mA(\vc_k)\vz^{P}_k+\mB\vu_k$ gives the linear recursion
+Define \(\ve_k=\vz^P_k-\vz^E_k\) and
+\(\vr^z_k=\mA(\vc_k)\vz^E_k+\mB\vu_k-\vz^E_{k+1}\).
+The two latent updates give
 \begin{equation*}
-    \ve_{k+1}=\mA(\vc_k)\ve_k+\vr^{z}_k,
-    \qquad
-    \vr^{z}_k=\mA(\vc_k)\vz^{E}_k+\mB\vu_k-\vz^{E}_{k+1},
+    \ve_{k+1}=\mA_k\ve_k+\vr^z_k,
+    \qquad \|\vr^z_k\|_2=\epsilon_k.
 \end{equation*}
-where $\|\vr^{z}_k\|_2=\epsilon_k$. Taking norms and using the triangle inequality and submultiplicativity yields the one-step bound $d_{k+1}\le\|\mA(\vc_k)\|_2\,d_k+\epsilon_k$. Unrolling the recursion over $H$ steps gives
+Taking norms yields the one-step inequality. Iterating the recursion gives
 \begin{align*}
     \ve_{k+H}
     &=\mA_{k+H-1}\cdots\mA_{k}\,\ve_k \\
-    &\quad+\sum_{i=0}^{H-1}\mA_{k+H-1}\cdots\mA_{k+i+1}\,\vr^{z}_{k+i},
+    &\quad+\sum_{i=0}^{H-1}\mA_{k+H-1}\cdots\mA_{k+i+1}\,\vr^{z}_{k+i}.
 \end{align*}
-and taking norms, with $\|\ve_k\|_2=d_k$ and $\|\vr^{z}_{k+i}\|_2=\epsilon_{k+i}$, gives \eqref{eq:prop_bound} (the empty product at $i=H-1$ is the identity). Since $\|\mA_{k+H-1}\cdots\mA_{k}\|_2\le\prod_{j=0}^{H-1}\|\mA_{k+j}\|_2$, this matrix-product form is at least as tight as the product-of-norms form.
+The triangle inequality and submultiplicativity yield \eqref{eq:prop_bound}.
 \end{proof}
 
-Equation~\eqref{eq:prop_bound} shows that the long-horizon inconsistency is governed by two factors: the local one-step defect $\epsilon_k$ and the \emph{amplification of the time-varying transition products}.
+The bound depends on the one-step defects and their amplification by scheduled transition products. The modulation bound \eqref{eq:correction_bound} also gives \(\|\mA(\vc_k)\|_2\le\|\mA_0\|_2+g_{\max}\), which bounds each one-step amplification factor but does not ensure contraction of the matrix products.
 
-\begin{remark}[Why spectral stabilization is insufficient]
+\begin{remark}[Spectral radius and scheduled products]
 \label{rem:spectral}
-Enforcing $\rho(\mA(\vc_k))<1$ for all $k$ does \emph{not} imply a uniform contraction of the time-varying products:
+Pointwise spectral-radius bounds do not imply uniform decay of time-varying products:
 \begin{equation}
-    \rho(\mA_k)<1\ \ \forall k \ \ \not\Rightarrow\ \ \|\mA_{k+H-1}\cdots\mA_k\|_2\le c<1 ,
+    \begin{gathered}
+        \rho(\mA_k)<1\quad \text{for all }k
+        \ \not\Longrightarrow \\[1pt]
+        \lim_{H\to\infty}\sup_k
+        \big\|\mA_{k+H-1}\cdots\mA_k\big\|_2=0.
+    \end{gathered}
 \end{equation}
-which is the classical spectral-radius/joint-spectral-radius gap for non-commuting matrices \cite{daubechies1992sets, rota1960joint, jungers2009joint}. A bound on $\rho(\mA(\vc))$ therefore does not by itself control the amplification of the scheduled products that appears in \eqref{eq:prop_bound}.
+This distinction is relevant to the non-commuting, history-scheduled transitions in \eqref{eq:prop_bound} \cite{daubechies1992sets, rota1960joint, jungers2009joint}.
 \end{remark}
 
 \subsection{Finite-Horizon Prediction Error Bound}
 \label{subsec:fh_bound}
 
-To state the bound we compare the learned predictor with a \emph{reference augmented sequence} built directly from the recorded observations, rather than postulating a deterministic reference transition for the plant. Let
+We next compare the recursive predictor with a reference sequence constructed from recorded observations. Define
 \begin{equation}
-    \vxi^{\star}_k=\mathrm{col}\big(\mathrm{vec}\,\mX_k,\,\mathrm{vec}\,\mU^{\mathrm{in}}_k,\,g_\theta(\mX_k)\big)
+    \vxi^{\star}_k=\mathrm{col}\big(\mathrm{vec}\,\mX_k,\,\mathrm{vec}\,\mU^{\mathrm{in}}_k,\,g_\theta(\mX_k)\big),
     \label{eq:true_augmented}
 \end{equation}
-denote the reference augmented state built from the true observations and the encoder-consistent latent, and let $\vxi^{\star}_{k+1}$ be its successor along the recorded trajectory. The reference sequence consists of measured quantities; no deterministic reference map is assumed to generate it, so the finite observed history is never asserted to Markovize the underlying plant. The learned augmented transition $\mF_\Theta$ is the map \eqref{eq:augmented_map}, which propagates the latent and feeds back the decoded output $\hat{\vx}=\mC\vz^{P}$. We therefore measure the learned model by its one-step discrepancy on the reference sequence,
+and let \(\vxi^\star_{k+1}\) be its successor on the recorded trajectory. For the predicted sequence, let
+\[
+    \hat{\vxi}_{k+i}=\mathrm{col}\big(
+        \mathrm{vec}\,\hat{\mX}_{k+i},\,
+        \mathrm{vec}\,\mU^{\mathrm{in}}_{k+i},\,
+        \vz^P_{k+i}\big),
+\]
+so that \(\hat{\vxi}_{k+i+1}=\mF_\Theta(\hat{\vxi}_{k+i},\vu_{k+i})\). Both sequences use the same prescribed future inputs. The one-step discrepancy of the learned map on the recorded reference is
 \begin{equation}
     \delta^{\star}_k=\big\|\vxi^{\star}_{k+1}-\mF_\Theta(\vxi^{\star}_k,\vu_k)\big\|_2 .
     \label{eq:ref_discrepancy}
 \end{equation}
-This quantity bundles the physical modeling error, the finite-history truncation error, the learned transition error, and the difference between the encoder-consistent and the propagated latent updates.
 
-On the recorded sequence we also define the one-step modeling residual at the encoder-consistent latent,
+Define also the one-step latent residual on the recorded history,
 \begin{equation}
     \vw_k = \vz^{E}_{k+1} - \big(\mA(\vc_k)\vz^{E}_k + \mB \vu_k\big),
     \qquad \vz^{E}_{k}=g_\theta(\mX_k),
     \label{eq:modeling_error}
 \end{equation}
-which measures one-step data consistency on recorded histories. It is not an independent error quantity: because the history and input shifts are exact and the encoder is state-preserving, $\mC\vz^{E}_{k+1}=\vx_{k+1}$, and the augmented one-step reference discrepancy \eqref{eq:ref_discrepancy} reduces to
+where \(\vc_k=C_\phi(\mX_k,\mU_k^{\mathrm{in}})\). The history shifts differ only in the appended measured and decoded states, while the input-history shifts coincide. Since \(\mC\vz^E_{k+1}=\vx_{k+1}\), it follows that
 \begin{equation}
     (\delta^{\star}_k)^2=\|\vw_k\|_2^2+\|\mC\vw_k\|_2^2 ,
     \qquad
     \|\vw_k\|_2\le\delta^{\star}_k\le\sqrt{2}\,\|\vw_k\|_2 ,
     \label{eq:w_delta_relation}
 \end{equation}
-so $\delta^{\star}_k$ and $\vw_k$ are two views of the same one-step discrepancy on recorded data. This identity uses the history shift, the fixed projection $\mC=[\mI_n\;\mathbf{0}]$, and the re-encoding of the next recorded state adopted here; it is not an unconditional relation for arbitrary feedback structures. The defect $\epsilon_k$ of Proposition~\ref{prop:propagation}, by contrast, is evaluated on histories generated by the predictor itself and cannot be replaced by statistics of $\vw_k$.
+where \(\|\mC\|_2=1\). Unlike the predicted-history defect \(\epsilon_k\) in Proposition~\ref{prop:propagation}, both \(\delta_k^\star\) and \(\vw_k\) are evaluated on recorded histories.
 
 \begin{assumption}[Operating-set reference discrepancy]
 \label{as:mismatch}
-There exist a compact \emph{operating set} $\Omega\subset\mathbb{R}^{Pn+(P-1)m+d}\times\mathbb{R}^m$, i.e.\ a set of augmented state--input pairs $(\vxi,\vu)$, and a finite constant $\epsilon\ge0$ such that, along the reference sequence and at every step of the considered horizon, the one-step reference discrepancy \eqref{eq:ref_discrepancy} satisfies $\delta^{\star}_k\le\epsilon$, equivalently
+There exist a compact set of augmented state--input pairs
+\(\Omega\subset\mathbb{R}^{Pn+(P-1)m+d}\times\mathbb{R}^m\)
+and a constant \(\epsilon\ge0\) such that the reference and predicted augmented state--input pairs remain in \(\Omega\) throughout the considered horizon and the reference discrepancy satisfies
 \begin{equation}
     \big\|\vxi^{\star}_{k+1}-\mF_\Theta(\vxi^{\star}_k,\vu_k)\big\|_2\le\epsilon .
     \label{eq:as_mismatch}
 \end{equation}
-We additionally require that the reference and predicted trajectories remain in $\Omega$ over the considered horizon; this condition is used explicitly in Theorem~\ref{thm:fh}.
 \end{assumption}
 
 \begin{assumption}[Lipschitz continuity of the learned transition]
 \label{as:lipschitz}
-There exists a finite constant $\mLf$ such that
+There exists a finite constant \(\mLf\ge0\) such that
 \begin{equation}
     \|\mF_\Theta(\vxi_1,\vu)-\mF_\Theta(\vxi_2,\vu)\|_2\le \mLf\|\vxi_1-\vxi_2\|_2
     \label{eq:as_lipschitz}
 \end{equation}
-for all $(\vxi_1,\vu),(\vxi_2,\vu)\in\Omega$.
-No contraction is assumed: $\mLf$ need not be smaller than one. The bound holds on $\Omega$ whenever the context map $C_\phi$, the modulation $\gamma_\psi$, and the map $\vc\mapsto\mA(\vc)$ are Lipschitz there and the lifted state stays bounded; we take these as standing regularity conditions on the learned components. These conditions concern the functions that the recursion \eqref{eq:augmented_map} actually composes---the context map, the modulation, the low-rank transition, the affine latent update and decoding, and the exact window shift---and not the lifting encoder: $g_\theta$ is evaluated only to initialize the rollout, and is not re-evaluated inside $\mF_\Theta$. In the parameterization used here the context map and the modulation are composed of affine layers and smooth activations, so on a bounded operating set these conditions are met.
+for all \((\vxi_1,\vu),(\vxi_2,\vu)\in\Omega\). The condition concerns the recursive map \(\mF_\Theta\), which comprises the context and modulation maps, latent propagation, decoding, and history shifts; the lifting encoder is not re-evaluated within this map. Lipschitz context and modulation functions on the bounded operating region, together with bounded lifted states, provide sufficient regularity. No contraction assumption is imposed.
 \end{assumption}
 
 \begin{theorem}[Finite-Horizon Prediction Error Bound]
 \label{thm:fh}
-For a common prescribed input sequence $\{\vu_k,\ldots,\vu_{k+H-1}\}$, suppose that the reference and predicted trajectories remain in the operating set $\Omega$ over the horizon $H$. Under Assumptions~\ref{as:mismatch} and \ref{as:lipschitz}, and with $e_k=\vxi^{\star}_k-\hat{\vxi}_k$,
+Under Assumptions~\ref{as:mismatch} and \ref{as:lipschitz}, consider reference and predicted augmented sequences driven by the same inputs \(\vu_k,\ldots,\vu_{k+H-1}\). With \(e_k=\vxi^{\star}_k-\hat{\vxi}_k\),
 \begin{equation}
     \|e_{k+H}\|_2 \le \mLf^{H}\|e_k\|_2+\sum_{i=0}^{H-1}\mLf^{H-1-i}\,\delta^{\star}_{k+i}.
     \label{eq:fh_bound}
 \end{equation}
-If in addition the reference discrepancy is uniformly bounded by $\epsilon$ as in Assumption~\ref{as:mismatch}, then
+In particular, \(\delta^{\star}_{k+i}\le\epsilon\) yields
 \begin{equation}
     \|e_{k+H}\|_2 \le \mLf^{H}\|e_k\|_2+\epsilon\sum_{j=0}^{H-1}\mLf^{j}.
     \label{eq:fh_bound_uniform}
 \end{equation}
-If the horizon is initialized from the same measured history and the corresponding encoder-consistent latent state, i.e. $\hat{\mX}_k=\mX_k$ and $\vz^{P}_k=g_\theta(\mX_k)$, then $e_k=0$ and $\|e_{k+H}\|_2\le\epsilon\sum_{j=0}^{H-1}\mLf^{j}$. The bound compares the learned predictor with the recorded reference trajectory under a \emph{common} input sequence; it is not a closed-loop tracking-error or robustness statement. Here $\epsilon$ is the uniform bound of Assumption~\ref{as:mismatch}.
+If the predictor is initialized with \(\hat{\mX}_k=\mX_k\), the same recorded input history \(\mU_k^{\mathrm{in}}\), and \(\vz_k^P=g_\theta(\mX_k)\), then \(e_k=0\).
 \end{theorem}
 
 \begin{proof}
-For one step, using the recorded successor $\vxi^{\star}_{k+1}$,
+For one step, adding and subtracting \(\mF_\Theta(\vxi^{\star}_k,\vu_k)\) gives
 \begin{align*}
     \|e_{k+1}\|_2
-    &=\big\|\vxi^{\star}_{k+1}-\mF_\Theta(\hat{\vxi}_k,\vu_k)\big\|_2 \\
     &\le\big\|\vxi^{\star}_{k+1}-\mF_\Theta(\vxi^{\star}_k,\vu_k)\big\|_2 \\
     &\quad+\big\|\mF_\Theta(\vxi^{\star}_k,\vu_k)-\mF_\Theta(\hat{\vxi}_k,\vu_k)\big\|_2 \\
-    &\le\delta^{\star}_k+\mLf\|e_k\|_2 ,
+    &\le\delta^{\star}_k+\mLf\|e_k\|_2.
 \end{align*}
-by \eqref{eq:ref_discrepancy} and Assumption~\ref{as:lipschitz}, which applies at every step because the trajectories remain in $\Omega$ over the horizon. Unrolling the recursion yields \eqref{eq:fh_bound}; bounding each $\delta^{\star}_{k+i}$ by $\epsilon$ yields \eqref{eq:fh_bound_uniform}.
+Applying this inequality successively gives \eqref{eq:fh_bound}; Assumption~\ref{as:mismatch} then gives \eqref{eq:fh_bound_uniform}.
 \end{proof}
 
-\begin{remark}[How to read these bounds]
-\label{rem:eps_vs_epsk}
-Equation~\eqref{eq:fh_bound} is a conditional finite-horizon relation between two trajectories driven by the same input sequence, not a numerical certificate. The quantities $\epsilon$, $\epsilon_k$ and $\vw_k$ are defined on different trajectories and are not interchangeable, and the regularity constants of Assumptions~\ref{as:mismatch} and \ref{as:lipschitz} are properties of the operating set $\Omega$ rather than of any validation sample. The bound concerns the rolled-out predictor under a common input sequence: when $\mLf>1$ it grows geometrically with $H$, and it is neither a closed-loop tracking-error statement nor a stability result.
-\end{remark}
-
-The bound above concerns the augmented state, and the physical coordinates are a sub-vector of it. Both the current physical state $\vx_{k+H}$ and the predictor's decoded feedback $\hat{\vx}_{k+H}=\mC\vz^{P}_{k+H}$ occupy the last $n$ coordinates of the history block of the respective augmented states, so their difference is a coordinate sub-vector of $\hat{\vxi}_{k+H}-\vxi^{\star}_{k+H}$. Since a coordinate sub-vector has at most the norm of the full vector, Theorem~\ref{thm:fh} gives directly, with no additional assumption,
+Because the measured state is the newest entry of the history block, its prediction error is a sub-vector of the augmented-state error. Theorem~\ref{thm:fh} therefore also implies
 \begin{equation}
     \|\hat{\vx}_{k+H}-\vx_{k+H}\|_2
     \le \mLf^{H}\|e_k\|_2+\sum_{i=0}^{H-1}\mLf^{H-1-i}\,\delta^{\star}_{k+i}.
@@ -642,7 +642,7 @@ The bound above concerns the augmented state, and the physical coordinates are a
 
 \begin{remark}[Scope of the analysis]
 \label{subsec:scope}
-The analysis is finite-horizon and concerns the consistency of the learned predictor and the propagation of its prediction error; the local linearization accuracy of the RTI step is treated separately in Section~\ref{sec:control}. It does not establish global closed-loop stability, a common Lyapunov function, terminal invariant sets, or recursive feasibility under learned uncertainty. The regularity constants used for the empirical assessment are operating-region diagnostics rather than global certificates, all bounds concern the rolled-out latent predictor rather than true-plant tracking error, and $\mA(\vc)$ is a latent linearization parameterization rather than an exact Koopman invariant-subspace operator.
+These are finite-horizon bounds for the learned predictor under the stated operating-set assumptions and common input sequence. They do not establish closed-loop stability or recursive feasibility of RTI-MPC; the controller's local optimization step is addressed separately in Section~\ref{sec:control}.
 \end{remark}
 
 % =========================================================
@@ -665,7 +665,7 @@ At control instant $k$ the controller is initialized from the measured history a
     \mU^{\mathrm{in}}_{k+i+1|k}&=\mathrm{shift}\big(\mU^{\mathrm{in}}_{k+i|k},\vu_{k+i|k}\big),
     \label{eq:scheduled_predictor}
 \end{align}
-where $i=0,\ldots,N-1$ and $i|k$ denotes prediction step $i$ from control instant $k$. This is the same \emph{context-re-scheduled, latent-propagated} recursion as the training rollout \eqref{eq:scheduled_rollout}: the lifting encoder is evaluated once per control instant, at the start of the horizon, and the context is re-scheduled at every step from the decoded history rather than re-encoded. At the next sampling instant the controller is re-initialized from the newly measured history, which does not re-run the encoder inside the horizon. The alternative---re-encoding the history at every prediction stage (RTI-RE)---requires one additional encoder evaluation per prediction stage; whether that additional evaluation improves accuracy is an empirical question left to the experiments.
+where $i=0,\ldots,N-1$ and $i|k$ denotes prediction step $i$ from control instant $k$. This is the same \emph{context-re-scheduled, latent-propagated} recursion as the training rollout \eqref{eq:scheduled_rollout}: the lifting encoder is evaluated once per control instant, at the start of the horizon, and the context is re-scheduled at every step from the decoded history rather than re-encoded. At the next sampling instant the controller is re-initialized from the newly measured history, which does not re-run the encoder inside the horizon. An alternative is to re-encode the predicted history at each prediction stage (RTI-RE), which introduces additional Transformer encoder evaluations within the horizon; the proposed propagation strategy avoids these repeated encoder evaluations.
 
 \subsection{One-Iteration RTI}
 
@@ -698,9 +698,20 @@ and composing them along the rollout into the sensitivity of the predicted outpu
 \end{aligned}
     \label{eq:rti_qp}
 \end{equation}
-in which $\mH_{\mathrm{RTI}}$ and $\mathbf{g}_{\mathrm{RTI}}$ are determined by the weights $\mQ,\mR,\mS$, the nominal prediction, and the composed sensitivities of step (iii); $\mH_{\mathrm{RTI}}$ is symmetric and positive semidefinite for the stated weights but need not be positive definite, and the subproblem is solved numerically rather than in closed form; and (v) applying only the first input, $\vu^{\mathrm{app}}_k=\bar\vu_k+\delta\vu_k$.
+in which the quadratic data $\mH_{\mathrm{RTI}}$ and $\mathbf{g}_{\mathrm{RTI}}$ are given by \eqref{eq:rti_qp_data}; and (v) applying only the first input, $\vu^{\mathrm{app}}_k=\bar\vu_k+\delta\vu_k$.
 
-Because the bounds act on the increments, $\delta\vu=\mathbf{0}$ is feasible for this subproblem whenever the warm-start nominal input lies inside the box. This is feasibility of the linearized subproblem only: it does not imply recursive feasibility of the nonlinear problem, and no claim is made here of strict convexity, of a unique minimizer, of exact minimization, or of global SQP convergence. The practical adequacy of a single iteration is assessed empirically against a matched exact scheduled NMPC oracle in Section~\ref{sec:experiments}.
+Let $\hat{\vx}_{k+1:k+N}\in\mathbb{R}^{Nn}$ denote the stacked predicted states $\hat{\vx}_{k+1|k},\ldots,\hat{\vx}_{k+N|k}$ obtained by rolling out \eqref{eq:scheduled_predictor} at the nominal sequence $\bar{\mUs}$, and let $\mJ_x=\partial\hat{\vx}_{k+1:k+N}/\partial\mUs$ denote its sensitivity to the \emph{whole} input sequence, obtained by composing the sensitivities \eqref{eq:rti_linearization} along the rollout, so that $\mJ_x$ differentiates the scheduled contexts, the low-rank modulation, the latent propagation, and the history shifts, rather than treating $\mA(\vc_i)$ as a fixed matrix. Writing the input-rate term of \eqref{eq:mpc_cost} as $\mD\mUs+\vb$, where $\mD$ is the first-difference operator and $\vb=[-\vu^{\mathrm{app}}_{k-1};\mathbf{0}]$ carries the previously applied input, the quadratic data of \eqref{eq:rti_qp} are
+\begin{equation}
+\begin{aligned}
+    \mH_{\mathrm{RTI}}&=2\big(\mJ_x^{\top}\mQ\mJ_x+\mR+\mD^{\top}\mS\mD\big),\\
+    \mathbf{g}_{\mathrm{RTI}}&=2\big[\mJ_x^{\top}\mQ(\hat{\vx}_{k+1:k+N}-\vx^{\mathrm{ref}}_{k+1:k+N})\\
+    &\qquad+\mR\bar{\mUs}+\mD^{\top}\mS(\mD\bar{\mUs}+\vb)\big],
+\end{aligned}
+    \label{eq:rti_qp_data}
+\end{equation}
+Here $\mQ,\mR,\mS$ are lifted block-diagonally over the horizon as implied by \eqref{eq:mpc_cost}; this is the Gauss--Newton form of the linearized scheduled problem, in which the Jacobian is exact for the scheduled rollout while the second-order dependence of the rollout map on the inputs is not retained. The implementation evaluates the objective \eqref{eq:rti_qp} directly and minimizes it numerically under the increment box constraints with a limited-iteration quasi-Newton method, instead of assembling $\mH_{\mathrm{RTI}}$; the iteration budget is fixed a priori. For positive semidefinite weights, $\mH_{\mathrm{RTI}}$ is symmetric and positive semidefinite, and it need not be positive definite.
+
+Because the bounds act on the increments, $\delta\vu=\mathbf{0}$ is feasible for this subproblem whenever the warm-start nominal input lies inside the box. This is feasibility of the linearized subproblem only: it does not imply recursive feasibility of the nonlinear problem, and no claim is made here of strict convexity, of a unique minimizer, of exact minimization, or of global SQP convergence.
 
 The accuracy of step (iii) is characterized by the local second-order remainder of the augmented map. Treating $\mF_\Theta$ as a function of the joint variable $\eta=\mathrm{col}(\vxi,\vu)$, let $\bar\eta_i=\mathrm{col}(\bar\vxi_i,\bar\vu_i)$ and $\delta\eta_i=\mathrm{col}(\delta\vxi_i,\delta\vu_i)$ denote the nominal point and the joint perturbation.
 
@@ -808,7 +819,7 @@ These measurements bear on the claim that one-step training insufficiently const
 \label{sec:conclusion}
 % =========================================================
 
-This paper presented Transformer-Koopman, a framework for learning history-conditioned Koopman models of controlled nonlinear systems from finite history windows. Because the measured state need not reveal the system's internal dynamics, a patch-based Transformer encoder first maps the history to a structured, state-preserving lifted state. Because a single global lifted transition would then still require all history-dependent regimes to share one evolution law, the lifted transition is additionally modulated by the history through a rank-$r$ term $\mA(\vc)=\mA_0+\mU\,\mathrm{diag}(\gamma_\psi(\vc))\mV^\top$ ($r=2$), which confines history dependence to a structured correction of a shared nominal operator while keeping the propagation conditional-linear. We identified a training--deployment inconsistency between one-step-trained history-conditioned dynamics and the recursively generated latent states seen at deployment, showed that it is not repaired by spectral stabilization, and resolved it with deployment-consistent scheduled training. The rollout-trained scheduled predictor was integrated into a one-iteration RTI-MPC that runs in real time and matches a matched exact scheduled NMPC oracle to within about $1\%$. A finite-horizon theory---finite-history Markovization, latent rollout error propagation, a bounded prediction-error theorem, a physical-space corollary, and a local RTI approximation result---was established and supported by empirical diagnostics. Hardware validation on the soft-robot platform across multi-setpoint, circular, figure-eight, unseen-trajectory, and speed-shift regimes, together with closed-loop baselines against a fixed (time-invariant) Transformer-Koopman controller, remains the immediate next step.
+This paper presented a history-conditioned Transformer--Koopman framework for predictive modeling and control of nonlinear systems whose measurements need not fully characterize the underlying state. The proposed approach combines state-preserving temporal lifting with low-rank modulation of a nominal lifted transition, allowing the predictor to adapt to recent state--input histories while retaining linear latent propagation for a fixed context. To address the mismatch between one-step learning and recursive prediction, a two-stage training procedure was developed, incorporating rollout-aware fine-tuning with context updates along predicted trajectories. A finite-horizon analysis characterized latent rollout inconsistency and prediction-error propagation under explicit assumptions. The learned predictor was further integrated into a one-iteration RTI-MPC formulation that propagates lifted states and updates contexts without repeatedly evaluating the Transformer encoder within the prediction horizon. The resulting framework provides a structured approach to history-dependent prediction and its integration into real-time predictive control, while closed-loop stability and robustness guarantees under model uncertainty remain outside the scope of the present analysis.
 
 \begin{thebibliography}{99}
 
@@ -961,6 +972,12 @@ P. S. G. Cisneros, S. Voss, and H. Werner, ``Efficient nonlinear model predictiv
 
 \bibitem{cisneros2020qlpv}
 P. S. G. Cisneros and H. Werner, ``Nonlinear model predictive control for models in quasi-linear parameter varying form,'' \emph{Int. J. Robust Nonlinear Control}, vol. 30, no. 10, pp. 3945--3959, 2020.
+
+\bibitem{han2024robust}
+M. Han, Z. Li, Xiang Yin, and Xunyuan Yin, ``Robust learning and control of time-delay nonlinear systems with deep recurrent Koopman operators,'' \emph{IEEE Trans. Ind. Informat.}, vol. 20, no. 3, pp. 4675--4684, Mar. 2024.
+
+\bibitem{shenoy2025temporal}
+S. Shenoy, B. Sharan, and H. Werner, ``Temporal autoencoder for identification and predictive control of nonlinear dynamics based on Koopman operator theory,'' in \emph{Proc. American Control Conf. (ACC)}, 2025, pp. 1795--1800.
 
 \end{thebibliography}
 
