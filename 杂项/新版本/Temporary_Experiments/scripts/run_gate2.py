@@ -74,10 +74,19 @@ def scheduling_diagnostics(model, split="test", n_batch=30):
         B = model.B_of(z[:, :2])
         dA = (A - model.A0.unsqueeze(0)).cpu().numpy()
         sv = np.linalg.svd(dA.reshape(len(idx), -1), compute_uv=False)
-        sv = sv / max(sv[0], 1e-12)
-        out["dA_effective_rank_90pct"] = int(np.searchsorted(np.cumsum(sv ** 2)
-                                                             / np.sum(sv ** 2), 0.9) + 1)
-        out["dA_rank_numerical"] = int(np.sum(sv > 1e-6))
+        if float(sv[0]) <= 1e-12:
+            # dA is numerically zero (A0B0 / A0Bx): the "effective rank" of a zero
+            # matrix is undefined -- reporting 1 here would be a 0/0 artifact.
+            out["dA_effective_rank_90pct"] = 0
+            out["dA_rank_numerical"] = 0
+            out["dA_degenerate"] = True
+        else:
+            svn = sv / float(sv[0])
+            out["dA_effective_rank_90pct"] = int(np.searchsorted(np.cumsum(svn ** 2)
+                                                                 / np.sum(svn ** 2), 0.9) + 1)
+            out["dA_rank_numerical"] = int(np.sum(svn > 1e-6))
+            out["dA_degenerate"] = False
+        out["dA_spectrum_head"] = [float(v) for v in sv[:5]]
         # same input, different measured state -> how different is B(x)u ?
         u = torch.tensor([[1.0, 1.0]], device=B.device)
         rels = []
@@ -115,6 +124,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--n-batch", type=int, default=30)
+    ap.add_argument("--only", choices=["all", "em5"], default="all",
+                    help="'em5' recomputes ONLY the scheduling diagnostics (seed 0) "
+                         "and merges them into the existing JSON -- used after fixing "
+                         "the 0/0 effective-rank artifact")
     args = ap.parse_args()
 
     ledger = json.load(open(os.path.join(RESULTS, "gate1_ledger.json"), encoding="utf-8"))
@@ -130,6 +143,27 @@ def main():
         """Write incrementally so an interrupted run still leaves usable results."""
         with io.open(out, "w", encoding="utf-8", newline="\n") as fh:
             json.dump(report, fh, ensure_ascii=False, indent=1)
+
+    if args.only == "em5":
+        if os.path.exists(out):
+            report.update(json.load(open(out, encoding="utf-8")))
+        print("\\n=== E-M5 scheduling diagnostics (recompute, seed 0) ===")
+        for variant, spec in VARIANTS:
+            model, info = g1.load_or_train(spec, cfg, seed=0)
+            d = scheduling_diagnostics(model, n_batch=args.n_batch)
+            d["load_info"] = info
+            report.setdefault("em5", {})[variant] = d
+            print("  %-5s dA_spec_max=%.4f dB_spec_max=%.4f rho_A_max=%.4f rank90=%d "
+                  "degenerate=%s Bx_rel=%.3f"
+                  % (variant, d.get("A_dev_spec_max", 0.0), d.get("B_dev_spec_max", 0.0),
+                     d.get("rho_A_max", 0.0), d.get("dA_effective_rank_90pct", 0),
+                     d.get("dA_degenerate"), d.get("Bx_response_rel_diff_mean", 0.0)))
+            dump()
+            g1.free()
+        report["finished"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        dump()
+        print("\\nwritten -> %s" % out)
+        return
 
     # ---------------------------------------------------------------- E-M3
     models = {}

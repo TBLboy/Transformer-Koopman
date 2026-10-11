@@ -264,6 +264,54 @@ def make_train_rollout(spec, cfg, seed):
     return model, info
 
 
+def _build_for_cfg(spec, cfg, seed):
+    """Construct the same architecture that ``train_one`` would train.
+
+    Must stay in sync with ``train_one``; it exists so a saved state_dict can be
+    loaded into an identically-shaped module without retraining.
+    """
+    if spec == "M0":
+        return build_model(spec, seed=seed, delay=cfg.get("delay", 0))
+    if spec == "M1":
+        return build_model(spec, seed=seed, **{k: v for k, v in cfg.items()})
+    if spec == "M2":
+        return build_model(spec, seed=seed, d_lift=cfg["d_lift"], hidden=cfg["hidden"],
+                           ridge=cfg["ridge"])
+    return build_model(spec, seed=seed, **{k: v for k, v in cfg.items()
+                                           if k not in ("lr", "epochs", "w_roll", "roll_h")})
+
+
+CLOSED_FORM_SPECS = ("M0", "M1", "M2")
+
+
+def load_or_train(spec, cfg, seed=0, save=True):
+    """Load ``<spec>_seed<seed>.pt`` when present, otherwise train and save it.
+
+    Downstream stages (control scenarios, auxiliary metrics) must use the SAME
+    parameters that the Gate-1 test stage evaluated.  Retraining would normally be
+    equivalent, but loading is exact and removes any CUDA-nondeterminism doubt;
+    ``run_gate4`` additionally re-checks the loaded/retrained model against the
+    ledger's seed-0 metrics.
+
+    NOTE (defect found and worked around): the closed-form models M0/M1/M2 keep
+    their fitted linear maps as plain attributes, not as ``nn.Parameter`` /
+    buffers, so those maps are NOT part of ``state_dict``.  Loading their
+    checkpoint yields ``A = None`` and crashes at prediction time.  They are
+    therefore always retrained (they take < 5 s each).
+    """
+    path = os.path.join(CKPT, "%s_seed%d.pt" % (spec, seed))
+    if spec not in CLOSED_FORM_SPECS and os.path.exists(path):
+        model = _build_for_cfg(spec, cfg, seed)
+        model.load_state_dict(torch.load(path, map_location="cpu"))
+        model.to(DEV).eval()          # keep the same device contract as training
+        return model, {"loaded": True, "path": os.path.basename(path)}
+    model, info = make_train_rollout(spec, cfg, seed)
+    if save and spec not in CLOSED_FORM_SPECS:
+        torch.save(model.state_dict(), path)
+    return model, {"loaded": False, "trained": True, "closed_form": spec in CLOSED_FORM_SPECS,
+                   **info}
+
+
 def eval_all(model, split="test"):
     """Full frozen evaluation on the pre-fixed start sets."""
     out = {"one_step": {}, "rollout": {}, "per_channel": {}, "curve": {}, "quantiles": {}}

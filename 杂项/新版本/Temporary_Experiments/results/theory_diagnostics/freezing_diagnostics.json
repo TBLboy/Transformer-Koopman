@@ -1,0 +1,108 @@
+{
+ "definition": "z_full(U) vs z_fr(U; bar U): same candidate U, schedules frozen from the nominal rollout driven by bar U (plan section 9)",
+ "model": "M5",
+ "cfg": {
+  "r_A": 3,
+  "r_B": 3,
+  "g_A": 0.1,
+  "g_B": 0.02,
+  "d_model": 32,
+  "n_layers": 2,
+  "lr": 0.001,
+  "w_roll": 1.0,
+  "roll_h": 20,
+  "epochs": 50
+ },
+ "horizon": 25,
+ "n_starts": 24,
+ "deltas": [
+  {
+   "delta": 0.0,
+   "nominal_rollout_selfcheck_max": 0.0,
+   "u_mismatch_mean": 0.0,
+   "u_mismatch_max": 0.0,
+   "z_err_max_mean": 0.0,
+   "z_err_max_max": 0.0,
+   "c_err_max": 0.0,
+   "A_dev_spec_max": 0.0,
+   "B_dev_spec_max": 0.0,
+   "cost_gap_mean": 0.0,
+   "cost_gap_max": 0.0
+  },
+  {
+   "delta": 0.25,
+   "nominal_rollout_selfcheck_max": 0.0,
+   "u_mismatch_mean": 1.7159819602966309,
+   "u_mismatch_max": 2.1875617504119873,
+   "z_err_max_mean": 0.0880008131886522,
+   "z_err_max_max": 0.1495162397623062,
+   "c_err_max": 0.7248713970184326,
+   "A_dev_spec_max": 0.012894474901258945,
+   "B_dev_spec_max": 0.0009111181716434658,
+   "cost_gap_mean": 9.576572037861623e-05,
+   "cost_gap_max": 0.0005401840056151741
+  },
+  {
+   "delta": 0.5,
+   "nominal_rollout_selfcheck_max": 0.0,
+   "u_mismatch_mean": 3.6095173358917236,
+   "u_mismatch_max": 4.148013114929199,
+   "z_err_max_mean": 0.18917320606609186,
+   "z_err_max_max": 0.3481362462043762,
+   "c_err_max": 1.4961649179458618,
+   "A_dev_spec_max": 0.026807300746440887,
+   "B_dev_spec_max": 0.0019311342621222138,
+   "cost_gap_mean": 0.00043792719605284525,
+   "cost_gap_max": 0.0017207612685901097
+  },
+  {
+   "delta": 1.0,
+   "nominal_rollout_selfcheck_max": 0.0,
+   "u_mismatch_mean": 7.0009446144104,
+   "u_mismatch_max": 8.294662475585938,
+   "z_err_max_mean": 0.3938181437551975,
+   "z_err_max_max": 1.0258389711380005,
+   "c_err_max": 2.497955799102783,
+   "A_dev_spec_max": 0.045316096395254135,
+   "B_dev_spec_max": 0.005485921632498503,
+   "cost_gap_mean": 0.0014686835857161803,
+   "cost_gap_max": 0.00951901042936143
+  },
+  {
+   "delta": 2.0,
+   "nominal_rollout_selfcheck_max": 0.0,
+   "u_mismatch_mean": 13.913540840148926,
+   "u_mismatch_max": 16.041933059692383,
+   "z_err_max_mean": 0.5119061898440123,
+   "z_err_max_max": 1.2234138250350952,
+   "c_err_max": 2.852790117263794,
+   "A_dev_spec_max": 0.04894613102078438,
+   "B_dev_spec_max": 0.005721554160118103,
+   "cost_gap_mean": 0.0024962946238689227,
+   "cost_gap_max": 0.007866379257612799
+  }
+ ],
+ "theory_checks": {
+  "P1_zero_mismatch_gives_zero_error": true,
+  "P1_detail": "delta=0 means U == bar U; the frozen and full trajectories must coincide (07 section 2: the driver is the input mismatch)",
+  "P2_monotone_growth": true
+ },
+ "decision_comparison": {
+  "note": "J_full(U_fr) - J_full(U_loc) is measured against a LOCAL L-BFGS-B solution of the non-convex full problem, NOT against a global optimum; no global suboptimality value is claimed.",
+  "J_full_U_frozen_QP": 0.004961661955795967,
+  "J_full_U_recorded_nominal": 0.004132503382255583,
+  "J_full_U_local_NLP": 0.0033365781869057246,
+  "gap_vs_local_NLP": 0.001625083768890242,
+  "gap_of_nominal_vs_local_NLP": 0.0007959251953498585,
+  "local_solver_success": true,
+  "qp_status": "solved",
+  "same_feasible_set": true,
+  "constraint": "u in [-3.5, 3.5] (both problems, input-only constraints)"
+ },
+ "not_claimed": [
+  "global optimality of the non-convex full problem",
+  "epsilon_J certificate (the constants would need to be estimated, and an empirical bound is not a certificate)",
+  "closed-loop stability, recursive feasibility or real-time performance"
+ ],
+ "finished": "2026-10-11 13:49:17"
+}

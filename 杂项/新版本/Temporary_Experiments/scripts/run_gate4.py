@@ -188,21 +188,42 @@ def _phase_lag(X, R):
 
 # ------------------------------------------------------------------ main
 def load_models(ledger, seed=0):
-    """Trained models, moved to CPU.
+    """Trained models, moved to CPU, plus a reproduction check.
 
     Rationale (documented): the closed-loop loop runs one controller solve and one
     plant step per time step with batch size 1, so GPU offload buys nothing and
     would add per-step synchronisation.  The models are small (<= 70k parameters),
     so CPU evaluation is deterministic and fast.  This choice affects nothing about
     the *training* protocol, which stays on GPU (see reports/modeling_comparison.md).
+
+    Reproduction check: M4/M5/M6 checkpoints were never written (their Gate-1
+    ``final`` stage died with the host-RAM crash), so the models are retrained here
+    at the frozen config with the same seed.  Their frozen-test one-step RMSE is
+    compared against the ledger's seed-0 entry, and the absolute difference is
+    stored in the output -- if the retrained model were a *different* model, this
+    number would not be ~0.
     """
-    out = {}
+    out, check = {}, {}
     for spec in ("M3", "M4", "M5", "M6"):
         cfg = ledger["best"][spec]["cfg"]
-        m, _ = g1.make_train_rollout(spec, cfg, seed=seed)
+        m, info = g1.load_or_train(spec, cfg, seed=seed)
+        ev = g1.eval_all(m, "test")
+        led0 = ledger.get("test", {}).get(spec, [{}])[seed]
+        check[spec] = {
+            "load_info": info,
+            "retrained_one_step": float(ev["one_step"]["short"]),
+            "ledger_seed0_one_step": float(led0.get("test", {}).get("one_step", {}).get("short", float("nan"))),
+            "retrained_roll25": float(ev["rollout"]["mid"]),
+            "ledger_seed0_roll25": float(led0.get("test", {}).get("rollout", {}).get("mid", float("nan"))),
+        }
+        check[spec]["abs_diff_one_step"] = abs(check[spec]["retrained_one_step"]
+                                               - check[spec]["ledger_seed0_one_step"])
+        print("  %s reproduction check: one-step %.6f vs ledger %.6f (|d|=%.2e)"
+              % (spec, check[spec]["retrained_one_step"], check[spec]["ledger_seed0_one_step"],
+                 check[spec]["abs_diff_one_step"]))
         m.to("cpu").eval()
         out[spec] = m
-    return out
+    return out, check
 
 
 def main():
@@ -216,7 +237,7 @@ def main():
 
     ledger = json.load(open(os.path.join(EXP, "results", "modeling", "gate1_ledger.json"),
                             encoding="utf-8"))
-    models = load_models(ledger, seed=args.seed)
+    models, repro_check = load_models(ledger, seed=args.seed)
     scen, meta = build_scenarios(args.split)
     print("split=%s scenarios=%s" % (args.split, [s["name"] for s in scen]))
 
@@ -255,6 +276,7 @@ def main():
     U_DATA_LOWER, U_DATA_UPPER = RANGE["u_min"], RANGE["u_max"]
 
     out = {"split": args.split, "scenario_meta": meta, "plant_fidelity": plant_fidelity,
+           "model_reproduction_check": repro_check,
            "u_limit_physical_assumed": U_PHYS,
            "u_limits_normalised": {"frozen": [U_LOWER.tolist(), U_UPPER.tolist()],
                                    "data_range": [U_DATA_LOWER.tolist(),
@@ -290,7 +312,7 @@ def main():
                              mm.get("plant_state_out_of_train_range_frac", 0.0),
                              mm.get("input_out_of_train_range_frac", 0.0)))
                     out["runs"][key][pname][cname][sc["name"]]["_traj"] = {
-                        "X": X.tolist(), "U": U.tolist()}
+                        "X": X.tolist(), "U": U.tolist()} if key == "default" else None
 
     out["finished"] = time.strftime("%Y-%m-%d %H:%M:%S")
     name = "control_%s%s.json" % (args.split, "_search" if args.search else "")

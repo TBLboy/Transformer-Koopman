@@ -6,3 +6,40 @@
   seed 2  one-step=0.021113 roll5=0.042297 roll25=0.074139 roll100=0.324206 params=20656 49s
 
 === E-M3 AcB0 (M4) x 3 seeds ===
+  seed 0  one-step=0.009445 roll5=0.016057 roll25=0.026046 roll100=0.307162 params=20818 120s
+  seed 1  one-step=0.009038 roll5=0.015597 roll25=0.027576 roll100=0.242474 params=20818 119s
+  seed 2  one-step=0.009561 roll5=0.015355 roll25=0.025774 roll100=0.629904 params=20818 125s
+
+=== E-M3 A0Bx (M7) x 3 seeds ===
+  seed 0  one-step=0.021146 roll5=0.041267 roll25=0.075830 roll100=1.655910 params=20710 107s
+  seed 1  one-step=0.020674 roll5=0.039748 roll25=0.073941 roll100=0.814251 params=20710 108s
+  seed 2  one-step=0.021195 roll5=0.041456 roll25=0.073515 roll100=0.342530 params=20710 98s
+
+=== E-M3 AcBx (M5) x 3 seeds ===
+  seed 0  one-step=0.009645 roll5=0.016094 roll25=0.026518 roll100=0.313599 params=20872 176s
+  seed 1  one-step=0.008892 roll5=0.015029 roll25=0.024680 roll100=0.221641 params=20872 180s
+  seed 2  one-step=0.009624 roll5=0.015326 roll25=0.026073 roll100=0.610364 params=20872 167s
+
+=== E-M5 scheduling diagnostics ===
+python.exe : D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate2.py:78: R
+untimeWarning: invalid value encountered in divide
+所在位置 行:5 字符: 1
++ & $py -u "scripts\run_gate2.py" --seeds 3 *>&1 | Out-File "$exp\resul ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\Project\Tran...tered in divide:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  out["dA_effective_rank_90pct"] = int(np.searchsorted(np.cumsum(sv ** 2)
+  A0B0  dA_spec_max=0.0000 dB_spec_max=0.0000 rho_A_max=1.0273 rank90=1 Bx_rel=0.000
+  AcB0  dA_spec_max=0.0277 dB_spec_max=0.0000 rho_A_max=1.0086 rank90=3 Bx_rel=0.000
+  A0Bx  dA_spec_max=0.0000 dB_spec_max=0.0109 rho_A_max=1.0291 rank90=1 Bx_rel=0.012
+  AcBx  dA_spec_max=0.0272 dB_spec_max=0.0123 rho_A_max=1.0106 rank90=3 Bx_rel=0.022
+
+=== E-M4 capacity matching (A(c)+B0 enlarged to M5's parameter count) ===
+  M5 params=20872 ; matched AcB0: {'d_model': 32, 'r_A': 3, 'params': 20818, 'rel_err': 0.0025871981602146417} (top-5 [{'d_model': 32, 'r_A': 3, 'params': 20818, 'rel_err': 0.0025871981602146417}, {'d_model': 32, 'r_A': 5, 'params': 20926, 'rel_err': 0.0025871981602146417}, {'d_model': 32, 'r_A': 2, 'params': 20764, 'rel_err': 0.005174396320429283}, {'d_model': 32, 'r_A': 1, 'params': 20710, 'rel_err': 0.007761594480643925}, {'d_model': 32, 'r_A': 8, 'params': 21088, 'rel_err': 0.010348792640858567}])
+  matched seed 0  roll25=0.026046 roll100=0.307162 params=20818
+  matched seed 1  roll25=0.027576 roll100=0.242474 params=20818
+  matched seed 2  roll25=0.025774 roll100=0.629904 params=20818
+
+written -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate2_diagnostics.json
+gate2 exit=0

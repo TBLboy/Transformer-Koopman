@@ -20,6 +20,8 @@ import json
 import os
 import sys
 
+import argparse
+
 import numpy as np
 import torch
 
@@ -36,22 +38,30 @@ SPECS = ["M0", "M1", "M2", "M3", "M4", "M5", "M6"]
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--models", nargs="*", default=SPECS,
+                    help="subset of models (default: all)")
+    args = ap.parse_args()
+    specs = args.models
     led = json.load(open(os.path.join(RES, "gate1_ledger.json"), encoding="utf-8"))
     out = {"metric": "per-trajectory RMSE at H=25 (normalised), test split",
            "seeds": [0], "note": ("single-seed supplementary diagnostic; the main "
                                   "table uses 3 seeds"),
            "statistical_unit": "one independent test trajectory",
            "models": {}}
+    path = os.path.join(RES, "xtraj_variance.json")
+    if os.path.exists(path):                     # merge so partial runs accumulate
+        out["models"] = json.load(open(path, encoding="utf-8")).get("models", {})
 
     w, _ = g1.tensors("test", 25, frozen_eval=True)
     traj = w["traj"]
 
-    for spec in SPECS:
+    for spec in specs:
         best = led.get("best", {}).get(spec)
         if not best:
             print("  %s: no selected config" % spec)
             continue
-        model, _ = g1.make_train_rollout(spec, best["cfg"], seed=0)
+        model, _ = g1.load_or_train(spec, best["cfg"], seed=0)
         idx = np.arange(len(w["k"]))
         xh, uin, uf = (g1.batchify(w, k, idx) for k in ("Xh", "Uin", "UF"))
         tgt = g1.batchify(w, "XF", idx)

@@ -98,7 +98,9 @@ def trajectory_cost(Z, U, x_ref, Q, P_term, R, S, u_prev):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n-starts", type=int, default=24)
-    ap.add_argument("--horizon", type=int, default=10)
+    ap.add_argument("--horizon", type=int, default=25,
+                    help="must be one of the protocol's frozen horizons (5/25/100); "
+                         "25 uses the 'mid' frozen start set")
     ap.add_argument("--model", default="M5")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
@@ -107,7 +109,7 @@ def main():
                             encoding="utf-8"))
     cfg = ledger["best"][args.model]["cfg"]
     print("model=%s cfg=%s" % (args.model, cfg))
-    model, _ = g1.make_train_rollout(args.model, cfg, seed=args.seed)
+    model, _info = g1.load_or_train(args.model, cfg, seed=args.seed)
     model.to("cpu").eval()
 
     H = args.horizon
@@ -127,7 +129,7 @@ def main():
     rng = np.random.default_rng(0)
     rows = []
     for di, delta in enumerate(DELTAS):
-        errs_z, errs_c, errs_A, errs_B, gaps, norms = [], [], [], [], [], []
+        errs_z, errs_c, errs_A, errs_B, gaps, norms, nom_gaps = [], [], [], [], [], [], []
         for s in range(len(idx)):
             Ubar = Utrue[s:s + 1]
             # candidate U: the SAME sequence plus a random perturbation of size delta
@@ -139,8 +141,10 @@ def main():
                 U = Ubar + delta * noise
             with torch.no_grad():
                 Zf, Af, Bf, Cf = roll(model, xh[s:s + 1], uin[s:s + 1], U)
-                Zb, Ab, Bb, Cb = model.nominal_rollout(xh[s:s + 1], uin[s:s + 1], Ubar)
+                Zb, Ab, Bb = model.nominal_rollout(xh[s:s + 1], uin[s:s + 1], Ubar)
+                Zn, _, _, Cb = roll(model, xh[s:s + 1], uin[s:s + 1], Ubar)
                 Zr, _, _, _ = roll(model, xh[s:s + 1], uin[s:s + 1], U, freeze=(Ab, Bb))
+            nom_gap = float(torch.max(torch.abs(Zb[0, 1:] - Zn[0, 1:Zb.shape[1]])))
             d = np.linalg.norm(U[0].cpu().numpy() - Ubar[0].cpu().numpy())
             norms.append(d)
             # frozen vs full latent/measurement trajectories (i = 1..H)
@@ -155,7 +159,9 @@ def main():
             Jr = trajectory_cost(Zr[0].cpu().numpy(), U[0].cpu().numpy(), x_ref[s],
                                  Q, P_term, R, S, u_prev)
             gaps.append(abs(Jf - Jr))
+            nom_gaps.append(nom_gap)
         rows.append({"delta": delta,
+                     "nominal_rollout_selfcheck_max": float(np.max(nom_gaps)),
                      "u_mismatch_mean": float(np.mean(norms)),
                      "u_mismatch_max": float(np.max(norms)),
                      "z_err_max_mean": float(np.mean(errs_z)),
@@ -182,12 +188,12 @@ def main():
     Ufr, info = solve_qp(M, f, -3.5, 3.5, H, 2)
     with torch.no_grad():
         Zf_fr, _, _, _ = roll(model, xh[s:s + 1], uin[s:s + 1],
-                              torch.as_tensor(Ufr[None], dtype=torch.float32))
+                              torch.as_tensor(Ufr.reshape(1, H, 2), dtype=torch.float32))
         Zf_ref, _, _, _ = roll(model, xh[s:s + 1], uin[s:s + 1], Ubar)
-    J_fr_dec = trajectory_cost(Zf_fr[0].cpu().numpy(), Ufr, x_ref_s, Q, P_term, R, S, u_prev)
+    J_fr_dec = trajectory_cost(Zf_fr[0].cpu().numpy(), Ufr.reshape(H, 2), x_ref_s, Q, P_term,
+                               R, S, u_prev)
     J_ref_dec = trajectory_cost(Zf_ref[0].cpu().numpy(), Ubar[0].cpu().numpy(), x_ref_s,
                                 Q, P_term, R, S, u_prev)
-
     def full_cost(Uflat, xh1, uin1, xref):
         U = torch.as_tensor(Uflat.reshape(1, H, 2), dtype=torch.float32)
         with torch.no_grad():
