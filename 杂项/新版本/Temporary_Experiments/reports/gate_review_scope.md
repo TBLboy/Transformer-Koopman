@@ -62,34 +62,38 @@
 
 ### 4.2 文件 sha256（工作区字节；证据绑定使用同一算法）
 
+> 下表为**信息性**参考（本文件自身也会变动）；**权威绑定**以 `.project-log` 账本中
+> 绑定最终提交 `b7a3e8d` 的 `EV-GATE1-MODELS-003` / `EV-GATE2-DIAG-002` /
+> `EV-GATE3-QP-003` / `EV-GATE4-CONTROL-002` / `EV-GATE5-FREEZE-002` 的 `file_hashes` 为准。
+
 | 文件（项目根相对路径） | sha256 |
 |---|---|
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/control_protocol.yaml` | `a0887e8644678aaff81e54b13475b618d307bf4aab9236b8cb64dc01561d5eef` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/models/protocol.py` | `ead56041e0dfa6bbe54a7f3bb3cb5e1bd71e5e80a4d229a7dd1c928382a3528e` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/models/library.py` | `ee71135dad75e414b547a9238954acdf4a5459c7c69f7334ef347f892bdf7bb0` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/controllers/ltv_mpc.py` | `39354803b93682178bef9b8a4d4b31aca804c3abd2618d841e9edb74b85e81fc` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/tests/test_ltv_qp.py` | `ddbbdd0184aa4d402dd82c289aed34bf9b6e7ae524adccb81803251219ddbba5` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate1.py` | `2df06cb82d5f2f2728992d1460e253e996d9394ad6050942327e6ceb018b73db` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate2.py` | `eaa32f32ce64af82eb9b7d429e68e091de477455178f0206a53afbc09830fd83` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate4.py` | `da85e0284595fc5c93f1f246c4267c2fd989e8f24c25f65bee9c28553c7cbeaa` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate5.py` | `376b6e6297d341d69282e28c4d20a29d9261b881092c231ff362799360b42664` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/report_modeling.py` | `a8c5e813fa61004a9a93133465fa36fa36e7b37a62340a4a091655eef8b316ce` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/report_control.py` | `f92f84a5ddc25024e6f118fdc30212091817145155dca67a16c5457e47498dc3` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/xtraj_variance.py` | `f75418f6c1b2bfd4cc08ae34d7947599207bfd94c14839ee05828755384a5dbb` |
 | `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/modeling_protocol.yaml` | `a7ea5ef77d2f4968882876a65283ce98658b8933fbcf2d15ee4f7a79b1f12c4b` |
 | `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/search_spaces.yaml` | `cd3fe31473d26a6491eb0d5dab22225d2a111260155b4dd30b9882d19fa45f5b` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/controllers/ltv_mpc.py` | `39354803b93682178bef9b8a4d4b31aca804c3abd2618d841e9edb74b85e81fc` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/models/library.py` | `ee71135dad75e414b547a9238954acdf4a5459c7c69f7334ef347f892bdf7bb0` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/models/protocol.py` | `ead56041e0dfa6bbe54a7f3bb3cb5e1bd71e5e80a4d229a7dd1c928382a3528e` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/control_comparison.md` | `2d2ea7c96f15790464adcf958fdc183294bfd0fc0ca621f86891ac7f702e5481` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/final_research_report.md` | `35aad7fb97f3d1b58413975712626a9b145a57ed9139e43635a6326bab8b8555` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/gate_review_scope.md` | `5cc9a876aed6f0e8aa4be17654131dcb8121945ef7022921e44d77920270a565` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/literature_baselines.md` | `01653669c1dc62faa5acb1afec88af517da3f55a5b1bd9978d1de09c5642aae5` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/modeling_comparison.md` | `37fde922a334ff3a62a4cf691839db4939ca49051348202921289eb6dca4f9ec` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/control_test.json` | `527ef2d7ca3127187611d831de623e5b8490df1221d41499902360324d389dfc` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/control_val_search.json` | `7b385d83cbe1eb77bea7abcfc9c354de048d9b74df099f54c6c65aece808eb7a` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/gate3_unit_tests.txt` | `da832012b7fcf8cc553a5921a60fc9b38b1cbc194f2bd00a7671a410418e1393` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/control_protocol.yaml` | `557aa32da8a3fb6061d0a286e45f3db71ca691156e8a4e7a1ad5967bc76f78df` |
 | `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/modeling/gate1_ledger.json` | `9d93eafd835b1c8e7ec5fc52a557a49611a4343212508b9d5dedd8f11c9f0e4c` |
 | `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/modeling/gate2_diagnostics.json` | `a90b7263499d3ec3b304dab61a0e4301ae8170d8103520d19828dc61766b2f0f` |
 | `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/modeling/xtraj_variance.json` | `f42a6d9df99f5bfa0675bf91b4e7564de7922756f6e6e8866c6953c48185a94d` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/gate3_unit_tests.txt` | `da832012b7fcf8cc553a5921a60fc9b38b1cbc194f2bd00a7671a410418e1393` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/gate3_hashes.txt` | `c44a70a9dfecd0e4d32e2392e1d4c8d8de5e15474556dac7b5bd797e37086ff3` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/control_test.json` | `527ef2d7ca3127187611d831de623e5b8490df1221d41499902360324d389dfc` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/control_val_search.json` | `7b385d83cbe1eb77bea7abcfc9c354de048d9b74df099f54c6c65aece808eb7a` |
 | `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/theory_diagnostics/freezing_diagnostics.json` | `35c7405ce07256fea0441f20eeaccfc2aa265c189f8208bf906836f93bf838c2` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/report_control.py` | `0fae03557d0b64f50ab3420389e515ef0a1757d1c547ccc1b3ca1a0979b7bc39` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/report_modeling.py` | `dd572a29856fef2f5c9ad895514e615835fe640b6f6bcb89aaedd1e59d76604c` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate1.py` | `2df06cb82d5f2f2728992d1460e253e996d9394ad6050942327e6ceb018b73db` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate2.py` | `eaa32f32ce64af82eb9b7d429e68e091de477455178f0206a53afbc09830fd83` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate4.py` | `6474db729e6c50756df30901d4be3df6f41d81aea4c9e85ceca07b49eedb3fe6` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate5.py` | `376b6e6297d341d69282e28c4d20a29d9261b881092c231ff362799360b42664` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/xtraj_variance.py` | `f75418f6c1b2bfd4cc08ae34d7947599207bfd94c14839ee05828755384a5dbb` |
-| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/tests/test_ltv_qp.py` | `ddbbdd0184aa4d402dd82c289aed34bf9b6e7ae524adccb81803251219ddbba5` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/modeling_comparison.md` | `4cacaaa280bafb46fe8bd008dada708531379ce5b62d0ccc5ac6d48f084c9b0e` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/control_comparison.md` | `3e5e4df956855941390c2f3e9395fcd7bcdbd477d51fc43749d0a17e5ffaa010` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/final_research_report.md` | `dad64f0ca2bd381ba18197ac576981cf56190fb6f1d1d7afd8a7cf5d77342d57` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/literature_baselines.md` | `01653669c1dc62faa5acb1afec88af517da3f55a5b1bd9978d1de09c5642aae5` |
 
 ### 4.3 关键命令与原始输出
 
