@@ -196,12 +196,13 @@ def load_models(ledger, seed=0):
     so CPU evaluation is deterministic and fast.  This choice affects nothing about
     the *training* protocol, which stays on GPU (see reports/modeling_comparison.md).
 
-    Reproduction check: M4/M5/M6 checkpoints were never written (their Gate-1
-    ``final`` stage died with the host-RAM crash), so the models are retrained here
-    at the frozen config with the same seed.  Their frozen-test one-step RMSE is
-    compared against the ledger's seed-0 entry, and the absolute difference is
-    stored in the output -- if the retrained model were a *different* model, this
-    number would not be ~0.
+    Reproduction check: the models come from ``g1.load_or_train`` -- a saved
+    checkpoint when one exists, otherwise a retrain at the frozen config with the
+    same seed (that was the case for ``M6`` on the first Gate-4 run; it is cached
+    now, and ``load_info`` in the output records which path was taken for each
+    model).  Each model's frozen-test one-step RMSE is compared against the
+    ledger's seed-0 entry and the absolute difference is stored in the output, so a
+    non-reproducible training process becomes visible instead of being assumed away.
     """
     out, check = {}, {}
     for spec in ("M3", "M4", "M5", "M6"):

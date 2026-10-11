@@ -20,8 +20,11 @@
 
 **plant 独立性**：plant A = M3（GRU 受控预测器），plant B = M6（Controlled Transformer），
 与三个控制器的内部模型（`A0/B0`、M4、M5）**属于不同模型族**。计划书禁止的
-「用被测试控制器自身的同一个学习模型当唯一 plant」因此被避免；M5 的**非冻结**完整模型
-只作 sanity 参考，不作唯一 plant。
+「用被测试控制器自身的同一个学习模型当唯一 plant」因此被避免。
+
+> M5 的**非冻结**完整模型在 `configs/control_protocol.yaml` 中被登记为
+> `plant_C_reference_only`（`executed: false`）：它**本轮没有运行**，
+> 只是一条明写的禁止项（M5 是 C2 的内部模型，单独当 plant 会构成循环论证）。
 
 ## 2. Gate 3 — 控制器单元测试
 

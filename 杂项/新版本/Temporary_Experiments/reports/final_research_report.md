@@ -182,7 +182,7 @@ Gate 5：`‖U−Ū‖ = 0` 时冻结误差**精确为 0**（Theory 07 §2：�
 |---|---|
 | 审计 | `reports/data_audit.md`、`reports/code_audit.md`、`reports/go_no_go.md` |
 | 配置 | `configs/data_manifest.yaml`、`split_manifest.yaml`、`modeling_protocol.yaml`、`search_spaces.yaml`、`control_protocol.yaml` |
-| 代码 | `models/protocol.py`（唯一评估实现）、`models/library.py`、`controllers/ltv_mpc.py`、`scripts/*.py` |
+| 代码 | `models/protocol.py`（窗口/起点/归一化/分位数唯一实现；RMSE 公式在 Gate 1/4 脚本内联重算，数值等价）、`models/library.py`、`controllers/ltv_mpc.py`、`scripts/*.py` |
 | 测试 | `tests/test_ltv_qp.py`（31 项） |
 | 结果 | `results/audit/`、`results/modeling/`、`results/control/`、`results/theory_diagnostics/` |
 | 报告 | `reports/modeling_comparison.md`、`reports/control_comparison.md`、`reports/literature_baselines.md`、`reports/gate_review_scope.md` |

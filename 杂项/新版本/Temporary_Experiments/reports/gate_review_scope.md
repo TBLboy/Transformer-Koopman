@@ -23,7 +23,7 @@
 
 ## 2. 必须独立核对的具体断言（不是"看起来对"）
 
-1. **同一评估实现**：所有模型的窗口/起点/指标是否都走 `models/protocol.py`（唯一实现），有无旁路。
+1. **同一评估实现**：所有模型的窗口/起点/归一化/分位数是否都走 `models/protocol.py`，有无旁路；RMSE 公式在 Gate 1/4 脚本内联重算，需确认与 `protocol.py` 数值等价（复核已确认等价）。
 2. **无测试集泄漏**：超参选择是否只用 validation；test 是否在超参冻结后只评估一次。
 3. **无未来测量泄漏**：`ScheduledKoopman.rollout` 是否为 latent 递归传播（encoder 一次 rollout 只调 1 次，单测 T7）。
 4. **冻结 LTV 与理论一致**：`Z = F + G U` 的构造是否与 `Theory_Package/06` 的 `G_{i,t}` 约定一致（单测 T1/T4/T5b）。

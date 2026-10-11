@@ -70,8 +70,9 @@ plants:
     independence: "attention-based, not a scheduled-Koopman model"
   plant_C_reference_only:
     model: "M5 full (non-frozen) scheduled model"
-    role: "sanity reference only; MUST NOT be used as the sole plant"
-    restriction: "M5 is C2's internal model -- using it alone would be circular"
+    role: "declared prohibition only -- NOT executed in this round"
+    executed: false
+    restriction: "M5 is C2's internal model -- using it alone would be circular, so no M5-plant run exists in results/control/"
   fidelity_reporting:
     required: "each plant's Gate-1 test rollout RMSE is quoted next to every control table"
 

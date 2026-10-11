@@ -52,7 +52,8 @@ def main():
     A("> **状态**：临时实验材料，**不是论文正文**；数值全部由 `scripts/report_modeling.py`")
     A("> 从 `results/modeling/gate1_ledger.json` 自动生成，无手工填写。")
     A("> **协议**：`configs/modeling_protocol.yaml`；数据与划分 `configs/data_manifest.yaml`、")
-    A("> `configs/split_manifest.yaml`；唯一评估实现 `models/protocol.py`。")
+    A("> `configs/split_manifest.yaml`；窗口/起点/归一化/分位数的**唯一**实现是 "
+      "`models/protocol.py`（RMSE 公式在 Gate 1/4 脚本内联重算，数值等价但非同一函数调用）。")
     A("")
 
     # ---------------- settings summary
