@@ -1,0 +1,11 @@
+run1 rc=0
+run1 stdout: ok  g_A_ch=[0.0, 0.120374] g_B_ch=[0.0, 0.012209]  fro_A=2.784e-01 fro_B=2.586e-01  full=83.1444 frozen=83.1053 rel=-0.0471% seqdev=1.594e-01
+run2 rc=0
+run2 stdout: ok  g_A_ch=[0.0, 0.120374] g_B_ch=[0.0, 0.012209]  fro_A=2.784e-01 fro_B=2.586e-01  full=83.1444 frozen=83.1053 rel=-0.0471% seqdev=1.594e-01
+
+numeric identical (t_median_ms excluded) = True
+stdout identical = True
+t_median_ms (full):   run1=2.2350  run2=2.2055  <- this field is an observation, it changes every run
+t_median_ms (frozen): run1=1.8760  run2=1.9009
+
+NOTE: the delivered results_plant.json / results_plant.md are from run2 above.
