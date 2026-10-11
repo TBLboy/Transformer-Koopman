@@ -1,0 +1,38 @@
+Gate 0 git baseline record
+======================================================================
+command: git -c core.quotepath=false <args>   (cwd = repo root)
+encoding: utf-8 (decoded from raw bytes, no console codepage involved)
+
+--- git rev-parse HEAD ---
+1c7bca69d41e1a4ccaf972650c4568122d1e6269
+
+--- git status --porcelain  (empty output means no tracked file is modified) ---
+?? 杂项/新版本/Temporary_Experiments/
+
+--- git status --porcelain -b ---
+## paper
+?? 杂项/新版本/Temporary_Experiments/
+
+--- git diff --stat HEAD  (empty output means no tracked modification) ---
+(empty)
+
+--- git diff --name-only HEAD ---
+(empty)
+
+--- tracked file count under 数据备份/ : 126 ---
+    (first 3: 数据备份/机械臂数据/原始数据/data1.mat, 数据备份/机械臂数据/原始数据/data10.mat, 数据备份/机械臂数据/原始数据/data11.mat)
+
+--- tracked file count under 论文/ : 38 ---
+    (first 3: 论文/新版本/IEEEtran.cls, 论文/新版本/bibtex/IEEEabrv.bib, 论文/新版本/bibtex/IEEEexample.bib)
+
+--- tracked file count under 杂项/ : 668 ---
+    (first 3: 杂项/新版本/Theory_Package/00_Index.md, 杂项/新版本/Theory_Package/00_assembly_scan.py, 杂项/新版本/Theory_Package/00_assembly_scan.txt)
+
+--- tracked file count under 代码部分/ : 114 ---
+    (first 3: 代码部分/老版本/训练代码/README.md, 代码部分/老版本/训练代码/configs/platform1.yaml, 代码部分/老版本/训练代码/configs/platform2.yaml)
+
+--- conclusion ---
+git status --porcelain lists only the untracked new directory
+  杂项/新版本/Temporary_Experiments/  (?? entry);
+git diff --stat HEAD and git diff --name-only HEAD are both empty;
+therefore no tracked file under 数据备份/ or 论文/ was modified or deleted.

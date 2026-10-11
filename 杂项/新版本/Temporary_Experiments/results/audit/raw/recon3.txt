@@ -1,0 +1,883 @@
+
+======================================================================
+1. git state
+======================================================================
+$ git branch -a
+    Transformer-Koopman
+    backup/old-remote-main
+    main
+  * paper
+    remotes/origin/HEAD -> origin/main
+    remotes/origin/main
+    remotes/origin/paper
+$ git log --oneline -8
+  1c7bca6 阶段七补充：按用户指定的被控对象（倒立摆 / 推车-杆）补做验证
+  63218b0 SC-2 补充文献调研：计划书第二阶段四主题
+  9c4eae6 阶段一~八：scheduled Koopman predictor 理论包 + 文献调研 + 临时验证
+  65f7bbe chore(repo): 目录重构留痕 —— 代码部分/{新版本,老版本}、杂项/{新版本,老版本}
+  12dd8a5 docs(paper): 论文目录重构 —— 老版本/ 归档、新版本/ 为写作目录，并补齐写作资源
+  e391794 chore(paper): 按新路线决策删除旧论文 Main.tex
+  b39bfce chore(paper): 清理旧理论路线的内容物（暂留 Main.tex 待裁决）
+  95e60f8 docs(paper): paper 分支起点检查点
+$ git status --short -b
+  ## paper
+$ git remote -v
+  origin	https://github.com/TBLboy/Transformer-Koopman.git (fetch)
+  origin	https://github.com/TBLboy/Transformer-Koopman.git (push)
+
+======================================================================
+2. history of 代码部分/老版本/训练代码/src
+======================================================================
+  65f7bbe chore(repo): 目录重构留痕 —— 代码部分/{新版本,老版本}、杂项/{新版本,老版本}
+  -- tree at HEAD --
+  代码部分/老版本/训练代码/src/patchtst_koopman/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/no_attention.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/no_patch.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/no_positional.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/patch_size.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/pure_feature.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/readout.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/window.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/models.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/positional_encoding.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/data/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/data/dataset.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/polynomial.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/rbf.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/robot_lifting.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/threelink_lifting.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/full_model.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/koopman_dynamics.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/linear_decoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/lstm_encoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/lstm_koopman_model.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/mlp_encoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/mlp_koopman_model.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/patchtst_encoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/rollout.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/edmd_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/lstm_koopman_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/mlp_koopman_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/performance.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/traditional_edmd_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/checkpoint.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/config_loader.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/data_prep.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/device.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/evaluation.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/koopman_solve.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/npz_inspector.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/positional_encoding.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/seed.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/subprocess_runner.py
+  -- tree at 95e60f8 --
+
+======================================================================
+3. any commit touching full_model.py / patchtst_koopman
+======================================================================
+$ git log --all --name-only -- *full_model.py
+  65f7bbe chore(repo): 目录重构留痕 —— 代码部分/{新版本,老版本}、杂项/{新版本,老版本}
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/full_model.py
+  25e400d chore: 提交本地全部项目文件（训练代码/论文/数据/杂项）并覆盖远端历史
+  训练代码/src/patchtst_koopman/models/full_model.py
+  5e50224 EDMD预训练增加多步物理/升维损失项，并更新Experiment 1实验结果与配置
+  src/patchtst_koopman/models/full_model.py
+  5750ad4 单步预测，没有加LSTM
+  src/patchtst_koopman/models/full_model.py
+$ git log --all --name-only -- *patchtst_koopman*
+  65f7bbe chore(repo): 目录重构留痕 —— 代码部分/{新版本,老版本}、杂项/{新版本,老版本}
+  代码部分/老版本/训练代码/src/patchtst_koopman/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/no_attention.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/no_patch.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/no_positional.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/patch_size.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/pure_feature.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/readout.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/encoders/window.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/models.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/ablation/positional_encoding.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/data/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/data/dataset.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/polynomial.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/rbf.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/robot_lifting.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/lifting/threelink_lifting.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/full_model.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/koopman_dynamics.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/linear_decoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/lstm_encoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/lstm_koopman_model.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/mlp_encoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/mlp_koopman_model.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/patchtst_encoder.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/rollout.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/edmd_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/lstm_koopman_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/mlp_koopman_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/performance.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/training/traditional_edmd_trainer.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/__init__.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/checkpoint.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/config_loader.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/data_prep.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/device.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/evaluation.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/koopman_solve.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/npz_inspector.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/positional_encoding.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/seed.py
+  代码部分/老版本/训练代码/src/patchtst_koopman/utils/subprocess_runner.py
+  25e400d chore: 提交本地全部项目文件（训练代码/论文/数据/杂项）并覆盖远端历史
+  训练代码/src/patchtst_koopman/__init__.py
+  训练代码/src/patchtst_koopman/ablation/__init__.py
+  训练代码/src/patchtst_koopman/ablation/encoders/__init__.py
+  训练代码/src/patchtst_koopman/ablation/encoders/no_attention.py
+  训练代码/src/patchtst_koopman/ablation/encoders/no_patch.py
+  训练代码/src/patchtst_koopman/ablation/encoders/no_positional.py
+  训练代码/src/patchtst_koopman/ablation/encoders/patch_size.py
+  训练代码/src/patchtst_koopman/ablation/encoders/pure_feature.py
+  训练代码/src/patchtst_koopman/ablation/encoders/readout.py
+  训练代码/src/patchtst_koopman/ablation/encoders/window.py
+  训练代码/src/patchtst_koopman/ablation/models.py
+  训练代码/src/patchtst_koopman/ablation/positional_encoding.py
+$ git log --all --name-only -- *models/koopman*
+  65f7bbe chore(repo): 目录重构留痕 —— 代码部分/{新版本,老版本}、杂项/{新版本,老版本}
+  代码部分/老版本/训练代码/src/patchtst_koopman/models/koopman_dynamics.py
+  25e400d chore: 提交本地全部项目文件（训练代码/论文/数据/杂项）并覆盖远端历史
+  训练代码/src/patchtst_koopman/models/koopman_dynamics.py
+  5750ad4 单步预测，没有加LSTM
+  src/patchtst_koopman/models/koopman_dynamics.py
+
+======================================================================
+4. full listing of 训练代码 (all depths)
+======================================================================
+  [.]  (5 files)
+      README.md                                                6059 B
+      pyproject.toml                                            802 B
+      requirements.txt                                          128 B
+      run_all_training.bat                                     2409 B
+      run_all_training.ps1                                     2877 B
+  [.pytest_cache]  (3 files)
+      .gitignore                                                 39 B
+      CACHEDIR.TAG                                              191 B
+      README.md                                                 310 B
+  [.pytest_cache\v]  (0 files)
+  [.pytest_cache\v\cache]  (2 files)
+      lastfailed                                                  2 B
+      nodeids                                                 20176 B
+  [configs]  (2 files)
+      platform1.yaml                                           8427 B
+      platform2.yaml                                           9362 B
+  [deploy]  (3 files)
+      README.md                                                2442 B
+      export_assets.py                                         2804 B
+      export_baseline_assets.py                                6027 B
+  [deploy\algorithms]  (2 files)
+      __init__.py                                                66 B
+      transformer_koopman_controller.py                        8979 B
+  [deploy\algorithms\configs]  (1 files)
+      transformer_koopman_controller.json                       209 B
+  [deploy\algorithms\tk_assets]  (3 files)
+      __init__.py                                               499 B
+      transformer_koopman_lifter.py                            5439 B
+      transformer_koopman_model.py                             5018 B
+  [deploy\algorithms\tk_assets\model_assets]  (2 files)
+      platform2_full_model.pth                               383292 B
+      platform2_metadata.json                                   705 B
+  [scripts]  (20 files)
+      check_model_prediction.py                                6193 B
+      encoder_inference_matlab.py                              7611 B
+      inspect_ckpt.py                                          1478 B
+      prepare_data.py                                          6179 B
+      run_all.py                                               9796 B
+      smoke_e2e.py                                             1614 B
+      smoke_test.py                                            3162 B
+      smoke_train.py                                           4690 B
+      test_mlp_koopman.py                                      3757 B
+      test_patchtst.py                                         5233 B
+      test_platform2_pth.py                                    7269 B
+      test_traditional_edmd.py                                 3374 B
+      train_lstm_koopman.py                                    3739 B
+      train_lstm_platforms.py                                  5347 B
+      train_mlp_koopman.py                                     3877 B
+      train_patchtst.py                                        5585 B
+      train_platform1.py                                       2951 B
+      train_platform2.py                                       2947 B
+      train_traditional_edmd.py                                4732 B
+      train_transformer.py                                     4534 B
+  [scripts\ablation]  (7 files)
+      ablation_platform1.yaml                                  3472 B
+      ablation_platform2.yaml                                  3462 B
+      generate_report.py                                       3159 B
+      plot_ablation_results.py                                 5302 B
+      run_ablation_pipeline.py                                 6025 B
+      test_ablation.py                                         9100 B
+      train_ablation.py                                       17638 B
+  [scripts\debug]  (3 files)
+      amplitude.py                                             2740 B
+      encoder_output.py                                        2608 B
+      state_embedded.py                                        2402 B
+  [scripts\experiment4]  (6 files)
+      common.py                                                7975 B
+      experiment4_platform1.yaml                               2619 B
+      experiment4_platform2.yaml                               2610 B
+      run_experiment4_pipeline.py                              2560 B
+      test_experiment4.py                                      2597 B
+      train_experiment4.py                                    10777 B
+  [src]  (0 files)
+  [src\patchtst_koopman]  (1 files)
+      __init__.py                                               102 B
+  [src\patchtst_koopman\ablation]  (3 files)
+      __init__.py                                               836 B
+      models.py                                                5738 B
+      positional_encoding.py                                    421 B
+  [src\patchtst_koopman\ablation\encoders]  (8 files)
+      __init__.py                                               585 B
+      no_attention.py                                          2396 B
+      no_patch.py                                              2250 B
+      no_positional.py                                         2919 B
+      patch_size.py                                            2443 B
+      pure_feature.py                                          2877 B
+      readout.py                                               2541 B
+      window.py                                                2641 B
+  [src\patchtst_koopman\data]  (2 files)
+      __init__.py                                               133 B
+      dataset.py                                               6340 B
+  [src\patchtst_koopman\lifting]  (5 files)
+      __init__.py                                               322 B
+      polynomial.py                                            3227 B
+      rbf.py                                                   1898 B
+      robot_lifting.py                                         5744 B
+      threelink_lifting.py                                     4941 B
+  [src\patchtst_koopman\models]  (10 files)
+      __init__.py                                               712 B
+      full_model.py                                             819 B
+      koopman_dynamics.py                                      1606 B
+      linear_decoder.py                                         603 B
+      lstm_encoder.py                                          2636 B
+      lstm_koopman_model.py                                    1594 B
+      mlp_encoder.py                                           1586 B
+      mlp_koopman_model.py                                     1536 B
+      patchtst_encoder.py                                      3278 B
+      rollout.py                                               2494 B
+  [src\patchtst_koopman\training]  (6 files)
+      __init__.py                                               285 B
+      edmd_trainer.py                                         24466 B
+      lstm_koopman_trainer.py                                   884 B
+      mlp_koopman_trainer.py                                  14886 B
+      performance.py                                            735 B
+      traditional_edmd_trainer.py                             10046 B
+  [src\patchtst_koopman\utils]  (11 files)
+      __init__.py                                               695 B
+      checkpoint.py                                            4936 B
+      config_loader.py                                          674 B
+      data_prep.py                                              877 B
+      device.py                                                1214 B
+      evaluation.py                                            6323 B
+      koopman_solve.py                                         1415 B
+      npz_inspector.py                                         1899 B
+      positional_encoding.py                                   1251 B
+      seed.py                                                  3041 B
+      subprocess_runner.py                                     2467 B
+  [tests]  (14 files)
+      conftest.py                                              1123 B
+      test_ablation_registry.py                                3832 B
+      test_ascii_identifiers.py                                2074 B
+      test_config_contract.py                                  6898 B
+      test_config_immutability.py                              3435 B
+      test_data_contract.py                                    3701 B
+      test_imports.py                                          1121 B
+      test_koopman_solve.py                                    4053 B
+      test_matlab_adapter.py                                   4436 B
+      test_no_hardcoded_paths.py                               4602 B
+      test_pipeline_jobs.py                                    3648 B
+      test_positional_encoding_consistency.py                  3248 B
+      test_rollout_consistency.py                              6656 B
+      test_subprocess_centralisation.py                        5363 B
+
+======================================================================
+5. filesystem search for patchtst_koopman package
+======================================================================
+  D:\Project\Transformer-Koopman\Transformer-Koopman\代码部分\老版本\训练代码\src\patchtst_koopman
+  D:\Project\code-projectv2 - 副本\src\patchtst_koopman
+  D:\Project\code-projectv2 - 副本\src\patchtst_koopman\models\__pycache__\patchtst_encoder.cpython-39.pyc
+  D:\Project\code-projectv2 - 副本\src\patchtst_koopman\models\full_model.py
+  D:\Project\code-projectv2 - 副本\src\patchtst_koopman\models\patchtst_encoder.py
+  D:\Project\code-projectv2\results\platform1\Models\patchtst_koopman
+  D:\Project\code-projectv2\results\platform1\Results\patchtst_koopman
+  D:\Project\code-projectv2\results\platform2\Models\patchtst_koopman
+  D:\Project\code-projectv2\results\platform2\Results\patchtst_koopman
+  D:\Project\code-projectv2\src\patchtst_koopman
+  D:\Project\code-projectv2\src\patchtst_koopman.egg-info
+  D:\Project\code-projectv2\src\patchtst_koopman\models\__pycache__\patchtst_encoder.cpython-312.pyc
+  D:\Project\code-projectv2\src\patchtst_koopman\models\__pycache__\patchtst_encoder.cpython-39.pyc
+  D:\Project\code-projectv2\src\patchtst_koopman\models\full_model.py
+  D:\Project\code-projectv2\src\patchtst_koopman\models\patchtst_encoder.py
+  D:\Project\论文3老版本\Transformer-Koopman\results\platform1\Models\patchtst_koopman
+  D:\Project\论文3老版本\Transformer-Koopman\results\platform1\Results\patchtst_koopman
+  D:\Project\论文3老版本\Transformer-Koopman\results\platform2\Models\patchtst_koopman
+  D:\Project\论文3老版本\Transformer-Koopman\results\platform2\Results\patchtst_koopman
+  D:\Project\论文3老版本\Transformer-Koopman\src\patchtst_koopman
+  D:\Project\论文3老版本\Transformer-Koopman\src\patchtst_koopman\models\full_model.py
+  D:\Project\论文3老版本\Transformer-Koopman\src\patchtst_koopman\models\patchtst_encoder.py
+  D:\conda\envs\edmddl2\Lib\site-packages\patchtst_koopman-0.1.0.dist-info
+  total hits: 23
+
+======================================================================
+6. pip / env probe: is patchtst_koopman importable?
+======================================================================
+  D:\conda\envs\edmddl2\python.exe
+    SPEC None
+    VERSION 3.9.25
+  D:\conda\envs\vibe-coding\python.exe
+    SPEC None
+    VERSION 3.11.15
+
+======================================================================
+7. inspect 杂项/老版本/模型检查点/*.pt
+======================================================================
+  --- A.pt (353867 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 3)
+      Va                           tensor (10, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (3,)
+      ga.weight                    tensor (3, 16)
+  --- AB.pt (355274 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 3)
+      Ub                           tensor (10, 3)
+      Va                           tensor (10, 3)
+      Vb                           tensor (2, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (3,)
+      ga.weight                    tensor (3, 16)
+      gb.bias                      tensor (3,)
+      gb.weight                    tensor (3, 16)
+  --- AB_s1.pt (355379 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 3)
+      Ub                           tensor (10, 3)
+      Va                           tensor (10, 3)
+      Vb                           tensor (2, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (3,)
+      ga.weight                    tensor (3, 16)
+      gb.bias                      tensor (3,)
+      gb.weight                    tensor (3, 16)
+  --- A_r1.pt (353768 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 1)
+      Va                           tensor (10, 1)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (1,)
+      ga.weight                    tensor (1, 16)
+  --- A_r2.pt (353960 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 2)
+      Va                           tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (2,)
+      ga.weight                    tensor (2, 16)
+  --- A_r3.pt (354024 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 3)
+      Va                           tensor (10, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (3,)
+      ga.weight                    tensor (3, 16)
+  --- A_r5.pt (354408 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 5)
+      Va                           tensor (10, 5)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (5,)
+      ga.weight                    tensor (5, 16)
+  --- A_s1.pt (354024 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ua                           tensor (10, 3)
+      Va                           tensor (10, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      ga.bias                      tensor (3,)
+      ga.weight                    tensor (3, 16)
+  --- A_stab_one_step.pt (355970 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Uraw                         tensor (10, 2)
+      Vraw                         tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      g.bias                       tensor (2,)
+      g.weight                     tensor (2, 16)
+      s                            tensor (2,)
+  --- A_stab_one_step_lam10.0_rho0.99.pt (356546 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Uraw                         tensor (10, 2)
+      Vraw                         tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      g.bias                       tensor (2,)
+      g.weight                     tensor (2, 16)
+      s                            tensor (2,)
+  --- A_stab_openloop.pt (355970 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Uraw                         tensor (10, 2)
+      Vraw                         tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      g.bias                       tensor (2,)
+      g.weight                     tensor (2, 16)
+      s                            tensor (2,)
+  --- A_stab_openloop_lam0.0_rho0.99.pt (356514 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Uraw                         tensor (10, 2)
+      Vraw                         tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      g.bias                       tensor (2,)
+      g.weight                     tensor (2, 16)
+      s                            tensor (2,)
+  --- A_stab_openloop_lam10.0_rho0.99.pt (356546 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Uraw                         tensor (10, 2)
+      Vraw                         tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      g.bias                       tensor (2,)
+      g.weight                     tensor (2, 16)
+      s                            tensor (2,)
+  --- B.pt (353803 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ub                           tensor (10, 3)
+      Vb                           tensor (2, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      gb.bias                      tensor (3,)
+      gb.weight                    tensor (3, 16)
+  --- B_s1.pt (353960 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      Ub                           tensor (10, 3)
+      Vb                           tensor (2, 3)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+      gb.bias                      tensor (3,)
+      gb.weight                    tensor (3, 16)
+  --- fixed.pt (352795 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+  --- fixed_s1.pt (354156 B) ---
+      A0                           tensor (10, 10)
+      B0                           tensor (10, 2)
+      ctx.0.bias                   tensor (64,)
+      ctx.0.weight                 tensor (64, 30)
+      ctx.2.bias                   tensor (16,)
+      ctx.2.weight                 tensor (16, 64)
+      encoder.patch_embedding.bias tensor (16,)
+      encoder.patch_embedding.weight tensor (16, 4)
+      encoder.positional_encoding.pe tensor (1, 5000, 16)
+      encoder.projection.bias      tensor (8,)
+      encoder.projection.weight    tensor (8, 16)
+      encoder.transformer.layers.0.linear1.bias tensor (64,)
+      encoder.transformer.layers.0.linear1.weight tensor (64, 16)
+      encoder.transformer.layers.0.linear2.bias tensor (16,)
+      encoder.transformer.layers.0.linear2.weight tensor (16, 64)
+      encoder.transformer.layers.0.norm1.bias tensor (16,)
+      encoder.transformer.layers.0.norm1.weight tensor (16,)
+      encoder.transformer.layers.0.norm2.bias tensor (16,)
+      encoder.transformer.layers.0.norm2.weight tensor (16,)
+      encoder.transformer.layers.0.self_attn.in_proj_bias tensor (48,)
+      encoder.transformer.layers.0.self_attn.in_proj_weight tensor (48, 16)
+      encoder.transformer.layers.0.self_attn.out_proj.bias tensor (16,)
+      encoder.transformer.layers.0.self_attn.out_proj.weight tensor (16, 16)
+  --- plant_dnn.pt (354887 B) ---
+      hidden                       48
+      sd                           dict keys=['encoder.patch_embedding.weight', 'encoder.patch_embedding.bias', 'encoder.positional_encoding.pe', 'encoder.transformer.layers.0.self_attn.in_proj_weight', 'encoder.transformer.layers.0.self_attn.in_proj_bias', 'encoder.transformer.layers.0.self_attn.out_proj.weight', 'encoder.transformer.layers.0.self_attn.out_proj.bias', 'encoder.transformer.layers.0.linear1.weight', 'encoder.transformer.layers.0.linear1.bias', 'encoder.transformer.layers.0.linear2.weight', 'encoder.transformer.layers.0.linear2.bias', 'encoder.transformer.layers.0.norm1.weight', 'encoder.transformer.layers.0.norm1.bias', 'encoder.transformer.layers.0.norm2.weight']
+
+======================================================================
+8. 杂项/老版本 top-level file list
+======================================================================
+  README.md                                                     3103 B
+  _artifact_info.py                                              535 B
+  _audit_bib.json                                              11410 B
+  _audit_usage.txt                                             37247 B
+  _manifest_counts.txt                                           117 B
+  _new_abstract.tex                                             1595 B
+  _new_intro.tex                                                5548 B
+  _new_related.tex                                              7781 B
+  _new_related2.tex                                             6899 B
+  _new_related3.tex                                             6384 B
+  _new_related4.tex                                             6155 B
+  _new_related5.tex                                             6201 B
+  ablate_stage01.py                                            12527 B
+  ablation_stage01_result.json                                241187 B
+  analyze_ablation.py                                           3184 B
+  apply_compression_v3.py                                      19966 B
+  apply_front_matter_edits.py                                   2083 B
+  apply_main9_p0.py                                             9050 B
+  apply_main9_p0b.py                                            2164 B
+  apply_main9_p1.py                                             7928 B
+  apply_main9_p2.py                                             1645 B
+  apply_narrative_p0.py                                         9896 B
+  apply_narrative_v2.py                                        15082 B
+  apply_option1_training.py                                    12714 B
+  apply_related_compress.py                                     1421 B
+  apply_review_D1_D4.py                                         3445 B
+  apply_section3_restructure.py                                 9164 B
+  apply_theory_consolidation.py                                16915 B
+  check_pdf_text.py                                             1160 B
+  citation_audit_report.md                                      4068 B
+  extract_citations.py                                          2264 B
+  fix_bibliography.py                                           4862 B
+  fix_n_collision.py                                            1962 B
+  fix_relatedwork_order.py                                      2752 B
+  fix_review_defects.py                                         4592 B
+  fix_review_defects2.py                                        3833 B
+  inspect_justification.py                                      3483 B
+  move_diagnostics_to_experiments.py                            3765 B
+  parse_tex_log.py                                              2444 B
+  rename_modulation_g.py                                        3246 B
+  render_paper_page.py                                          2671 B
+  scan_justification.py                                         3141 B
+  update_task006_v3.py                                          4061 B
+  verify_compression_v3.py                                      3210 B
+  verify_novelty_edits.py                                       2317 B
+  verify_related_work_rti.py                                    2213 B

@@ -1,0 +1,140 @@
+# Gate 0 data manifest — Platform 2 (2-DOF soft robotic platform)
+# Produced by: Temporary_Experiments/scripts/audit_data.py + audit_split_stats.py
+# Status: PASS with 3 open questions (Q1 units, Q2 provenance, Q4 u_limit) plus
+# 1 item resolved inside the audit (Q3 history_length = 8). See reports/data_audit.md section 8.
+# Rule: values marked `pending_confirmation` must not be presented as established facts.
+
+schema_version: 1
+platform:
+  id: platform2
+  name_cn: 软体平台
+  name_en: 2-DOF soft robotic platform
+  source_of_name: "代码部分/老版本/训练代码/README.md:7 (Platform 2 — 2-DOF Soft Robotic Arm)"
+  state_dim: 2
+  control_dim: 2
+
+dataset:
+  version: "raw-100x300-0.2s"
+  raw:
+    path: 数据备份/软体平台数据/原始数据
+    glob: "*.npz"
+    n_files: 100
+    file_bytes: 12724
+    keys: [t, x, u]
+    raw_set_digest_sha256: 7d4aaef7240092f95e0683e7fe9e183c1cd430bf0dfde07130b18122f549c76c
+    per_file_sha256_index: results/audit/data_audit_raw.json
+  processed:
+    path: 数据备份/软体平台数据/处理后的数据
+    files:
+      train.npz:
+        sha256: 21ba5f9f6f88655ecb3fbc6665e4580ee3d6d34aef2de3fa9a16927ca7652353
+        bytes: 924982
+        n_samples: 21000
+        n_trajectories: 70
+        recording_ids: "01..09, 10, 100, 11..69  (string order, positions 1-70)"
+      val.npz:
+        sha256: 5997441c4040722b5e39066b6d191fac9c7d68ba73226c35381d98e80f51a183
+        bytes: 264982
+        n_samples: 6000
+        n_trajectories: 20
+        recording_ids: "70..89  (positions 71-90)"
+      test.npz:
+        sha256: 7a0c608208e1c3de708fbcf9327de91e8ac1843c3804012fe9c2ac6215a8c9a5
+        bytes: 132982
+        n_samples: 3000
+        n_trajectories: 10
+        recording_ids: "90..99  (positions 91-100)"
+    field_contract:
+      x: {shape: "[N,2]", dtype: float64, meaning: "task-space position coordinate"}
+      u: {shape: "[N,2]", dtype: float64, meaning: "motor control command"}
+      t: {shape: "[N,]", dtype: float64, meaning: "elapsed time per recording, rebased to 0"}
+      trajectory_id: {shape: "[N,]", dtype: int32, meaning: "0-based index of the recording within its split"}
+    reproduces_from_raw: true   # verified element-wise for x/u/t/trajectory_id
+
+time:
+  nominal_sampling_period_s: 0.2
+  sampling_rate_hz: 5.0
+  samples_per_recording: 300
+  recording_duration_s: 59.78
+  dt_measured:
+    min: 0.199933129
+    max: 0.200197689
+    mean: 0.200008607
+    std: 5.732e-05
+  dt_constant_within_recording: true
+  duplicate_timestamps: 0
+  non_monotonic_records: 0
+  note: >-
+    dt is exactly constant inside each recording but the constant differs slightly
+    between recordings (+/-0.07%). The time axis is therefore index-reconstructed
+    uniform sampling, not raw wall-clock timestamps.
+
+units:
+  x: "platform coordinate unit (same frame as reference trajectories)"
+  u: "motor movement unit (pulse count)"
+  physical_conversion: pending_confirmation
+  evidence:
+    - "软控逻辑.txt:214  sampling period Ts default 0.2 s"
+    - "软控逻辑.txt:224,227  u_k=(N_h,N_v) is motor movement unit (pulse), not physical distance"
+    - "软控逻辑.txt:326  (delta_x,delta_y) unit = pulse count"
+    - "软控逻辑.txt:377  x side is vision feedback, light-spot centroid (C_x,C_y)"
+    - "code-projectv2/.project-log/business-logic/nodes.md:162  controller outputs (dx,dy) motor commands"
+
+limits:
+  u_limit_abs: 100.0
+  u_limit_source: "D:/Project/code-projectv2/experiment3/正弦轨迹/config_snapshot.json:10  (u_limit=100.0)"
+  u_limit_status: pending_confirmation
+  u_observed_absmax: [68.508298, 65.290837]
+  u_saturation_detected: false
+  x_observed_absmax: [11.103394, 10.887755]
+
+statistics:
+  normalization_fit_scope: train_only
+  train_only_normalization:
+    x_mean: [-0.696318, 0.048996]
+    x_std: [3.243583, 3.415089]
+    u_mean: [0.238027, -0.091383]
+    u_std: [27.962413, 28.133323]
+  per_split:
+    train: {n_samples: 21000, n_traj: 70, x_std: [3.243583, 3.415089], u_std: [27.962413, 28.133323]}
+    val:   {n_samples: 6000,  n_traj: 20, x_std: [2.819755, 2.972317], u_std: [27.731243, 28.195751]}
+    test:  {n_samples: 3000,  n_traj: 10, x_std: [3.024891, 3.097841], u_std: [28.115616, 28.315724]}
+
+conditions:
+  platform: platform2
+  task: "same platform, same task, repeated independent experiments"
+  labels_available: false
+  n_independent_experiments: 100
+  cross_condition_generalization_supported: false
+  note: >-
+    Recordings carry no working-condition labels. Claims of generalization to unseen
+    working conditions are NOT supported by this dataset (plan section 2.1.4).
+
+quality:
+  nan_or_inf: 0
+  outliers_detected: false
+  resets_or_stops: false
+  max_consecutive_state_jump: 0.3234
+  max_abs_corr_u_to_delta_x: 0.7771
+  u_integer_valued: false
+  x_integer_valued: false
+
+provenance:
+  source_type: pending_confirmation   # real actuator log | simulation export | mixed
+  reason: >-
+    State/control signals are smooth and physically plausible, but dt is exactly
+    constant within every recording, which is atypical for raw wall-clock logs.
+    No evidence of mixed provenance. Must be confirmed by the user before any
+    "real platform" wording is used.
+
+evaluation_protocol_inputs:
+  recommended_horizons_steps: {short: 5, mid: 25, long: 100}
+  horizon_rationale: "0.2 s/sample; 5/25/100 steps = 1/5/20 s; to be frozen before Gate 1"
+  history_length_authoritative: 8
+  history_length_authoritative_source: "PHASE2-CONFIG-AUDIT-001 (杂项/老版本/记录载荷/env_tZ10-audit.json): P_final for the paper = 8; all Phase-2 gate experiments trained from 处理后的数据 with configs/platform2.yaml -> P=8, n_layers=1"
+  history_length_conflict_resolved: true
+  history_length_conflict:
+    repo_config: 8       # configs/platform2.yaml:43   (authoritative)
+    deploy_metadata: 4   # deploy/algorithms/tk_assets/model_assets/platform2_metadata.json
+    deploy_metadata_status: "stale legacy artifact (P=4, n_layers=3) imported from 论文4/code_project; implements the OLD route (fixed A + LQR); no P=8 final checkpoint exists in this repo"
+  overlapping_windows_policy: "evaluate on a pre-fixed set of start indices; report trajectory-level distributions"

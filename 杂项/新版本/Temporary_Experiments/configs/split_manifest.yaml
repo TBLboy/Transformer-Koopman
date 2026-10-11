@@ -1,0 +1,74 @@
+# Gate 0 split manifest — Platform 2 (soft platform)
+# Companion to configs/data_manifest.yaml. Records the frozen train/val/test
+# assignment so every model in Gate 1 sees exactly the same data, in the same
+# order, with the same normalisation.
+#
+# Authority: 代码部分/老版本/训练代码/scripts/prepare_data.py:37-47 (SPLIT_PLAN)
+# Verified : results/audit/data_audit_summary.txt section B (element-wise reproduction)
+
+schema_version: 1
+platform: platform2
+frozen: true
+frozen_by: TASK-044 (Gate 0)
+frozen_reason: >-
+  The plan requires one split, one normalisation, one prediction task and one
+  evaluation protocol for every model. This file is the single source of truth
+  for the split; any model that deviates must be recorded as an explicit
+  deviation.
+
+rule:
+  ordering: "filename as a string (so 100 sorts between 10 and 11)"
+  cut: "first 70 -> train, next 20 -> val, last 10 -> test"
+  reason: "reproduces the upstream legacy split exactly (prepare_data.py docstring)"
+  random_seed_needed: false
+  reproducibility: "verified element-wise against 数据备份/软体平台数据/处理后的数据/*.npz"
+
+assignments:
+  train:
+    n_trajectories: 70
+    n_samples: 21000
+    recordings: ["01","02","03","04","05","06","07","08","09","10","100","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69"]
+    trajectory_id_range: [0, 69]
+  val:
+    n_trajectories: 20
+    n_samples: 6000
+    recordings: ["70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89"]
+    trajectory_id_range: [0, 19]
+  test:
+    n_trajectories: 10
+    n_samples: 3000
+    recordings: ["90","91","92","93","94","95","96","97","98","99"]
+    trajectory_id_range: [0, 9]
+
+trajectory_lengths: 300   # every recording, every split
+
+normalisation:
+  fit_on: train_only
+  frozen: true
+  constants:
+    x_mean: [-0.696318, 0.048996]
+    x_std: [3.243583, 3.415089]
+    u_mean: [0.238027, -0.091383]
+    u_std: [27.962413, 28.133323]
+  note: >-
+    These are the Gate-0 audit values. Gate 1 must verify that the reimplemented
+    models use exactly these constants and must not refit on val/test.
+
+evaluation_units:
+  statistical_unit: "one recording (trajectory), not one window"
+  overlapping_window_policy: >-
+    Start indices per trajectory are pre-fixed before any model is trained.
+    Trajectory-level distributions are reported; effective sample size is the
+    number of trajectories (70/20/10), never the number of windows.
+  forbidden:
+    - "randomly splitting overlapping sliding windows across train/val/test"
+    - "using the test split to select hyperparameters"
+    - "mixing teacher-forcing error with free-rollout error"
+
+generalisation_tasks:
+  same_condition_future_segment:
+    supported: true
+    note: "legal history may come from before the prediction window, but must not cross a recording boundary"
+  unseen_condition:
+    supported: false
+    reason: "recordings carry no working-condition labels (see data_manifest.yaml conditions)"

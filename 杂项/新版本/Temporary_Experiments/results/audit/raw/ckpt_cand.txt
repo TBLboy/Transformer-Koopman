@@ -1,0 +1,215 @@
+﻿====================================================================================================
+
+--- Transformer-Koopman\Transformer-Koopman\代码部分\老版本\训练代码\deploy\algorithms\tk_assets\model_assets\platform2_full_model.pth  (383292 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 2.087758779525757
+    timestamp    : 2026-05-14 09:05:09
+    x_mean      [0.345229 0.423334]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497775 3.206664]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014557 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882555 28.230585]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\mlp_e2e_best.pth  (111056 B)
+    model_info   : {}
+    spectral_r   : None
+    timestamp    : None
+    normalization: ABSENT
+
+--- code-projectv2\results\models\platform2\mlp_pretrain_best.pth  (111111 B)
+    model_info   : {}
+    spectral_r   : None
+    timestamp    : None
+    normalization: ABSENT
+
+--- code-projectv2\results\models\platform2\model_20260529_110554.pth  (348872 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 8, "patch_length": 2}
+    encoder      : P=8 p=2 d=10 d_model=16 L=1 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0007140636444092
+    timestamp    : 2026-05-29 11:05:54
+    x_mean      [0.345229 0.423334]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497775 3.206664]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014557 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882555 28.230585]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_20260602_114642.pth  (745104 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 8, "history_length": 8, "patch_length": 2}
+    encoder      : P=8 p=2 d=8 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.000808754409808
+    timestamp    : 2026-06-02 11:46:42
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_20260602_120253.pth  (746000 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 8, "history_length": 8, "patch_length": 2}
+    encoder      : P=8 p=2 d=8 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.000435863421434
+    timestamp    : 2026-06-02 12:02:53
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_20260602_122928.pth  (747152 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0002192348602272
+    timestamp    : 2026-06-02 12:29:28
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_20260602_124637.pth  (746768 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.000773168153039
+    timestamp    : 2026-06-02 12:46:37
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_20260602_130111.pth  (745744 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 8, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=8 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0007918721839648
+    timestamp    : 2026-06-02 13:01:11
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_20260602_133534.pth  (746768 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.000773168153039
+    timestamp    : 2026-06-02 13:35:34
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\model_best.pth  (746229 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.000773168153039
+    timestamp    : 2026-06-02 13:35:34
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\models\platform2\pretrain_best.pth  (738504 B)
+    model_info   : {}
+    spectral_r   : None
+    timestamp    : None
+    normalization: ABSENT
+
+--- code-projectv2\results\platform2\Models\patchtst_koopman\model_20260605_232730.pth  (745698 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 4, "patch_length": 2}
+    encoder      : P=4 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0008545799362776
+    timestamp    : 2026-06-05 23:27:30
+    x_mean      [0.386075 0.406265]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.488761 3.187188]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [-0.002079  0.079685]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.867005 28.226506]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\platform2\Models\patchtst_koopman\model_20260623_221946.pth  (348808 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 8, "patch_length": 2}
+    encoder      : P=8 p=2 d=10 d_model=16 L=1 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0004541873931885
+    timestamp    : 2026-06-23 22:19:46
+    x_mean      [0.345229 0.423334]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497775 3.206664]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014557 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882555 28.230585]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\platform2\Models\patchtst_koopman\model_best.pth  (348469 B)
+    model_info   : {"state_dim": 2, "control_dim": 2, "latent_dim": 10, "history_length": 8, "patch_length": 2}
+    encoder      : P=8 p=2 d=10 d_model=16 L=1 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0004541873931885
+    timestamp    : 2026-06-23 22:19:46
+    x_mean      [0.345229 0.423334]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497775 3.206664]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014557 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882555 28.230585]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\platform2\Models\patchtst_koopman\pretrain_best.pth  (342336 B)
+    model_info   : {}
+    spectral_r   : None
+    timestamp    : None
+    normalization: ABSENT
+
+--- code-projectv2\results\platform2\Models\mlp_koopman\model.pth  (53349 B)
+    model_info   : {}
+    encoder      : P=8 p=2 d=8 d_model=16 L=1 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0137802362442017
+    timestamp    : None
+    x_mean      [0.345229 0.423334]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497775 3.206664]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014557 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882555 28.230585]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\platform2\Models\mlp_koopman\model_best.pth  (54005 B)
+    model_info   : {}
+    encoder      : P=8 p=2 d=8 d_model=16 L=1 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.0137802362442017
+    timestamp    : None
+    x_mean      [0.345229 0.423334]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497775 3.206664]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014557 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882555 28.230585]   [train-only [27.962413 28.133323]] -> differs
+
+--- code-projectv2\results\platform2\Models\lstm_koopman\model.pth  (118361 B)
+    model_info   : {}
+    encoder      : P=10 p=2 d=10 d_model=16 L=3 heads=2 d_ff=64 readout=mean
+    data_dir     : ./data/experiment_006
+    method       : edmd
+    spectral_r   : 1.2350954333372417
+    timestamp    : None
+    x_mean      [0.345229 0.423332]   [train-only [-0.696318  0.048996]] -> differs
+    x_std       [3.497781 3.20667 ]   [train-only [3.243583 3.415089]] -> differs
+    u_mean      [0.014558 0.093088]   [train-only [ 0.238027 -0.091383]] -> differs
+    u_std       [27.882545 28.230646]   [train-only [27.962413 28.133323]] -> differs
+
+====================================================================================================
+recorded result jsons (code-projectv2)
+  results_20260530_111527.json -> {'method': 'edmd', 'test_rmse_onestep': 0.01636535415921004, 'auto_test_rmse': 1.3072394539193948, 'auto_test_mae': 0.8315451988820276, 'timestamp': '2026-05-30 11:15:27', 'config': {'method': 'edmd', 'state_dim': 2, 'control_dim': 2, 'latent_dim': 10}}
+  results_20260605_232731.json -> {'method': 'edmd', 'test_rmse_onestep': 0.014902630386142292, 'auto_test_rmse': 1.1387649156113622, 'auto_test_mae': 0.9927225541954163, 'timestamp': '2026-06-05 23:27:31', 'config': {'method': 'edmd', 'state_dim': 2, 'control_dim': 2, 'latent_dim': 10}}
+  results_20260623_221948.json -> {'method': 'edmd', 'test_rmse_onestep': 0.015712232597799462, 'auto_test_rmse': 2.5898280143737793, 'auto_test_mae': 2.1848607063293457, 'timestamp': '2026-06-23 22:19:48', 'config': {'method': 'edmd', 'state_dim': 2, 'control_dim': 2, 'latent_dim': 10}}
+  results.json -> {'method': 'mlp_koopman', 'training_method': 'end_to_end', 'test_rmse': 1.4311708211898804, 'test_mae': 1.2291953563690186}
+  results.json -> {'method': 'lstm_koopman', 'training_method': 'end_to_end', 'test_rmse': 1.6889191039559053, 'test_mae': 1.383435919149361}
+  results_20260605_232731.json -> {'method': 'edmd', 'test_rmse_onestep': 0.014902630386142292, 'auto_test_rmse': 1.1387649156113622, 'auto_test_mae': 0.9927225541954163, 'timestamp': '2026-06-05 23:27:31', 'config': {'method': 'edmd', 'state_dim': 2, 'control_dim': 2, 'latent_dim': 10}}
+  results_20260623_221948.json -> {'method': 'edmd', 'test_rmse_onestep': 0.015712232597799462, 'auto_test_rmse': 2.5898280143737793, 'auto_test_mae': 2.1848607063293457, 'timestamp': '2026-06-23 22:19:48', 'config': {'method': 'edmd', 'state_dim': 2, 'control_dim': 2, 'latent_dim': 10}}

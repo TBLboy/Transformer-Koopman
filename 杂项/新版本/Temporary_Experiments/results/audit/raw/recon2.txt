@@ -1,0 +1,1594 @@
+=== 数据备份 tree ===
+数据备份/  (0 files)
+  机械臂数据/  (0 files)
+    原始数据/  (20 files)
+      data1.mat                                          194482 B
+      data10.mat                                         216032 B
+      data11.mat                                         216297 B
+      data12.mat                                         216150 B
+      data13.mat                                         215985 B
+      data14.mat                                         215979 B
+      data15.mat                                         216069 B
+      data16.mat                                         216525 B
+      data17.mat                                         216037 B
+      data18.mat                                         215827 B
+      data19.mat                                         215853 B
+      data2.mat                                          194780 B
+      data20.mat                                         216071 B
+      data3.mat                                          195109 B
+      data4.mat                                          197910 B
+      data5.mat                                          196307 B
+      data6.mat                                          196547 B
+      data7.mat                                          215651 B
+      data8.mat                                          215737 B
+      data9.mat                                          216252 B
+    处理后的数据/  (3 files)
+      test.npz                                           418966 B
+      train.npz                                         6272002 B
+      val.npz                                           1673338 B
+  软体平台数据/  (0 files)
+    原始数据/  (100 files)
+      01.npz                                              12724 B
+      02.npz                                              12724 B
+      03.npz                                              12724 B
+      04.npz                                              12724 B
+      05.npz                                              12724 B
+      06.npz                                              12724 B
+      07.npz                                              12724 B
+      08.npz                                              12724 B
+      09.npz                                              12724 B
+      10.npz                                              12724 B
+      100.npz                                             12724 B
+      11.npz                                              12724 B
+      12.npz                                              12724 B
+      13.npz                                              12724 B
+      14.npz                                              12724 B
+      15.npz                                              12724 B
+      16.npz                                              12724 B
+      17.npz                                              12724 B
+      18.npz                                              12724 B
+      19.npz                                              12724 B
+      20.npz                                              12724 B
+      21.npz                                              12724 B
+      22.npz                                              12724 B
+      23.npz                                              12724 B
+      24.npz                                              12724 B
+      25.npz                                              12724 B
+      26.npz                                              12724 B
+      27.npz                                              12724 B
+      28.npz                                              12724 B
+      29.npz                                              12724 B
+      30.npz                                              12724 B
+      31.npz                                              12724 B
+      32.npz                                              12724 B
+      33.npz                                              12724 B
+      34.npz                                              12724 B
+      35.npz                                              12724 B
+      36.npz                                              12724 B
+      37.npz                                              12724 B
+      38.npz                                              12724 B
+      39.npz                                              12724 B
+      40.npz                                              12724 B
+      41.npz                                              12724 B
+      42.npz                                              12724 B
+      43.npz                                              12724 B
+      44.npz                                              12724 B
+      45.npz                                              12724 B
+      46.npz                                              12724 B
+      47.npz                                              12724 B
+      48.npz                                              12724 B
+      49.npz                                              12724 B
+      50.npz                                              12724 B
+      51.npz                                              12724 B
+      52.npz                                              12724 B
+      53.npz                                              12724 B
+      54.npz                                              12724 B
+      55.npz                                              12724 B
+      56.npz                                              12724 B
+      57.npz                                              12724 B
+      58.npz                                              12724 B
+      59.npz                                              12724 B
+      60.npz                                              12724 B
+      61.npz                                              12724 B
+      62.npz                                              12724 B
+      63.npz                                              12724 B
+      64.npz                                              12724 B
+      65.npz                                              12724 B
+      66.npz                                              12724 B
+      67.npz                                              12724 B
+      68.npz                                              12724 B
+      69.npz                                              12724 B
+      70.npz                                              12724 B
+      71.npz                                              12724 B
+      72.npz                                              12724 B
+      73.npz                                              12724 B
+      74.npz                                              12724 B
+      75.npz                                              12724 B
+      76.npz                                              12724 B
+      77.npz                                              12724 B
+      78.npz                                              12724 B
+      79.npz                                              12724 B
+      80.npz                                              12724 B
+      81.npz                                              12724 B
+      82.npz                                              12724 B
+      83.npz                                              12724 B
+      84.npz                                              12724 B
+      85.npz                                              12724 B
+      86.npz                                              12724 B
+      87.npz                                              12724 B
+      88.npz                                              12724 B
+      89.npz                                              12724 B
+      90.npz                                              12724 B
+      91.npz                                              12724 B
+      92.npz                                              12724 B
+      93.npz                                              12724 B
+      94.npz                                              12724 B
+      95.npz                                              12724 B
+      96.npz                                              12724 B
+      97.npz                                              12724 B
+      98.npz                                              12724 B
+      99.npz                                              12724 B
+    处理后的数据/  (3 files)
+      test.npz                                           132982 B
+      train.npz                                          924982 B
+      val.npz                                            264982 B
+
+=== 代码部分 tree ===
+代码部分/  (0 files)
+  新版本/  (0 files)
+  老版本/  (0 files)
+    训练代码/  (5 files)
+      README.md                                            6059 B
+      pyproject.toml                                        802 B
+      requirements.txt                                      128 B
+      run_all_training.bat                                 2409 B
+      run_all_training.ps1                                 2877 B
+      .pytest_cache/  (3 files)
+        .gitignore                                             39 B
+        CACHEDIR.TAG                                          191 B
+        README.md                                             310 B
+        v/  (0 files)
+      configs/  (2 files)
+        platform1.yaml                                       8427 B
+        platform2.yaml                                       9362 B
+      deploy/  (3 files)
+        README.md                                            2442 B
+        export_assets.py                                     2804 B
+        export_baseline_assets.py                            6027 B
+        algorithms/  (2 files)
+          __init__.py                                            66 B
+          transformer_koopman_controller.py                    8979 B
+      scripts/  (20 files)
+        check_model_prediction.py                            6193 B
+        encoder_inference_matlab.py                          7611 B
+        inspect_ckpt.py                                      1478 B
+        prepare_data.py                                      6179 B
+        run_all.py                                           9796 B
+        smoke_e2e.py                                         1614 B
+        smoke_test.py                                        3162 B
+        smoke_train.py                                       4690 B
+        test_mlp_koopman.py                                  3757 B
+        test_patchtst.py                                     5233 B
+        test_platform2_pth.py                                7269 B
+        test_traditional_edmd.py                             3374 B
+        train_lstm_koopman.py                                3739 B
+        train_lstm_platforms.py                              5347 B
+        train_mlp_koopman.py                                 3877 B
+        train_patchtst.py                                    5585 B
+        train_platform1.py                                   2951 B
+        train_platform2.py                                   2947 B
+        train_traditional_edmd.py                            4732 B
+        train_transformer.py                                 4534 B
+        ablation/  (7 files)
+          ablation_platform1.yaml                              3472 B
+          ablation_platform2.yaml                              3462 B
+          generate_report.py                                   3159 B
+          plot_ablation_results.py                             5302 B
+          run_ablation_pipeline.py                             6025 B
+          test_ablation.py                                     9100 B
+          train_ablation.py                                   17638 B
+        debug/  (3 files)
+          amplitude.py                                         2740 B
+          encoder_output.py                                    2608 B
+          state_embedded.py                                    2402 B
+        experiment4/  (6 files)
+          common.py                                            7975 B
+          experiment4_platform1.yaml                           2619 B
+          experiment4_platform2.yaml                           2610 B
+          run_experiment4_pipeline.py                          2560 B
+          test_experiment4.py                                  2597 B
+          train_experiment4.py                                10777 B
+        __pycache__/  (9 files)
+          encoder_inference_matlab.cpython-39.pyc              5756 B
+          run_all.cpython-39.pyc                               6486 B
+          test_mlp_koopman.cpython-39.pyc                      3103 B
+          test_patchtst.cpython-39.pyc                         4237 B
+          test_platform2_pth.cpython-39.pyc                    6172 B
+          train_lstm_platforms.cpython-39.pyc                  4403 B
+          train_platform1.cpython-39.pyc                       2709 B
+          train_platform2.cpython-39.pyc                       2705 B
+          train_transformer.cpython-39.pyc                     4003 B
+      src/  (0 files)
+        patchtst_koopman/  (1 files)
+          __init__.py                                           102 B
+      tests/  (14 files)
+        conftest.py                                          1123 B
+        test_ablation_registry.py                            3832 B
+        test_ascii_identifiers.py                            2074 B
+        test_config_contract.py                              6898 B
+        test_config_immutability.py                          3435 B
+        test_data_contract.py                                3701 B
+        test_imports.py                                      1121 B
+        test_koopman_solve.py                                4053 B
+        test_matlab_adapter.py                               4436 B
+        test_no_hardcoded_paths.py                           4602 B
+        test_pipeline_jobs.py                                3648 B
+        test_positional_encoding_consistency.py              3248 B
+        test_rollout_consistency.py                          6656 B
+        test_subprocess_centralisation.py                    5363 B
+        __pycache__/  (14 files)
+          conftest.cpython-39-pytest-8.4.2.pyc                 1542 B
+          test_ablation_registry.cpython-39-pytest-8.4.2.pyc       4825 B
+          test_ascii_identifiers.cpython-39-pytest-8.4.2.pyc       3492 B
+          test_config_contract.cpython-39-pytest-8.4.2.pyc       8869 B
+          test_config_immutability.cpython-39-pytest-8.4.2.pyc       6483 B
+          test_data_contract.cpython-39-pytest-8.4.2.pyc       8116 B
+          test_imports.cpython-39-pytest-8.4.2.pyc             2099 B
+          test_koopman_solve.cpython-39-pytest-8.4.2.pyc       7033 B
+          test_matlab_adapter.cpython-39-pytest-8.4.2.pyc       6574 B
+          test_no_hardcoded_paths.cpython-39-pytest-8.4.2.pyc       5367 B
+          test_pipeline_jobs.cpython-39-pytest-8.4.2.pyc       8089 B
+          test_positional_encoding_consistency.cpython-39-pytest-8.4.2.pyc       5858 B
+          test_rollout_consistency.cpython-39-pytest-8.4.2.pyc      11793 B
+          test_subprocess_centralisation.cpython-39-pytest-8.4.2.pyc       9494 B
+
+=== 杂项 top 2 levels ===
+杂项/  (0 files)
+  新版本/  (1 files)
+    Transformer_Scheduled_Koopman_MPC_Research_Plan.md       8821 B
+    notes/  (0 files)
+    Theory_Package/  (13 files)
+      00_Index.md                                         11853 B
+      00_assembly_scan.py                                  7773 B
+      00_assembly_scan.txt                                13655 B
+      01_Model_Definition.md                               9874 B
+      02_Assumptions.md                                    7561 B
+      03_Low_rank_Boundedness.md                           5121 B
+      04_Scheduling_Lipschitz.md                           6841 B
+      05_Prediction_Error_Bound.md                        10853 B
+      06_Frozen_LTV_QP_Proof.md                           11848 B
+      07_Freezing_Error_Bound.md                          11157 B
+      08_Conditional_Suboptimality.md                     10010 B
+      09_Reference_List.md                                25896 B
+      10_Reference_List_Supplement.md                     23503 B
+    validation/  (9 files)
+      replay_counterexample.py                             4783 B
+      replay_counterexample_result.txt                     1168 B
+      results.json                                         4826 B
+      results.md                                           7134 B
+      results_plant.json                                   4404 B
+      results_plant.md                                     8105 B
+      results_plant_repro.txt                               632 B
+      validate_plant_cartpole.py                          27695 B
+      validate_theory.py                                  22075 B
+  老版本/  (46 files)
+    README.md                                            3103 B
+    _artifact_info.py                                     535 B
+    _audit_bib.json                                     11410 B
+    _audit_usage.txt                                    37247 B
+    _manifest_counts.txt                                  117 B
+    _new_abstract.tex                                    1595 B
+    _new_intro.tex                                       5548 B
+    _new_related.tex                                     7781 B
+    _new_related2.tex                                    6899 B
+    _new_related3.tex                                    6384 B
+    _new_related4.tex                                    6155 B
+    _new_related5.tex                                    6201 B
+    ablate_stage01.py                                   12527 B
+    ablation_stage01_result.json                       241187 B
+    analyze_ablation.py                                  3184 B
+    apply_compression_v3.py                             19966 B
+    apply_front_matter_edits.py                          2083 B
+    apply_main9_p0.py                                    9050 B
+    apply_main9_p0b.py                                   2164 B
+    apply_main9_p1.py                                    7928 B
+    apply_main9_p2.py                                    1645 B
+    apply_narrative_p0.py                                9896 B
+    apply_narrative_v2.py                               15082 B
+    apply_option1_training.py                           12714 B
+    apply_related_compress.py                            1421 B
+    apply_review_D1_D4.py                                3445 B
+    apply_section3_restructure.py                        9164 B
+    apply_theory_consolidation.py                       16915 B
+    check_pdf_text.py                                    1160 B
+    citation_audit_report.md                             4068 B
+    extract_citations.py                                 2264 B
+    fix_bibliography.py                                  4862 B
+    fix_n_collision.py                                   1962 B
+    fix_relatedwork_order.py                             2752 B
+    fix_review_defects.py                                4592 B
+    fix_review_defects2.py                               3833 B
+    inspect_justification.py                             3483 B
+    move_diagnostics_to_experiments.py                   3765 B
+    parse_tex_log.py                                     2444 B
+    rename_modulation_g.py                               3246 B
+    render_paper_page.py                                 2671 B
+    scan_justification.py                                3141 B
+    update_task006_v3.py                                 4061 B
+    verify_compression_v3.py                             3210 B
+    verify_novelty_edits.py                              2317 B
+    verify_related_work_rti.py                           2213 B
+    _tmp_figcheck/  (12 files)
+      Figure1_page1.png                                  198080 B
+      crop_bottom.png                                     91590 B
+      crop_stage1.png                                     54900 B
+      crop_stage3.png                                     75875 B
+      crop_stage5.png                                     93522 B
+      page4.png                                          344839 B
+      page5.png                                          281482 B
+      page_eq22.png                                      532859 B
+      r8_p4.png                                          491198 B
+      r8_p5.png                                          368391 B
+      r8_page5.png                                       368391 B
+      r9_page4.png                                       475884 B
+    图表/  (5 files)
+      eq49_crop.png                                      225003 B
+      p08_300.png                                       1068232 B
+      p2_fs_vs_ours_93.png                               199869 B
+      p2_old_vs_new_curves.png                            84622 B
+      p2_old_vs_new_trajectories.png                     421464 B
+    实验结果/  (53 files)
+      D_P1.json                                            2554 B
+      D_P2.json                                            1598 B
+      D_P2_D7.json                                          521 B
+      D_P2_DWR.json                                         266 B
+      N_P1_residual.json                                   1305 B
+      N_P2_policy_null.json                                5080 B
+      Q_P1.json                                             613 B
+      Q_P2.json                                            2624 B
+      V_APLUS.json                                         1287 B
+      V_A_GATE.json                                         844 B
+      V_A_GATE2.json                                        982 B
+      V_A_GATE3.json                                        696 B
+      V_C8.json                                            1281 B
+      V_C8b.json                                           1190 B
+      V_C8c.json                                           3575 B
+      V_P12.json                                           2789 B
+      V_P12b.json                                          1449 B
+      V_T6.json                                             769 B
+      V_Z1.json                                            4046 B
+      V_Z2.json                                             803 B
+      ctrl_baseline.json                                   1126 B
+      gate13_result.json                                    442 B
+      gate13b_result.json                                  1867 B
+      gate14_directnn_result.json                           711 B
+      gate14_result.json                                   5061 B
+      gate14a_result.json                                  2965 B
+      gate14c_result.json                                  1714 B
+      gate14d_result.json                                   877 B
+      gate14d_result_N5.json                                873 B
+      gate14d_result_N5_it2.json                            876 B
+      gate16_corollary.json                                 419 B
+      gate16_diag_final.json                               2121 B
+      gate16_diag_fix.json                                 2196 B
+      gate16_matched_oracle_N5.json                         812 B
+      gate16_matched_oracle_N8.json                         807 B
+      gate16_theory_diagnostics.json                       3224 B
+      gate_result.json                                     2916 B
+      gate_result_s1.json                                  2933 B
+      p1_data_profile.json                                 2581 B
+      p1_dt_noise_check.json                                607 B
+      p1_residual_structure.json                           1157 B
+      p2_fs_vs_ours_93.json                                2241 B
+      p2_old_vs_new_rollout.json                          15492 B
+      spike_a2_relative_degree.json                        3080 B
+      spike_p1_passivity.json                               836 B
+      spike_p1_passivity_v2.json                            434 B
+      spike_p1_structured_lifting.json                      671 B
+      testA_gauge.json                                     1756 B
+      testA_gauge_v2.json                                  1471 B
+      testA_gauge_v3.json                                  2486 B
+      testB_ref_defect.json                                 800 B
+      testC_residual_ar.json                               1981 B
+      test_r1_multistep.json                               3098 B
+    模型检查点/  (18 files)
+      A.pt                                               353867 B
+      AB.pt                                              355274 B
+      AB_s1.pt                                           355379 B
+      A_r1.pt                                            353768 B
+      A_r2.pt                                            353960 B
+      A_r3.pt                                            354024 B
+      A_r5.pt                                            354408 B
+      A_s1.pt                                            354024 B
+      A_stab_one_step.pt                                 355970 B
+      A_stab_one_step_lam10.0_rho0.99.pt                 356546 B
+      A_stab_openloop.pt                                 355970 B
+      A_stab_openloop_lam0.0_rho0.99.pt                  356514 B
+      A_stab_openloop_lam10.0_rho0.99.pt                 356546 B
+      B.pt                                               353803 B
+      B_s1.pt                                            353960 B
+      fixed.pt                                           352795 B
+      fixed_s1.pt                                        354156 B
+      plant_dnn.pt                                       354887 B
+    流程脚本/  (248 files)
+      amend_win_audit.py                                   5789 B
+      analyze_log.py                                       1768 B
+      block_on_migration.py                                4486 B
+      bootstrap_task.py                                    2666 B
+      build_delivery9.py                                   1443 B
+      build_desktop_round12.py                              581 B
+      build_desktop_round13.py                              580 B
+      build_desktop_round14.py                              568 B
+      build_desktop_round15.py                              578 B
+      build_desktop_round16.py                              596 B
+      build_desktop_round17.py                              611 B
+      build_handoff9b.py                                   2977 B
+      cancel_task096.py                                     890 B
+      check_aiinstall.py                                    903 B
+      check_config.py                                      1387 B
+      check_configs.py                                     1542 B
+      check_ev_status.py                                    505 B
+      check_limit.py                                        502 B
+      check_macros.py                                       961 B
+      check_runall_guard.py                                1239 B
+      check_schema2.py                                     1223 B
+      check_t1.py                                           644 B
+      check_tex.py                                         1098 B
+      check_tex2.py                                        1339 B
+      close_task096.py                                     2504 B
+      compare_copies.py                                    2416 B
+      compare_data.py                                      2018 B
+      consolidate_materials.py                             3643 B
+      count_mixed.py                                        994 B
+      create_fix_tasks.py                                  4781 B
+      create_records.py                                    8203 B
+      create_task097.py                                    2533 B
+      create_task098.py                                    2198 B
+      db_child.py                                           808 B
+      db_child2.py                                         1062 B
+      db_children.py                                        506 B
+      db_models.py                                          697 B
+      db_probe.py                                           443 B
+      db_ses.py                                             704 B
+      dec015.py                                            2214 B
+      diff_t.py                                            2928 B
+      drop_unused_imports.py                                973 B
+      dump_alignments.py                                   1018 B
+      dump_aln005.py                                        797 B
+      dump_aln010.py                                        780 B
+      dump_aln019.py                                        693 B
+      dump_blocks.py                                        966 B
+      dump_dec003.py                                        522 B
+      dump_decisions.py                                     744 B
+      dump_ev.py                                            733 B
+      dump_ev_aln011.py                                     597 B
+      dump_goal.py                                          542 B
+      dump_old_log.py                                      1359 B
+      dump_payloads.py                                      634 B
+      dump_rev.py                                           678 B
+      dump_schema.py                                        652 B
+      dump_two.py                                          1653 B
+      eol_check.py                                          696 B
+      eol_check_all.py                                      695 B
+      evidence_inventory.py                                4771 B
+      ... (188 more)
+    研究代码/  (79 files)
+      D_P1.py                                              3355 B
+      D_P2.py                                              7566 B
+      D_P2_D7.py                                           4742 B
+      D_P2_DWR.py                                          5543 B
+      N_P1_residual.py                                     3582 B
+      N_P2_policy_null.py                                  6738 B
+      Q_P1.py                                              3746 B
+      Q_P2.py                                             13902 B
+      V_APLUS.py                                           6096 B
+      V_A_GATE.py                                          5539 B
+      V_A_GATE2.py                                         5316 B
+      V_A_GATE3.py                                         4663 B
+      V_C8.py                                              4432 B
+      V_C8b.py                                             4533 B
+      V_C8c.py                                             5252 B
+      V_P12.py                                             5734 B
+      V_P12b.py                                            3689 B
+      V_T6.py                                              5796 B
+      V_Z1.py                                              5911 B
+      V_Z2.py                                              3580 B
+      align_fs_data.py                                     1970 B
+      audit_p.py                                           1073 B
+      audit_p2_psr.py                                      2718 B
+      check_ckpt.py                                         660 B
+      compare_fs_vs_ours_p2.py                             7434 B
+      compare_old_new_p2_rollout.py                        8325 B
+      ctrl_baseline.py                                     6667 B
+      debug_ctrl.py                                        1869 B
+      debug_shapes.py                                       771 B
+      diagnose_p2_observability.py                         2243 B
+      eval_deployed.py                                     3265 B
+      extract_text.py                                       413 B
+      gate13_analyze.py                                   12208 B
+      gate13b_rsweep.py                                    1912 B
+      gate14_directnn.py                                   3441 B
+      gate14_stabilize.py                                 12261 B
+      gate14a_manifold.py                                  4427 B
+      gate14c2_plantsens.py                                1420 B
+      gate14c_control.py                                   6308 B
+      gate14d_rti.py                                       6253 B
+      gate16_corollary.py                                  3071 B
+      gate16_diag_final.py                                 7523 B
+      gate16_diag_fix.py                                   7244 B
+      gate16_matched_oracle.py                             4214 B
+      gate16_theory_diagnostics.py                         9898 B
+      gate_context_koopman.py                              9327 B
+      gate_health_check.py                                 2628 B
+      inspect_data_deep.py                                 3796 B
+      inspect_data_splits.py                                759 B
+      inspect_fs_koopman.py                                1748 B
+      inspect_p2_ckpt_keys.py                               637 B
+      inspect_route_diagnostics.py                          825 B
+      map_fs_trajectories.py                               2334 B
+      p1_dt_noise_check.py                                 1374 B
+      p1_residual_structure.py                             2666 B
+      peek_ckpt.py                                          614 B
+      plot_mechanism.py                                    2553 B
+      plot_mechanism_v2.py                                 3093 B
+      profile_p1_data.py                                   1507 B
+      render_pdf.py                                         527 B
+      ... (19 more)
+    记录载荷/  (185 files)
+      covers_aplus.json                                     146 B
+      covers_audit.json                                     441 B
+      covers_complete.json                                  201 B
+      covers_dec022.json                                    205 B
+      covers_fb.json                                        101 B
+      covers_gate13.json                                    182 B
+      covers_gate14.json                                    182 B
+      covers_gate14d.json                                   183 B
+      covers_gate16.json                                    193 B
+      covers_gatev2.json                                    176 B
+      covers_gatev3.json                                    176 B
+      covers_ho.json                                        100 B
+      covers_l3.json                                        112 B
+      covers_mroutes.json                                   186 B
+      covers_n.json                                         158 B
+      covers_paper.json                                     127 B
+      covers_qroutes.json                                   186 B
+      covers_r19.json                                       127 B
+      covers_r20.json                                       127 B
+      covers_rigor.json                                     184 B
+      covers_routeA.json                                    142 B
+      covers_structgate.json                                194 B
+      covers_theory.json                                    126 B
+      covers_theory2.json                                   178 B
+      covers_theory3.json                                   126 B
+      covers_vroutes.json                                   186 B
+      covers_wroutes.json                                   186 B
+      covers_yroutes.json                                   186 B
+      covers_zroutes.json                                   216 B
+      dec-053-payload.json                                 1363 B
+      dec029_payload.json                                   933 B
+      env_t54-handoff.json                                  947 B
+      env_t54-resume.json                                   945 B
+      env_t54-spike.json                                   1668 B
+      env_t55-handoff.json                                  973 B
+      env_t55-p1.json                                      2299 B
+      env_t55-resume.json                                   971 B
+      env_t56-handoff.json                                  904 B
+      env_t56-pass.json                                    2497 B
+      env_t56-resume.json                                   902 B
+      env_t57-handoff.json                                  889 B
+      env_t57-res.json                                     1370 B
+      env_t57-resume.json                                   887 B
+      env_t58-gpt.json                                     3608 B
+      env_t58-handoff.json                                 1018 B
+      env_t58-resume.json                                  1016 B
+      env_t59-handoff.json                                 1041 B
+      env_t59-resume.json                                  1039 B
+      env_t59-val.json                                     2960 B
+      env_t60-handoff.json                                  983 B
+      env_t60-resume.json                                   981 B
+      env_t60-val2.json                                    1755 B
+      env_t70-handoff.json                                 1252 B
+      env_t70-resume.json                                  1250 B
+      env_t70-val3.json                                    3102 B
+      env_t80-dec019.json                                  1071 B
+      env_t80-handoff.json                                  705 B
+      env_t80-mroutes.json                                 2633 B
+      env_t80-resume.json                                   703 B
+      env_t81-mexp.json                                    2777 B
+      ... (125 more)
+    说明文档/  (7 files)
+      commit-msg.txt                                        821 B
+      commit-msg2.txt                                       312 B
+      delivery_header.md                                    991 B
+      delivery_header_v7.md                                1516 B
+      delivery_header_v8.md                                1283 B
+      mktree.txt                                            626 B
+      pdf_text_p8_p9.txt                                  10264 B
+
+=== 结果备份 ===
+  entries: []
+
+=== data file inspection ===
+
+--- 数据备份\机械臂数据\原始数据\data1.mat (194482 B) ---
+    data1                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data10.mat (216032 B) ---
+    data10                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data11.mat (216297 B) ---
+    data11                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data12.mat (216150 B) ---
+    data12                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data13.mat (215985 B) ---
+    data13                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data14.mat (215979 B) ---
+    data14                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data15.mat (216069 B) ---
+    data15                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data16.mat (216525 B) ---
+    data16                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data17.mat (216037 B) ---
+    data17                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data18.mat (215827 B) ---
+    data18                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data19.mat (215853 B) ---
+    data19                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data2.mat (194780 B) ---
+    data2                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data20.mat (216071 B) ---
+    data20                   shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data3.mat (195109 B) ---
+    data3                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data4.mat (197910 B) ---
+    data4                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data5.mat (196307 B) ---
+    data5                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data6.mat (196547 B) ---
+    data6                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data7.mat (215651 B) ---
+    data7                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data8.mat (215737 B) ---
+    data8                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\原始数据\data9.mat (216252 B) ---
+    data9                    shape=(1, 1)                 dtype=[('q', 'O'), ('tau', 'O'), ('t', 'O')]
+
+--- 数据备份\机械臂数据\处理后的数据\test.npz (418966 B) ---
+    x                        shape=(4976, 6)              dtype=float64   
+        min=-15.62556 max=11.41077 mean=0.16408
+    u                        shape=(4976, 3)              dtype=float64   
+        min=-2.55681 max=5.6766 mean=1.48559
+    t                        shape=(4976,)                dtype=float64   
+        min=0. max=19.9 mean=9.95
+    trajectory_id            shape=(4976,)                dtype=int32     
+        min=0. max=0. mean=0.
+
+--- 数据备份\机械臂数据\处理后的数据\train.npz (6272002 B) ---
+    x                        shape=(74655, 6)             dtype=float64   
+        min=-16.55076 max=11.61637 mean=0.1633
+    u                        shape=(74655, 3)             dtype=float64   
+        min=-2.63862 max=5.70897 mean=1.50887
+    t                        shape=(74655,)               dtype=float64   
+        min=0. max=19.92 mean=9.952
+    trajectory_id            shape=(74655,)               dtype=int32     
+        min=0. max=14. mean=7.00075
+
+--- 数据备份\机械臂数据\处理后的数据\val.npz (1673338 B) ---
+    x                        shape=(19909, 6)             dtype=float64   
+        min=-15.52276 max=11.51356 mean=0.14755
+    u                        shape=(19909, 3)             dtype=float64   
+        min=-2.58316 max=5.60534 mean=1.50239
+    t                        shape=(19909,)               dtype=float64   
+        min=0. max=19.916 mean=9.9525
+    trajectory_id            shape=(19909,)               dtype=int32     
+        min=0. max=3. mean=1.49952
+
+--- 数据备份\软体平台数据\原始数据\01.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80153 mean=29.90076
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.99231 max=1.16386 mean=-2.13166
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.93549 max=49.29867 mean=0.99492
+
+--- 数据备份\软体平台数据\原始数据\02.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.78693 mean=29.89347
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.41668 max=0.86486 mean=-4.33802
+    u                        shape=(300, 2)               dtype=float64   
+        min=-51.93414 max=52.11227 mean=0.33824
+
+--- 数据备份\软体平台数据\原始数据\03.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79577 mean=29.89788
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.65115 max=6.89181 mean=-0.38404
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.36043 max=47.77098 mean=-0.89695
+
+--- 数据备份\软体平台数据\原始数据\04.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80288 mean=29.90144
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.27712 max=1.47855 mean=-2.23108
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.4202 max=50.63272 mean=1.19972
+
+--- 数据备份\软体平台数据\原始数据\05.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80409 mean=29.90204
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.35476 max=3.95416 mean=-1.70741
+    u                        shape=(300, 2)               dtype=float64   
+        min=-47.86958 max=49.84815 mean=-2.38299
+
+--- 数据备份\软体平台数据\原始数据\06.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79918 mean=29.89959
+    x                        shape=(300, 2)               dtype=float64   
+        min=-1.76565 max=6.46605 mean=2.45325
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.82567 max=50.36212 mean=-1.14082
+
+--- 数据备份\软体平台数据\原始数据\07.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80465 mean=29.90233
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.88796 max=9.51427 mean=1.12038
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.58257 max=47.63064 mean=2.99856
+
+--- 数据备份\软体平台数据\原始数据\08.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80126 mean=29.90063
+    x                        shape=(300, 2)               dtype=float64   
+        min=-2.46403 max=6.48833 mean=0.95249
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.34627 max=48.29314 mean=0.326
+
+--- 数据备份\软体平台数据\原始数据\09.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80261 mean=29.9013
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.49362 max=3.97004 mean=-0.0977
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.00469 max=49.84309 mean=-0.34737
+
+--- 数据备份\软体平台数据\原始数据\10.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.84736 mean=29.92368
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.29154 max=7.94932 mean=0.45827
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.71464 max=52.45986 mean=-1.3784
+
+--- 数据备份\软体平台数据\原始数据\100.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79614 mean=29.89807
+    x                        shape=(300, 2)               dtype=float64   
+        min=-2.45774 max=10.88776 mean=3.43988
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.05313 max=49.13776 mean=1.20737
+
+--- 数据备份\软体平台数据\原始数据\11.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.78001 mean=29.89
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.11425 max=2.74213 mean=-2.19783
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.71163 max=48.94103 mean=-0.42787
+
+--- 数据备份\软体平台数据\原始数据\12.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85668 mean=29.92834
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.19273 max=2.55564 mean=-0.5291
+    u                        shape=(300, 2)               dtype=float64   
+        min=-53.16167 max=52.88985 mean=-0.37821
+
+--- 数据备份\软体平台数据\原始数据\13.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80271 mean=29.90136
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.70467 max=2.48192 mean=-2.13201
+    u                        shape=(300, 2)               dtype=float64   
+        min=-65.29084 max=50.08503 mean=0.90538
+
+--- 数据备份\软体平台数据\原始数据\14.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79497 mean=29.89749
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.53139 max=3.35292 mean=0.3391
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.22556 max=48.99431 mean=0.07033
+
+--- 数据备份\软体平台数据\原始数据\15.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79758 mean=29.89879
+    x                        shape=(300, 2)               dtype=float64   
+        min=-1.53953 max=7.45417 mean=1.96934
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.65738 max=47.50519 mean=0.66652
+
+--- 数据备份\软体平台数据\原始数据\16.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79788 mean=29.89894
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.14139 max=3.97968 mean=-0.81852
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.76485 max=49.07065 mean=0.4672
+
+--- 数据备份\软体平台数据\原始数据\17.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79574 mean=29.89787
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.91565 max=3.96622 mean=-2.60333
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.64545 max=49.2659 mean=-2.44208
+
+--- 数据备份\软体平台数据\原始数据\18.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.7971 mean=29.89855
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.02402 max=4.66642 mean=-0.04167
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.75197 max=49.63497 mean=-1.07747
+
+--- 数据备份\软体平台数据\原始数据\19.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79724 mean=29.89862
+    x                        shape=(300, 2)               dtype=float64   
+        min=-10.06109 max=1.4705 mean=-2.87901
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.8389 max=49.20624 mean=0.86705
+
+--- 数据备份\软体平台数据\原始数据\20.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80156 mean=29.90078
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.76831 max=6.60946 mean=-0.43296
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.13847 max=48.64643 mean=2.06724
+
+--- 数据备份\软体平台数据\原始数据\21.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79714 mean=29.89857
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.29185 max=1.10116 mean=-2.93068
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.3856 max=47.51448 mean=-0.31653
+
+--- 数据备份\软体平台数据\原始数据\22.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79819 mean=29.8991
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.16695 max=4.73351 mean=-0.50317
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.75788 max=49.89911 mean=1.31217
+
+--- 数据备份\软体平台数据\原始数据\23.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79809 mean=29.89905
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.02226 max=2.83582 mean=-0.64964
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.23767 max=49.37389 mean=1.5439
+
+--- 数据备份\软体平台数据\原始数据\24.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79702 mean=29.89851
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.44027 max=6.57458 mean=0.78179
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.953 max=48.88567 mean=0.78824
+
+--- 数据备份\软体平台数据\原始数据\25.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79689 mean=29.89844
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.65821 max=4.31409 mean=-1.09303
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.2242 max=48.74853 mean=1.5134
+
+--- 数据备份\软体平台数据\原始数据\26.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79998 mean=29.89999
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.60687 max=3.70805 mean=-2.66013
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.24098 max=49.99827 mean=1.19867
+
+--- 数据备份\软体平台数据\原始数据\27.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85651 mean=29.92825
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.2307 max=7.37883 mean=-0.7786
+    u                        shape=(300, 2)               dtype=float64   
+        min=-52.41875 max=48.87408 mean=-1.98119
+
+--- 数据备份\软体平台数据\原始数据\28.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79604 mean=29.89802
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.79512 max=6.39308 mean=1.10082
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.98472 max=48.98221 mean=0.11368
+
+--- 数据备份\软体平台数据\原始数据\29.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79675 mean=29.89838
+    x                        shape=(300, 2)               dtype=float64   
+        min=-1.83952 max=6.06132 mean=2.32363
+    u                        shape=(300, 2)               dtype=float64   
+        min=-46.76425 max=50.27477 mean=0.0787
+
+--- 数据备份\软体平台数据\原始数据\30.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79898 mean=29.89949
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.45615 max=3.49355 mean=0.92477
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.80048 max=49.17039 mean=-0.01018
+
+--- 数据备份\软体平台数据\原始数据\31.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79732 mean=29.89866
+    x                        shape=(300, 2)               dtype=float64   
+        min=-10.02089 max=2.33853 mean=-2.85255
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.67593 max=49.38334 mean=-0.89766
+
+--- 数据备份\软体平台数据\原始数据\32.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80218 mean=29.90109
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.47807 max=5.65427 mean=-1.97546
+    u                        shape=(300, 2)               dtype=float64   
+        min=-60.76729 max=57.19653 mean=1.11677
+
+--- 数据备份\软体平台数据\原始数据\33.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79741 mean=29.89871
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.72426 max=1.3067 mean=-2.04316
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.71781 max=50.06157 mean=0.37186
+
+--- 数据备份\软体平台数据\原始数据\34.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79843 mean=29.89922
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.3145 max=1.68467 mean=-1.37374
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.76376 max=49.17677 mean=-0.52989
+
+--- 数据备份\软体平台数据\原始数据\35.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79607 mean=29.89803
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.52094 max=8.67105 mean=-0.32766
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.96038 max=50.85801 mean=3.74064
+
+--- 数据备份\软体平台数据\原始数据\36.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79889 mean=29.89945
+    x                        shape=(300, 2)               dtype=float64   
+        min=-2.06101 max=6.14984 mean=2.32663
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.97391 max=49.62357 mean=-0.47769
+
+--- 数据备份\软体平台数据\原始数据\37.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85681 mean=29.92841
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.73028 max=3.07596 mean=-1.02895
+    u                        shape=(300, 2)               dtype=float64   
+        min=-52.61587 max=57.89627 mean=0.87001
+
+--- 数据备份\软体平台数据\原始数据\38.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80218 mean=29.90109
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.31113 max=8.21684 mean=2.08492
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.39383 max=47.28301 mean=2.24989
+
+--- 数据备份\软体平台数据\原始数据\39.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80092 mean=29.90046
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.03615 max=10.5514 mean=1.62827
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.65171 max=48.1369 mean=2.06056
+
+--- 数据备份\软体平台数据\原始数据\40.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80307 mean=29.90154
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.13906 max=5.19653 mean=0.14996
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.19163 max=50.33819 mean=1.1762
+
+--- 数据备份\软体平台数据\原始数据\41.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79819 mean=29.89909
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.51403 max=4.50303 mean=0.82412
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.90862 max=48.7239 mean=-0.25159
+
+--- 数据备份\软体平台数据\原始数据\42.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79913 mean=29.89956
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.01834 max=2.07278 mean=-0.53776
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.14693 max=49.38554 mean=-0.75983
+
+--- 数据备份\软体平台数据\原始数据\43.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.7984 mean=29.8992
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.11874 max=4.24707 mean=0.47563
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.12728 max=49.17657 mean=1.11964
+
+--- 数据备份\软体平台数据\原始数据\44.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79306 mean=29.89653
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.12938 max=3.31935 mean=-0.53596
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.34901 max=50.05441 mean=0.49346
+
+--- 数据备份\软体平台数据\原始数据\45.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.7962 mean=29.8981
+    x                        shape=(300, 2)               dtype=float64   
+        min=-1.87945 max=8.14306 mean=2.87662
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.4047 max=47.47254 mean=-0.11236
+
+--- 数据备份\软体平台数据\原始数据\46.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79611 mean=29.89806
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.21551 max=2.62342 mean=-1.28818
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.22994 max=49.54284 mean=-0.14809
+
+--- 数据备份\软体平台数据\原始数据\47.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80276 mean=29.90138
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.83673 max=3.55342 mean=-1.19092
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.79936 max=51.54653 mean=-0.9397
+
+--- 数据备份\软体平台数据\原始数据\48.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80188 mean=29.90094
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.31341 max=5.68824 mean=-1.08199
+    u                        shape=(300, 2)               dtype=float64   
+        min=-51.9854 max=48.79263 mean=-0.90151
+
+--- 数据备份\软体平台数据\原始数据\49.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79753 mean=29.89876
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.56146 max=6.13905 mean=-0.10864
+    u                        shape=(300, 2)               dtype=float64   
+        min=-47.57263 max=49.33813 mean=-3.84273
+
+--- 数据备份\软体平台数据\原始数据\50.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79625 mean=29.89812
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.79019 max=4.72417 mean=-1.77175
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.88144 max=49.67533 mean=1.90397
+
+--- 数据备份\软体平台数据\原始数据\51.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79873 mean=29.89937
+    x                        shape=(300, 2)               dtype=float64   
+        min=-0.34199 max=7.59322 mean=3.59273
+    u                        shape=(300, 2)               dtype=float64   
+        min=-54.91763 max=48.77344 mean=-0.42571
+
+--- 数据备份\软体平台数据\原始数据\52.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.78784 mean=29.89392
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.1261 max=4.16958 mean=-0.50537
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.2376 max=50.10661 mean=1.13221
+
+--- 数据备份\软体平台数据\原始数据\53.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.78374 mean=29.89187
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.81881 max=6.60727 mean=0.64046
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.19632 max=47.20326 mean=2.69569
+
+--- 数据备份\软体平台数据\原始数据\54.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80051 mean=29.90026
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.001 max=11.10339 mean=1.58017
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.3886 max=48.34936 mean=-3.30947
+
+--- 数据备份\软体平台数据\原始数据\55.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.7966 mean=29.8983
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.48993 max=3.2756 mean=-0.32393
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.77914 max=49.83449 mean=-1.59844
+
+--- 数据备份\软体平台数据\原始数据\56.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79629 mean=29.89815
+    x                        shape=(300, 2)               dtype=float64   
+        min=-0.95617 max=7.51081 mean=2.36662
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.3747 max=49.17274 mean=-0.8263
+
+--- 数据备份\软体平台数据\原始数据\57.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79761 mean=29.8988
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.0795 max=2.5905 mean=-2.99366
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.51954 max=48.80946 mean=1.686
+
+--- 数据备份\软体平台数据\原始数据\58.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85911 mean=29.92955
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.43737 max=7.84706 mean=0.73533
+    u                        shape=(300, 2)               dtype=float64   
+        min=-54.3952 max=54.55218 mean=2.35275
+
+--- 数据备份\软体平台数据\原始数据\59.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.8007 mean=29.90035
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.15809 max=9.05585 mean=0.59452
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.44409 max=48.79043 mean=3.33525
+
+--- 数据备份\软体平台数据\原始数据\60.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.8047 mean=29.90235
+    x                        shape=(300, 2)               dtype=float64   
+        min=-10.30265 max=3.06215 mean=-2.84567
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.66888 max=51.48676 mean=-1.55683
+
+--- 数据备份\软体平台数据\原始数据\61.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.78849 mean=29.89425
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.55658 max=5.67465 mean=1.19376
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.28042 max=50.63572 mean=-0.44372
+
+--- 数据备份\软体平台数据\原始数据\62.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80062 mean=29.90031
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.80382 max=6.92945 mean=-2.42854
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.84143 max=49.603 mean=-3.87564
+
+--- 数据备份\软体平台数据\原始数据\63.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79884 mean=29.89942
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.91051 max=3.43036 mean=-1.06186
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.12744 max=51.30523 mean=0.11191
+
+--- 数据备份\软体平台数据\原始数据\64.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80093 mean=29.90046
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.99017 max=4.03793 mean=-1.2258
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.54138 max=49.48418 mean=-0.20367
+
+--- 数据备份\软体平台数据\原始数据\65.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85627 mean=29.92813
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.21818 max=4.71405 mean=0.54265
+    u                        shape=(300, 2)               dtype=float64   
+        min=-56.40052 max=54.74505 mean=1.53291
+
+--- 数据备份\软体平台数据\原始数据\66.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79741 mean=29.89871
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.78832 max=3.37152 mean=0.16578
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.66138 max=49.16144 mean=-2.09478
+
+--- 数据备份\软体平台数据\原始数据\67.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79449 mean=29.89725
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.14771 max=9.32789 mean=1.14183
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.6328 max=49.13753 mean=-2.67072
+
+--- 数据备份\软体平台数据\原始数据\68.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79799 mean=29.899
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.49845 max=3.67145 mean=-2.69297
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.0223 max=47.69645 mean=-2.9486
+
+--- 数据备份\软体平台数据\原始数据\69.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85013 mean=29.92506
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.06516 max=4.55891 mean=-0.10588
+    u                        shape=(300, 2)               dtype=float64   
+        min=-54.10414 max=61.60032 mean=0.12053
+
+--- 数据备份\软体平台数据\原始数据\70.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79769 mean=29.89885
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.53243 max=6.40546 mean=1.04087
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.46625 max=50.16389 mean=-1.50833
+
+--- 数据备份\软体平台数据\原始数据\71.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.7976 mean=29.8988
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.65428 max=6.3822 mean=1.33609
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.0974 max=49.38858 mean=-0.05561
+
+--- 数据备份\软体平台数据\原始数据\72.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79689 mean=29.89844
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.58575 max=3.58136 mean=-0.64439
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.27844 max=49.63353 mean=0.35451
+
+--- 数据备份\软体平台数据\原始数据\73.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79866 mean=29.89933
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.3399 max=4.13621 mean=-0.45293
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.49651 max=48.88345 mean=0.48236
+
+--- 数据备份\软体平台数据\原始数据\74.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79764 mean=29.89882
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.83605 max=1.56316 mean=-3.07904
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.5249 max=49.22404 mean=-3.41045
+
+--- 数据备份\软体平台数据\原始数据\75.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79837 mean=29.89918
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.10107 max=5.79086 mean=1.58787
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.18368 max=49.17774 mean=1.94141
+
+--- 数据备份\软体平台数据\原始数据\76.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79036 mean=29.89518
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.04518 max=3.89879 mean=-0.21466
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.93739 max=50.80393 mean=-1.10971
+
+--- 数据备份\软体平台数据\原始数据\77.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85788 mean=29.92894
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.40021 max=1.65952 mean=-1.24701
+    u                        shape=(300, 2)               dtype=float64   
+        min=-56.66796 max=54.43087 mean=-0.28695
+
+--- 数据备份\软体平台数据\原始数据\78.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.85875 mean=29.92937
+    x                        shape=(300, 2)               dtype=float64   
+        min=-2.96503 max=5.65526 mean=0.85643
+    u                        shape=(300, 2)               dtype=float64   
+        min=-58.99509 max=59.17246 mean=0.76471
+
+--- 数据备份\软体平台数据\原始数据\79.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79676 mean=29.89838
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.10277 max=2.48646 mean=-1.65077
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.60324 max=49.79905 mean=-2.20289
+
+--- 数据备份\软体平台数据\原始数据\80.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79592 mean=29.89796
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.73194 max=3.61574 mean=-2.01786
+    u                        shape=(300, 2)               dtype=float64   
+        min=-47.45205 max=49.45943 mean=0.24676
+
+--- 数据备份\软体平台数据\原始数据\81.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79555 mean=29.89778
+    x                        shape=(300, 2)               dtype=float64   
+        min=-7.08566 max=2.15237 mean=-2.27858
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.43231 max=49.72172 mean=-0.30024
+
+--- 数据备份\软体平台数据\原始数据\82.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79867 mean=29.89934
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.51644 max=7.83601 mean=1.99819
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.61246 max=48.87267 mean=-2.71177
+
+--- 数据备份\软体平台数据\原始数据\83.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79828 mean=29.89914
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.69334 max=4.14778 mean=0.59541
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.61925 max=49.36392 mean=-1.95828
+
+--- 数据备份\软体平台数据\原始数据\84.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79592 mean=29.89796
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.05162 max=6.24774 mean=-0.32792
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.36333 max=53.0957 mean=-1.93278
+
+--- 数据备份\软体平台数据\原始数据\85.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79538 mean=29.89769
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.29072 max=2.50331 mean=-0.31875
+    u                        shape=(300, 2)               dtype=float64   
+        min=-47.92488 max=49.76327 mean=-0.8728
+
+--- 数据备份\软体平台数据\原始数据\86.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79696 mean=29.89848
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.77041 max=6.04473 mean=-0.36602
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.40665 max=48.99074 mean=0.35814
+
+--- 数据备份\软体平台数据\原始数据\87.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79688 mean=29.89844
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.33942 max=6.7792 mean=0.27053
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.60572 max=49.27377 mean=1.28432
+
+--- 数据备份\软体平台数据\原始数据\88.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.78839 mean=29.89419
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.36708 max=7.77749 mean=1.95423
+    u                        shape=(300, 2)               dtype=float64   
+        min=-47.35979 max=48.90533 mean=0.10121
+
+--- 数据备份\软体平台数据\原始数据\89.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79635 mean=29.89817
+    x                        shape=(300, 2)               dtype=float64   
+        min=-5.38986 max=4.62936 mean=1.15084
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.27079 max=48.97169 mean=1.58747
+
+--- 数据备份\软体平台数据\原始数据\90.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79602 mean=29.89801
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.36699 max=2.14799 mean=-0.63566
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.90394 max=49.65216 mean=1.37079
+
+--- 数据备份\软体平台数据\原始数据\91.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79014 mean=29.89507
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.42354 max=5.23784 mean=-0.90437
+    u                        shape=(300, 2)               dtype=float64   
+        min=-51.58814 max=48.36187 mean=2.20025
+
+--- 数据备份\软体平台数据\原始数据\92.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79682 mean=29.89841
+    x                        shape=(300, 2)               dtype=float64   
+        min=-3.28986 max=8.6928 mean=1.35855
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.50635 max=49.78804 mean=2.02036
+
+--- 数据备份\软体平台数据\原始数据\93.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79819 mean=29.89909
+    x                        shape=(300, 2)               dtype=float64   
+        min=-10.45799 max=5.28143 mean=-0.71464
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.01034 max=49.56128 mean=2.6138
+
+--- 数据备份\软体平台数据\原始数据\94.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.80071 mean=29.90036
+    x                        shape=(300, 2)               dtype=float64   
+        min=-9.18467 max=4.54285 mean=0.22921
+    u                        shape=(300, 2)               dtype=float64   
+        min=-49.15034 max=50.43945 mean=1.73078
+
+--- 数据备份\软体平台数据\原始数据\95.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79619 mean=29.89809
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.65934 max=2.36283 mean=-0.56878
+    u                        shape=(300, 2)               dtype=float64   
+        min=-50.40982 max=52.19487 mean=0.58672
+
+--- 数据备份\软体平台数据\原始数据\96.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79597 mean=29.89799
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.73735 max=6.26154 mean=-0.02382
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.60321 max=48.67711 mean=2.91609
+
+--- 数据备份\软体平台数据\原始数据\97.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79845 mean=29.89922
+    x                        shape=(300, 2)               dtype=float64   
+        min=-4.913 max=4.76563 mean=0.1163
+    u                        shape=(300, 2)               dtype=float64   
+        min=-68.5083 max=51.11847 mean=-0.82485
+
+--- 数据备份\软体平台数据\原始数据\98.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79606 mean=29.89803
+    x                        shape=(300, 2)               dtype=float64   
+        min=-8.64947 max=1.24109 mean=-3.54237
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.29247 max=49.80607 mean=0.36741
+
+--- 数据备份\软体平台数据\原始数据\99.npz (12724 B) ---
+    t                        shape=(300,)                 dtype=float64   
+        min=0. max=59.79667 mean=29.89833
+    x                        shape=(300, 2)               dtype=float64   
+        min=-6.45963 max=4.67971 mean=-0.1004
+    u                        shape=(300, 2)               dtype=float64   
+        min=-48.17749 max=50.12983 mean=-2.08117
+
+--- 数据备份\软体平台数据\处理后的数据\test.npz (132982 B) ---
+    x                        shape=(3000, 2)              dtype=float64   
+        min=-10.45799 max=8.6928 mean=-0.4786
+    u                        shape=(3000, 2)              dtype=float64   
+        min=-68.5083 max=52.19487 mean=1.09002
+    t                        shape=(3000,)                dtype=float64   
+        min=0. max=59.80071 mean=29.89826
+    trajectory_id            shape=(3000,)                dtype=int32     
+        min=0. max=9. mean=4.5
+
+--- 数据备份\软体平台数据\处理后的数据\train.npz (924982 B) ---
+    x                        shape=(21000, 2)             dtype=float64   
+        min=-10.30265 max=11.10339 mean=-0.32366
+    u                        shape=(21000, 2)             dtype=float64   
+        min=-65.29084 max=61.60032 mean=0.07332
+    t                        shape=(21000,)               dtype=float64   
+        min=0. max=59.85911 mean=29.90174
+    trajectory_id            shape=(21000,)               dtype=int32     
+        min=0. max=69. mean=34.5
+
+--- 数据备份\软体平台数据\处理后的数据\val.npz (264982 B) ---
+    x                        shape=(6000, 2)              dtype=float64   
+        min=-9.83605 max=7.83601 mean=-0.09037
+    u                        shape=(6000, 2)              dtype=float64   
+        min=-58.99509 max=59.17246 mean=-0.46145
+    t                        shape=(6000,)                dtype=float64   
+        min=0. max=59.85875 mean=29.90122
+    trajectory_id            shape=(6000,)                dtype=int32     
+        min=0. max=19. mean=9.5
+
+=== 软控逻辑.txt (first 60 lines) ===
+  total lines: 598
+  \documentclass[a4paper,12pt]{article}
+  \usepackage[UTF8]{ctex}      % 中文支持
+  \usepackage{geometry}       % 页面设置
+  \usepackage{graphicx}       % 图片支持
+  \usepackage{float}          % 浮动体控制
+  \usepackage{listings}       % 代码块支持
+  \usepackage{xcolor}         % 颜色支持
+  \usepackage{hyperref}       % 超链接
+  \usepackage{array}          % 表格增强
+  \usepackage{booktabs}       % 三线表
+  \usepackage{amsmath}        % 数学公式
+  \usepackage{enumitem}       % 列表定制
+  \usepackage{longtable}      % 长表格
+  
+  % 页面设置
+  \geometry{left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm}
+  
+  % ---------------------------------------------------------
+  % 1. 代码高亮通用样式配置
+  % ---------------------------------------------------------
+  \definecolor{codegreen}{rgb}{0,0.6,0}
+  \definecolor{codegray}{rgb}{0.5,0.5,0.5}
+  \definecolor{codepurple}{rgb}{0.58,0,0.82}
+  \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+  
+  \lstdefinestyle{mystyle}{
+      backgroundcolor=\color{backcolour},   
+      commentstyle=\color{codegreen},
+      keywordstyle=\color{magenta},
+      numberstyle=\tiny\color{codegray},
+      stringstyle=\color{codepurple},
+      basicstyle=\ttfamily\footnotesize,
+      breakatwhitespace=false,         
+      breaklines=true,                 
+      captionpos=b,                    
+      keepspaces=true,                 
+      numbers=left,                    
+      numbersep=5pt,                  
+      showspaces=false,                
+      showstringspaces=false,
+      showtabs=false,                  
+      tabsize=4,
+      frame=single
+  }
+  
+  % 应用全局样式
+  \lstset{style=mystyle}
+  
+  % ---------------------------------------------------------
+  % 2. JSON 语言高亮特殊定义
+  % ---------------------------------------------------------
+  \colorlet{punct}{red!60!black}
+  \definecolor{delim}{RGB}{20,105,176}
+  \colorlet{numb}{magenta!60!black}
+  
+  \lstdefinelanguage{json}{
+      basicstyle=\normalfont\ttfamily\footnotesize,
+      numbers=left,
+      numberstyle=\scriptsize,
+      stepnumber=1,

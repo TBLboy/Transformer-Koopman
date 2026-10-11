@@ -1,0 +1,1029 @@
+
+======================================================================
+1. D:\Project top level
+======================================================================
+  .opencode                                    DIR
+  APP开发                                        DIR
+  C++                                          DIR
+  My_knowledge_base                            DIR
+  Skills开发                                     DIR
+  Transformer-Koopman                          DIR
+  VR数采调研                                       DIR
+  api_lk73_v1.0.4-main                         DIR
+  bypass_rl.py                                 FILE
+  code-projectv2                               DIR
+  code-projectv2 - 副本                          DIR
+  code-projectv2.rar                           FILE
+  codex_tmp.py                                 FILE
+  data                                         DIR
+  data_engine                                  DIR
+  dexbot_ros2_ws-dev_715_cut_cucumbers         DIR
+  dexbot_ros2_ws-dev_715_cut_cucumbers.zip     FILE
+  dexbot_ros2_ws-dex_vla                       DIR
+  dexbot_ros2_ws-dex_vla.zip                   FILE
+  dexbot_ros2_ws-n_feature_refactor            DIR
+  dexbot_ros2_ws-n_feature_refactor.zip        FILE
+  every-embodied                               DIR
+  exploit_codes.py                             FILE
+  haiou-codex-main                             DIR
+  model                                        DIR
+  my_lunwen                                    DIR
+  ollama-models                                DIR
+  rerun_migration_package.py                   FILE
+  vibe-coding                                  DIR
+  力触觉调研                                        DIR
+  校招信息                                         DIR
+  海鸥codeX版                                     DIR
+  海鸥codeX版.zip                                 FILE
+  科技厨房-玉书豆腐                                    DIR
+  论文3老版本                                       DIR
+  辅料称重防错系统                                     DIR
+
+======================================================================
+2. D:\Project\code-projectv2
+======================================================================
+  code-projectv2/  (8 files)
+    .gitignore                                            248 B
+    README.md                                            5179 B
+    pyproject.toml                                        784 B
+    requirements.txt                                      128 B
+    run_all_training.bat                                 2102 B
+    run_all_training.ps1                                 2627 B
+    实验1结果记录.txt                                             0 B
+    论文.txt                                              58179 B
+    .claude/  (1 files)
+      settings.local.json                                   125 B
+    .project-log/  (3 files)
+      current-session.md                                   4025 B
+      progress.md                                          9630 B
+      requirements.md                                      1893 B
+      architecture/  (1 files)
+        software-architecture.md                             3501 B
+      business-logic/  (7 files)
+        constraints.md                                       1134 B
+        decision-records.md                                  2272 B
+        edges.md                                             5411 B
+        graph.md                                             1081 B
+        main.md                                              3030 B
+        nodes.md                                             4792 B
+        open-questions.md                                    5208 B
+      config/  (1 files)
+        config-schema.md                                     1954 B
+      debugging/  (1 files)
+        known-issues.md                                      2910 B
+      hardware/  (1 files)
+        hardware-list.md                                      705 B
+    configs/  (2 files)
+      platform1.yaml                                      10228 B
+      platform2.yaml                                       8608 B
+    data/  (0 files)
+      experiment_001/  (3 files)
+        test.npz                                           418966 B
+        train.npz                                         6272002 B
+        val.npz                                           1673338 B
+      experiment_002/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          519670 B
+        val.npz                                            130678 B
+      experiment_003/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          756934 B
+        val.npz                                            325030 B
+      experiment_004/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          756934 B
+        val.npz                                            325030 B
+      experiment_005/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          293302 B
+        val.npz                                            126262 B
+      experiment_006/  (3 files)
+        test.npz                                            24982 B
+        train.npz                                         1160182 B
+        val.npz                                            481030 B
+    deploy/  (3 files)
+      README.md                                            2457 B
+      export_assets.py                                     2804 B
+      export_baseline_assets.py                            5777 B
+      algorithms/  (2 files)
+        __init__.py                                            66 B
+        transformer_koopman_controller.py                    8979 B
+    docs/  (5 files)
+      ABLATION_DESIGN.md                                   9166 B
+      EXPERIMENTS_DRAFT.md                                12260 B
+      QUICKSTART.md                                        2072 B
+      TRADITIONAL_EDMD.md                                  3483 B
+      paper_notes.txt                                     56550 B
+    experiment1/  (0 files)
+      EDMD-Koopman/  (0 files)
+      LSTM-Koopman/  (0 files)
+      MLP-Koopman/  (0 files)
+      Transformer-Koopman/  (0 files)
+    experiment3/  (0 files)
+      五角星/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   40666 B
+      圆形/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   40279 B
+      正弦轨迹/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   40527 B
+      正方形/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   39596 B
+    figures/  (0 files)
+      ablation/  (14 files)
+        ablation_data_clean.csv                              4472 B
+        ablation_section_draft.tex                           5243 B
+        fig_ablation_metric_platform1.pdf                   33688 B
+        fig_ablation_metric_platform1.png                  126802 B
+        fig_ablation_metric_platform2.pdf                   33528 B
+        fig_ablation_metric_platform2.png                  122978 B
+        fig_ablation_platform1.pdf                          36379 B
+        fig_ablation_platform1.png                         104390 B
+        fig_ablation_platform2.pdf                          36258 B
+        fig_ablation_platform2.png                          91943 B
+        generate_ablation_materials.py                      31466 B
+        plot_ablation.py                                    23753 B
+        table_ablation_platform1.tex                         1370 B
+        table_ablation_platform2.tex                         1299 B
+      experiment1/  (2 files)
+        plot_platform1.py                                   28237 B
+        plot_platform2.py                                   26901 B
+    results/  (2 files)
+      .gitkeep                                                0 B
+      train_p2_patchtst.log                               84112 B
+      ablation/  (0 files)
+      experiment4/  (0 files)
+      logs/  (13 files)
+        Platform_1_LSTM-Koopman_20260529_173639.log         38276 B
+        Platform_2_LSTM-Koopman_20260529_160545.log        107227 B
+        Platform_2_LSTM-Koopman_20260529_161327.log          8213 B
+        Platform_2_LSTM-Koopman_20260529_173345.log         75154 B
+        p1_lstm_koopman.log                                   704 B
+        p1_mlp_koopman.log                                   2616 B
+        p1_patchtst_koopman.log                             61327 B
+        p1_traditional_edmd.log                               730 B
+        p2_lstm_koopman.log                                  2138 B
+        p2_mlp_koopman.log                                  17058 B
+        p2_patchtst-koopman.log                               412 B
+        p2_patchtst_koopman.log                            178600 B
+        p2_traditional_edmd.log                              2998 B
+      lstm_koopman/  (0 files)
+      mlp_koopman/  (0 files)
+      models/  (4 files)
+        mlp_e2e_best.pth                                    48597 B
+        model_20260527_154535.pth                          347999 B
+        pretrain_best.pth                                  341735 B
+        results_20260527_154536.json                          299 B
+      platform1/  (0 files)
+      platform2/  (0 files)
+      traditional_edmd/  (6 files)
+        A_matrix.npy                                          328 B
+        B_matrix.npy                                          208 B
+        C_matrix.npy                                          208 B
+        lifting_meta.npz                                     1084 B
+        results.npy                                           378 B
+        test_prediction.png                                572500 B
+    scripts/  (18 files)
+      check_model_prediction.py                            4996 B
+      encoder_inference_matlab.py                          5433 B
+      inspect_ckpt.py                                       932 B
+      run_all.py                                           9124 B
+      smoke_e2e.py                                         1614 B
+      smoke_test.py                                        2821 B
+      test_mlp_koopman.py                                  3757 B
+      test_patchtst.py                                     5233 B
+      test_platform2_pth.py                                6443 B
+      test_traditional_edmd.py                             3374 B
+      train_lstm_koopman.py                                3739 B
+      train_lstm_platforms.py                              5872 B
+      train_mlp_koopman.py                                 3877 B
+      train_patchtst.py                                    5585 B
+      train_platform1.py                                   3710 B
+      train_platform2.py                                   3706 B
+      train_traditional_edmd.py                            4732 B
+      train_transformer.py                                 5337 B
+      ablation/  (7 files)
+        ablation_platform1.yaml                              3472 B
+        ablation_platform2.yaml                              3462 B
+        generate_report.py                                   3159 B
+        plot_ablation_results.py                             5302 B
+        run_ablation_pipeline.py                             6022 B
+        test_ablation.py                                     9100 B
+        train_ablation.py                                   17629 B
+      debug/  (3 files)
+        amplitude.py                                         2740 B
+        encoder_output.py                                    2608 B
+        state_embedded.py                                    2402 B
+      experiment4/  (6 files)
+        common.py                                            7975 B
+        experiment4_platform1.yaml                           2619 B
+        experiment4_platform2.yaml                           2610 B
+        run_experiment4_pipeline.py                          2534 B
+        test_experiment4.py                                  2597 B
+        train_experiment4.py                                10763 B
+    src/  (0 files)
+      patchtst_koopman/  (1 files)
+        __init__.py                                           102 B
+      patchtst_koopman.egg-info/  (6 files)
+        PKG-INFO                                             5796 B
+        SOURCES.txt                                          2198 B
+        dependency_links.txt                                    1 B
+        entry_points.txt                                       74 B
+        requires.txt                                          144 B
+        top_level.txt                                          17 B
+
+======================================================================
+3. D:\Project\code-projectv2\results
+======================================================================
+  results/  (2 files)
+    .gitkeep                                                0 B
+    train_p2_patchtst.log                               84112 B
+    ablation/  (0 files)
+      platform1/  (0 files)
+        ablation_platform1/  (0 files)
+      platform2/  (0 files)
+        ablation_platform2/  (0 files)
+    experiment4/  (0 files)
+      platform1/  (0 files)
+        20260609_191412/  (6 files)
+          best_config.json                                     4924 B
+          candidate_manifest.json                               563 B
+          exported_platform1_main_config.yaml                  2288 B
+          exported_platform1_module_ablation_config.yaml       2489 B
+          scan_results.json                                    3128 B
+          selection_summary.json                                742 B
+        20260609_191708/  (7 files)
+          best_config.json                                     4923 B
+          candidate_manifest.json                               563 B
+          exported_platform1_main_config.yaml                  2288 B
+          exported_platform1_module_ablation_config.yaml       2489 B
+          scan_results.json                                    3126 B
+          selection_summary.json                                742 B
+          test_results.json                                     521 B
+      platform2/  (0 files)
+        20260609_185945/  (7 files)
+          best_config.json                                     4822 B
+          candidate_manifest.json                               556 B
+          exported_platform2_main_config.yaml                  2289 B
+          exported_platform2_module_ablation_config.yaml       2490 B
+          scan_results.json                                    2901 B
+          selection_summary.json                                723 B
+          test_results.json                                     396 B
+        20260609_190635/  (7 files)
+          best_config.json                                     4939 B
+          candidate_manifest.json                               556 B
+          exported_platform2_main_config.yaml                  2289 B
+          exported_platform2_module_ablation_config.yaml       2490 B
+          scan_results.json                                    3139 B
+          selection_summary.json                                723 B
+          test_results.json                                     515 B
+        20260609_191412/  (7 files)
+          best_config.json                                     4939 B
+          candidate_manifest.json                               556 B
+          exported_platform2_main_config.yaml                  2289 B
+          exported_platform2_module_ablation_config.yaml       2490 B
+          scan_results.json                                    3139 B
+          selection_summary.json                                723 B
+          test_results.json                                     515 B
+    logs/  (13 files)
+      Platform_1_LSTM-Koopman_20260529_173639.log         38276 B
+      Platform_2_LSTM-Koopman_20260529_160545.log        107227 B
+      Platform_2_LSTM-Koopman_20260529_161327.log          8213 B
+      Platform_2_LSTM-Koopman_20260529_173345.log         75154 B
+      p1_lstm_koopman.log                                   704 B
+      p1_mlp_koopman.log                                   2616 B
+      p1_patchtst_koopman.log                             61327 B
+      p1_traditional_edmd.log                               730 B
+      p2_lstm_koopman.log                                  2138 B
+      p2_mlp_koopman.log                                  17058 B
+      p2_patchtst-koopman.log                               412 B
+      p2_patchtst_koopman.log                            178600 B
+      p2_traditional_edmd.log                              2998 B
+      platform1/  (0 files)
+    lstm_koopman/  (0 files)
+      platform1/  (1 files)
+        model.pth                                          274009 B
+      platform2/  (1 files)
+        model.pth                                          118361 B
+    mlp_koopman/  (0 files)
+      platform1/  (1 files)
+        model.pth                                          238789 B
+      platform2/  (3 files)
+        model.pth                                           52764 B
+        results.json                                          136 B
+        test_prediction.png                                944002 B
+    models/  (4 files)
+      mlp_e2e_best.pth                                    48597 B
+      model_20260527_154535.pth                          347999 B
+      pretrain_best.pth                                  341735 B
+      results_20260527_154536.json                          299 B
+      auto_test/  (1 files)
+        test_prediction.png                                982490 B
+      platform1/  (5 files)
+        mlp_e2e_best.pth                                   208597 B
+        model_20260602_132702.pth                         3864080 B
+        model_best.pth                                    3863541 B
+        pretrain_best.pth                                 3832008 B
+        results_20260602_132710.json                          300 B
+        auto_test/  (1 files)
+          test_prediction.png                               3316053 B
+      platform2/  (18 files)
+        mlp_e2e_best.pth                                   111056 B
+        mlp_pretrain_best.pth                              111111 B
+        model_20260529_110554.pth                          348872 B
+        model_20260602_114642.pth                          745104 B
+        model_20260602_120253.pth                          746000 B
+        model_20260602_122928.pth                          747152 B
+        model_20260602_124637.pth                          746768 B
+        model_20260602_130111.pth                          745744 B
+        model_20260602_133534.pth                          746768 B
+        model_best.pth                                     746229 B
+        pretrain_best.pth                                  738504 B
+        results_20260529_110555.json                          297 B
+        results_20260602_114644.json                          299 B
+        results_20260602_120253.json                          299 B
+        results_20260602_122929.json                          300 B
+        results_20260602_124638.json                          299 B
+        results_20260602_130112.json                          298 B
+        results_20260602_133535.json                          299 B
+        auto_test/  (1 files)
+          test_prediction.png                               1016028 B
+    platform1/  (0 files)
+      Models/  (0 files)
+        lstm_koopman/  (3 files)
+          model.pth                                          274009 B
+          results.json                                          141 B
+          test_prediction.png                               3585229 B
+        mlp_koopman/  (3 files)
+          model.pth                                          238789 B
+          results.json                                          138 B
+          test_prediction.png                               3885122 B
+        patchtst_koopman/  (8 files)
+          model_20260529_132332.pth                         3862690 B
+          model_20260529_190046.pth                         3863202 B
+          model_20260605_231201.pth                         3863522 B
+          model_best.pth                                    3863522 B
+          pretrain_best.pth                                 3825864 B
+          results_20260529_132341.json                          301 B
+          results_20260529_190054.json                          301 B
+          results_20260605_231209.json                          301 B
+        traditional_edmd/  (6 files)
+          A_matrix.npy                                         6400 B
+          B_matrix.npy                                          800 B
+          C_matrix.npy                                         1472 B
+          lifting_meta.npz                                     1064 B
+          results.npy                                           373 B
+          test_prediction.png                               2849570 B
+      Results/  (0 files)
+        lstm_koopman/  (2 files)
+          results.json                                          141 B
+          test_prediction.png                               3585229 B
+        mlp_koopman/  (2 files)
+          results.json                                          138 B
+          test_prediction.png                               3885122 B
+        patchtst_koopman/  (4 files)
+          results_20260529_132341.json                          301 B
+          results_20260529_190054.json                          301 B
+          results_20260605_231209.json                          301 B
+          test_prediction.png                               3721700 B
+        traditional_edmd/  (2 files)
+          results.npy                                           373 B
+          test_prediction.png                               2849570 B
+    platform2/  (0 files)
+      Models/  (0 files)
+        lstm_koopman/  (3 files)
+          model.pth                                          118361 B
+          results.json                                          138 B
+          test_prediction.png                                968592 B
+        mlp_koopman/  (4 files)
+          model.pth                                           53349 B
+          model_best.pth                                      54005 B
+          results.json                                          137 B
+          test_prediction.png                                965422 B
+        patchtst_koopman/  (6 files)
+          model_20260605_232730.pth                          745698 B
+          model_20260623_221946.pth                          348808 B
+          model_best.pth                                     348469 B
+          pretrain_best.pth                                  342336 B
+          results_20260605_232731.json                          300 B
+          results_20260623_221948.json                          300 B
+        traditional_edmd/  (6 files)
+          A_matrix.npy                                          328 B
+          B_matrix.npy                                          208 B
+          C_matrix.npy                                          208 B
+          lifting_meta.npz                                     1072 B
+          results.npy                                           407 B
+          test_prediction.png                                593522 B
+      Results/  (0 files)
+        lstm_koopman/  (2 files)
+          results.json                                          138 B
+          test_prediction.png                                968592 B
+        mlp_koopman/  (2 files)
+          results.json                                          138 B
+          test_prediction.png                                955477 B
+        patchtst_koopman/  (23 files)
+          results_20260529_121932.json                          298 B
+          results_20260529_141313.json                          299 B
+          results_20260529_150838.json                          299 B
+          results_20260529_155928.json                          299 B
+          results_20260529_170829.json                          298 B
+          results_20260529_184211.json                          297 B
+          results_20260529_192640.json                          269 B
+          results_20260530_091338.json                          269 B
+          results_20260530_091822.json                          299 B
+          results_20260530_092623.json                          299 B
+          results_20260530_093810.json                          298 B
+          results_20260530_094259.json                          299 B
+          results_20260530_101456.json                          299 B
+          results_20260530_102045.json                          299 B
+          results_20260530_102856.json                          300 B
+          results_20260530_103239.json                          298 B
+          results_20260530_103509.json                          298 B
+          results_20260530_104744.json                          300 B
+          results_20260530_110652.json                          299 B
+          results_20260530_111527.json                          299 B
+          results_20260605_232731.json                          300 B
+          results_20260623_221948.json                          300 B
+          test_prediction.png                               1000597 B
+        traditional_edmd/  (2 files)
+          results.npy                                           378 B
+          test_prediction.png                                572500 B
+    traditional_edmd/  (6 files)
+      A_matrix.npy                                          328 B
+      B_matrix.npy                                          208 B
+      C_matrix.npy                                          208 B
+      lifting_meta.npz                                     1084 B
+      results.npy                                           378 B
+      test_prediction.png                                572500 B
+      platform1/  (6 files)
+        A_matrix.npy                                         6400 B
+        B_matrix.npy                                          800 B
+        C_matrix.npy                                         1472 B
+        lifting_meta.npz                                     1064 B
+        results.npy                                           373 B
+        test_prediction.png                               2849570 B
+      platform2/  (6 files)
+        A_matrix.npy                                          328 B
+        B_matrix.npy                                          208 B
+        C_matrix.npy                                          208 B
+        lifting_meta.npz                                     1084 B
+        results.npy                                           378 B
+        test_prediction.png                                572500 B
+
+======================================================================
+4. D:\Project\论文3老版本\Transformer-Koopman
+======================================================================
+  Transformer-Koopman/  (8 files)
+    .gitignore                                            248 B
+    README.md                                            5179 B
+    pyproject.toml                                        784 B
+    requirements.txt                                      128 B
+    run_all_training.bat                                 2102 B
+    run_all_training.ps1                                 2627 B
+    实验1结果记录.txt                                             0 B
+    论文.txt                                              58179 B
+    configs/  (2 files)
+      platform1.yaml                                      10228 B
+      platform2.yaml                                       8608 B
+    data/  (0 files)
+      experiment_001/  (3 files)
+        test.npz                                           418966 B
+        train.npz                                         6272002 B
+        val.npz                                           1673338 B
+      experiment_002/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          519670 B
+        val.npz                                            130678 B
+      experiment_003/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          756934 B
+        val.npz                                            325030 B
+      experiment_004/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          756934 B
+        val.npz                                            325030 B
+      experiment_005/  (3 files)
+        test.npz                                            15382 B
+        train.npz                                          293302 B
+        val.npz                                            126262 B
+      experiment_006/  (3 files)
+        test.npz                                            24982 B
+        train.npz                                         1160182 B
+        val.npz                                            481030 B
+    deploy/  (3 files)
+      README.md                                            2457 B
+      export_assets.py                                     2804 B
+      export_baseline_assets.py                            5777 B
+      algorithms/  (2 files)
+        __init__.py                                            66 B
+        transformer_koopman_controller.py                    8979 B
+    docs/  (5 files)
+      ABLATION_DESIGN.md                                   9166 B
+      EXPERIMENTS_DRAFT.md                                12260 B
+      QUICKSTART.md                                        2072 B
+      TRADITIONAL_EDMD.md                                  3483 B
+      paper_notes.txt                                     56550 B
+    experiment1/  (0 files)
+      EDMD-Koopman/  (0 files)
+      LSTM-Koopman/  (0 files)
+      MLP-Koopman/  (0 files)
+      Transformer-Koopman/  (0 files)
+    experiment3/  (0 files)
+      五角星/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   40666 B
+      圆形/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   40279 B
+      正弦轨迹/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   40527 B
+      正方形/  (2 files)
+        config_snapshot.json                                  409 B
+        tracking_data.csv                                   39596 B
+    figures/  (0 files)
+      ablation/  (14 files)
+        ablation_data_clean.csv                              4472 B
+        ablation_section_draft.tex                           5243 B
+        fig_ablation_metric_platform1.pdf                   33688 B
+        fig_ablation_metric_platform1.png                  126802 B
+        fig_ablation_metric_platform2.pdf                   33528 B
+        fig_ablation_metric_platform2.png                  122978 B
+        fig_ablation_platform1.pdf                          36379 B
+        fig_ablation_platform1.png                         104390 B
+        fig_ablation_platform2.pdf                          36258 B
+        fig_ablation_platform2.png                          91943 B
+        generate_ablation_materials.py                      31466 B
+        plot_ablation.py                                    23753 B
+        table_ablation_platform1.tex                         1370 B
+        table_ablation_platform2.tex                         1299 B
+      experiment1/  (2 files)
+        plot_platform1.py                                   28237 B
+        plot_platform2.py                                   26901 B
+    results/  (2 files)
+      .gitkeep                                                0 B
+      train_p2_patchtst.log                               84112 B
+      ablation/  (0 files)
+      experiment4/  (0 files)
+      logs/  (13 files)
+        Platform_1_LSTM-Koopman_20260529_173639.log         38276 B
+        Platform_2_LSTM-Koopman_20260529_160545.log        107227 B
+        Platform_2_LSTM-Koopman_20260529_161327.log          8213 B
+        Platform_2_LSTM-Koopman_20260529_173345.log         75154 B
+        p1_lstm_koopman.log                                   704 B
+        p1_mlp_koopman.log                                    699 B
+        p1_patchtst_koopman.log                                 0 B
+        p1_traditional_edmd.log                               730 B
+        p2_lstm_koopman.log                                  2138 B
+        p2_mlp_koopman.log                                  17058 B
+        p2_patchtst-koopman.log                               412 B
+        p2_patchtst_koopman.log                            178600 B
+        p2_traditional_edmd.log                              2998 B
+      lstm_koopman/  (0 files)
+      mlp_koopman/  (0 files)
+      models/  (4 files)
+        mlp_e2e_best.pth                                    48597 B
+        model_20260527_154535.pth                          347999 B
+        pretrain_best.pth                                  341735 B
+        results_20260527_154536.json                          299 B
+      platform1/  (0 files)
+      platform2/  (0 files)
+      traditional_edmd/  (6 files)
+        A_matrix.npy                                          328 B
+        B_matrix.npy                                          208 B
+        C_matrix.npy                                          208 B
+        lifting_meta.npz                                     1084 B
+        results.npy                                           378 B
+        test_prediction.png                                572500 B
+    scripts/  (18 files)
+      check_model_prediction.py                            4996 B
+      encoder_inference_matlab.py                          5433 B
+      inspect_ckpt.py                                       932 B
+      run_all.py                                           9124 B
+      smoke_e2e.py                                         1614 B
+      smoke_test.py                                        2821 B
+      test_mlp_koopman.py                                  3757 B
+      test_patchtst.py                                     5233 B
+      test_platform2_pth.py                                6443 B
+      test_traditional_edmd.py                             3374 B
+      train_lstm_koopman.py                                3739 B
+      train_lstm_platforms.py                              5872 B
+      train_mlp_koopman.py                                 3877 B
+      train_patchtst.py                                    5585 B
+      train_platform1.py                                   3710 B
+      train_platform2.py                                   3706 B
+      train_traditional_edmd.py                            4732 B
+      train_transformer.py                                 5337 B
+      ablation/  (7 files)
+        ablation_platform1.yaml                              3472 B
+        ablation_platform2.yaml                              3462 B
+        generate_report.py                                   3159 B
+        plot_ablation_results.py                             5302 B
+        run_ablation_pipeline.py                             6022 B
+        test_ablation.py                                     9100 B
+        train_ablation.py                                   17629 B
+      debug/  (3 files)
+        amplitude.py                                         2740 B
+        encoder_output.py                                    2608 B
+        state_embedded.py                                    2402 B
+      experiment4/  (6 files)
+        common.py                                            7975 B
+        experiment4_platform1.yaml                           2619 B
+        experiment4_platform2.yaml                           2610 B
+        run_experiment4_pipeline.py                          2534 B
+        test_experiment4.py                                  2597 B
+        train_experiment4.py                                10763 B
+    src/  (0 files)
+      patchtst_koopman/  (1 files)
+        __init__.py                                           102 B
+    论文草稿/  (46 files)
+      IEEEtran.cls                                       281957 B
+      IEEEtran_HOWTO.pdf                                 671626 B
+      Main.tex                                            47690 B
+      Main10.tex                                          54756 B
+      Main11.tex                                          54982 B
+      Main12.tex                                          59370 B
+      Main13.tex                                          60218 B
+      Main14.tex                                          69047 B
+      Main15.tex                                          49625 B
+      Main16.tex                                          49961 B
+      Main17.tex                                          56139 B
+      Main18.tex                                          55853 B
+      Main19.tex                                          55772 B
+      Main20.tex                                          56510 B
+      Main21.tex                                          56514 B
+      Main22.tex                                          54946 B
+      Main23.tex                                          54534 B
+      Main24.tex                                          55625 B
+      Main25.tex                                           6768 B
+      Main26.tex                                          54720 B
+      Main27.tex                                          57563 B
+      Main28.tex                                          60209 B
+      Main28备份.tex                                        58043 B
+      Main29.tex                                          60046 B
+      Main30.tex                                          60025 B
+      Main31.tex                                          60007 B
+      Main32.tex                                          53845 B
+      Main33.tex                                          56487 B
+      Main34.tex                                          57294 B
+      Main5.tex                                           52843 B
+      Main6.tex                                           52843 B
+      Main7.tex                                           52069 B
+      Main8.tex                                           55151 B
+      Main9.tex                                           55151 B
+      README                                               5465 B
+      bare_adv.tex                                        38435 B
+      bare_conf.tex                                       20926 B
+      bare_conf_compsoc.tex                               21905 B
+      bare_jrnl.tex                                       26815 B
+      bare_jrnl_compsoc.tex                               30906 B
+      bare_jrnl_comsoc.tex                                28286 B
+      bare_jrnl_transmag.tex                              26855 B
+      changelog.txt                                       35418 B
+      版本1.tex                                             46744 B
+      版本2.tex                                             48901 B
+      版本3.tex                                             49480 B
+      bibtex/  (11 files)
+        IEEEabrv.bib                                        20899 B
+        IEEEexample.bib                                     39685 B
+        IEEEfull.bib                                        24832 B
+        IEEEtran.bst                                        57748 B
+        IEEEtranN.bst                                       63583 B
+        IEEEtranS.bst                                       61730 B
+        IEEEtranSA.bst                                      65863 B
+        IEEEtranSN.bst                                      66951 B
+        IEEEtran_bst_HOWTO.pdf                             286900 B
+        README                                               5527 B
+        changelog.txt                                        8847 B
+      extras/  (3 files)
+        README                                               1974 B
+        tux.eps                                            105094 B
+        tux.pdf                                             19349 B
+      pictures/  (3 files)
+        Figure1.pdf                                         89318 B
+        Figure2.pdf                                         81285 B
+        Figure3.pdf                                         57878 B
+      testflow/  (7 files)
+        README                                               2805 B
+        testflow.tex                                        16834 B
+        testflow_ctl_A4.pdf                                 74762 B
+        testflow_ctl_A4.ps                                 153750 B
+        testflow_ctl_LTR.pdf                                74715 B
+        testflow_ctl_LTR.ps                                153801 B
+        testflow_doc.pdf                                   389625 B
+      tools/  (4 files)
+        IEEEtrantools.sty                                  130521 B
+        IEEEtrantools_doc.txt                               13144 B
+        README                                               4190 B
+        changelog.txt                                        4725 B
+
+======================================================================
+5. grep for new-model checkpoint keys in .py under D:\Project (depth<=6)
+======================================================================
+  key 'plant_dnn' -> 2 files
+      Transformer-Koopman\杂项\老版本\流程脚本\record_round16.py
+      Transformer-Koopman\杂项\老版本\研究代码\gate16_matched_oracle.py
+  key 'AB.pt' -> 0 files
+  key 'Ua' -> 2 files
+      Transformer-Koopman\杂项\老版本\研究代码\V_APLUS.py
+      Transformer-Koopman\杂项\老版本\研究代码\gate_context_koopman.py
+  key 'Ub' -> 10 files
+      Transformer-Koopman\杂项\新版本\validation\replay_counterexample.py
+      Transformer-Koopman\杂项\新版本\validation\validate_theory.py
+      Transformer-Koopman\杂项\老版本\流程脚本\normalize_log.py
+      Transformer-Koopman\杂项\老版本\流程脚本\record_fix_bundle.py
+      Transformer-Koopman\杂项\老版本\流程脚本\record_task095.py
+      Transformer-Koopman\杂项\老版本\流程脚本\record_task095b.py
+      Transformer-Koopman\杂项\老版本\流程脚本\record_task095c.py
+      Transformer-Koopman\杂项\老版本\研究代码\Q_P1.py
+      Transformer-Koopman\杂项\老版本\研究代码\V_APLUS.py
+      Transformer-Koopman\杂项\老版本\研究代码\gate_context_koopman.py
+  key 'ga.weight' -> 0 files
+  key 'gb.weight' -> 0 files
+  key 'scheduled' -> 33 files
+      Transformer-Koopman\代码部分\老版本\训练代码\tests\test_pipeline_jobs.py
+      Transformer-Koopman\杂项\新版本\validation\validate_plant_cartpole.py
+      Transformer-Koopman\杂项\新版本\validation\validate_theory.py
+      Transformer-Koopman\杂项\老版本\ablate_stage01.py
+      Transformer-Koopman\杂项\老版本\analyze_ablation.py
+      Transformer-Koopman\杂项\老版本\apply_compression_v3.py
+      Transformer-Koopman\杂项\老版本\apply_main9_p0.py
+      Transformer-Koopman\杂项\老版本\apply_main9_p1.py
+      Transformer-Koopman\杂项\老版本\apply_narrative_p0.py
+      Transformer-Koopman\杂项\老版本\apply_narrative_v2.py
+      Transformer-Koopman\杂项\老版本\apply_option1_training.py
+      Transformer-Koopman\杂项\老版本\apply_review_D1_D4.py
+      Transformer-Koopman\杂项\老版本\apply_theory_consolidation.py
+      Transformer-Koopman\杂项\老版本\fix_relatedwork_order.py
+  key 'diag(gamma' -> 2 files
+      Transformer-Koopman\杂项\新版本\validation\validate_plant_cartpole.py
+      Transformer-Koopman\杂项\新版本\validation\validate_theory.py
+  key 'diag(ga' -> 2 files
+      Transformer-Koopman\杂项\新版本\validation\validate_plant_cartpole.py
+      Transformer-Koopman\杂项\新版本\validation\validate_theory.py
+
+======================================================================
+6. platform2_metadata.json
+======================================================================
+{
+    "source_checkpoint": "C:\\Users\\Windows\\Desktop\\论文4\\code_project\\results\\models\\ablation_platform2\\20260514_084213\\full_model\\full_model_model.pth",
+    "target_checkpoint": "C:\\Users\\Windows\\Desktop\\论文4\\code_project\\实验3代码\\algorithms\\model_assets\\platform2_full_model.pth",
+    "A_shape": [
+        10,
+        10
+    ],
+    "B_shape": [
+        10,
+        2
+    ],
+    "state_dim": 2,
+    "control_dim": 2,
+    "history_length": 4,
+    "patch_length": 2,
+    "latent_dim": 10,
+    "d_model": 16,
+    "n_layers": 3,
+    "n_heads": 2,
+    "normalization_keys": [
+        "x_mean",
+        "x_std",
+        "u_mean",
+        "u_std"
+    ]
+}
+
+======================================================================
+7. 杂项/老版本/README.md
+======================================================================
+# 杂项 — 研究材料与代码归档
+
+本目录集中保存 Transformer-Koopman 项目在研究过程中产生的**研究代码、模型检查点、实验结果与脚本**，防止它们仅存在于系统临时文件夹而丢失。
+
+## 来源与完整性
+- **来源**：`C:\Users\12187\AppData\Local\Temp\opencode\`（OpenCode 临时工作目录）
+- **归档时间**：2026-10-06
+- **方式**：**复制**（临时目录中的原始文件未删除，可确认无误后另行清理）
+- **校验**：逐文件 sha256 比对，0 处不匹配
+
+## 目录结构
+| 目录 | 内容 | 文件数 |
+|---|---|---|
+| `研究代码/` | 研究脚本：gate 系列（新路线模型/实验/诊断）、路线探索（`V_`/`D_`/`Q_`/`N_`/`spike_`）、控制与评估、绘图/渲染 | 72 |
+| `流程脚本/` | 项目日志与 vibe CLI 驱动脚本（`record_`/`dump_`/`probe_`/`check_`/`fix_`/`verify_` 等） | 248 |
+| `模型检查点/` | 训练权重（`gate_states/` 全部 17 个 + `plant_dnn.pt`） | 18 |
+| `实验结果/` | 实验/诊断结果 JSON（`gate*`/`N_`/`D_`/`Q_`/`V_`/`spike_`/`test*`/`p1_*` 等） | 51 |
+| `记录载荷/` | project-log 记录用的 payload/covers JSON 与 `vibe-status` 快照 | 185 |
+| `图表/` | 论文插图/裁剪（`eq49_crop.png`、`p08_300.png`） | 2 |
+| `说明文档/` | 交付说明头、提交信息、PDF 文本抽取等 | 7 |
+
+## 关键材料（新路线实现与证据）
+- **新路线模型与训练**：
+  - `研究代码/gate_context_koopman.py`（`CtxKoopman`，A/B/AB 调制对照）
+  - `研究代码/gate14_stabilize.py`（`BudgetedCtxKoopman`：`A(c)=A0+U·diag(δ_A·π⊙tanh(g(c)))·Vᵀ`，r=2；开环 scheduled 传播训练 + 谱半径惩罚）
+- **理论诊断（论文表 I / 图 3 的单一事实源）**：
+  - `研究代码/gate16_diag_final.py` → `实验结果/gate16_diag_final.json`（stride-1）
+  - `研究代码/gate16_diag_fix.py` → `实验结果/gate16_diag_fix.json`（stride-4，图 3 用）
+- **匹配 oracle 控制实验 / RTI 运行时**：
+  - `研究代码/gate16_matched_oracle.py` → `实验结果/gate16_matched_oracle_N5.json`、`_N8.json`
+  - `研究代码/gate14d_rti.py` → `实验结果/gate14d_result*.json`
+- **冻结部署预测器权重**：`模型检查点/A_stab_openloop_lam0.0_rho0.99.pt`（gate16 诊断所用；r=2, P=8, d=10）
+- **论文改写脚本**：`研究代码/rewrite_ivb.py`（把 §IV-B/Algorithm 1/Fig.2 重写为实际实现）
+
+## 未纳入本目录（仍在临时目录）
+- `tectonic/`、`tectonic.zip`：LaTeX 编译引擎（工具，可重新获取）。
+- `milk-milk-go-before-filter.bundle`：与本项目无关的 `milk` 仓库 git bundle（120 MB）。
+- `pdf_v2…v5`、`pdf_pages`、`pdf_r4`：论文 PDF 渲染图（可由 `Main.tex` 重新生成）。
+- `vr3/`、`__pycache__/`、`installed-backup*/`、`gate-git-*/`：vibe 框架副本与测试产物。
+
+> ⚠️ `模型检查点/` 与 `研究代码/` 中的脚本是**新路线（A(c) + rollout-aware scheduled 训练）的唯一实现**——迁移进仓库的 `训练代码/` 仅含旧固定-A 路线。请勿删除。
+
+
+======================================================================
+8. 杂项/老版本/_manifest_counts.txt + p1_data_profile.json
+======================================================================
+  --- _manifest_counts.txt ---
+研究代码	72
+流程脚本	248
+模型检查点	18
+实验结果	51
+记录载荷	185
+图表	2
+说明文档	15
+
+  --- p1_data_profile.json ---
+{
+  "train.npz": {
+    "x_shape": [
+      74655,
+      6
+    ],
+    "u_shape": [
+      74655,
+      3
+    ],
+    "n_traj": 15,
+    "x_min": [
+      -0.87051,
+      -16.55076,
+      0.36151,
+      -11.22074,
+      -0.04564,
+      -9.88155
+    ],
+    "x_max": [
+      0.87421,
+      11.61637,
+      1.63945,
+      10.40468,
+      0.6422,
+      8.65909
+    ],
+    "x_std": [
+      0.42825,
+      2.98048,
+      0.21693,
+      1.93434,
+      0.11938,
+      1.5707
+    ],
+    "u_min": [
+      -2.63862,
+      -0.2073,
+      -1.17888
+    ],
+    "u_max": [
+      3.50368,
+      5.70897,
+      2.96498
+    ],
+    "u_std": [
+      0.91861,
+      0.91856,
+      0.5461
+    ],
+    "u_absmean": [
+      0.74502,
+      3.11144,
+      1.38162
+    ]
+  },
+  "val.npz": {
+    "x_shape": [
+      19909,
+      6
+    ],
+    "u_shape": [
+      19909,
+      3
+    ],
+    "n_traj": 4,
+    "x_min": [
+      -0.86311,
+      -15.52276,
+      0.36314,
+      -11.22072,
+      -0.04686,
+      -9.47407
+    ],
+    "x_max": [
+      0.87298,
+      11.51356,
+      1.64108,
+      10.30269,
+      0.63975,
+      8.9647
+    ],
+    "x_std": [
+      0.44167,
+      2.65829,
+      0.19082,
+      1.75738,
+      0.10188,
+      1.3926
+    ],
+    "u_min": [
+      -2.58316,
+      -0.13803,
+      -1.09219
+    ],
+    "u_max": [
+      3.25583,
+      5.60534,
+      2.95519
+    ],
+    "u_std": [
+      0.87605,
+      0.87265,
+      0.50941
+    ],
+    "u_absmean": [
+      0.70931,
+      3.11572,
+      1.36239
+    ]
+  },
+  "test.npz": {
+    "x_shape": [
+      4976,
+      6
+    ],
+    "u_shape": [
+      4976,
+      3
+    ],
+    "n_traj": 1,
+    "x_min": [
+      -0.86352,
+      -15.62556,
+      0.36355,
+      -11.0167,
+      -0.0436,
+      -9.27032
+    ],
+    "x_max": [
+      0.87174,
+      11.41077,
+      1.63415,
+      10.20065,
+      0.63894,
+      7.64037
+    ],
+    "x_std": [
+      0.45577,
+      3.31941,
+      0.24401,
+      2.12214,
+      0.12409,
+      1.74125
+    ],
+    "u_min": [
+      -2.55681,
+      -0.14141,
+      -1.02463
+    ],
+    "u_max": [
+      3.23951,
+      5.6766,
+      2.95669
+    ],
+    "u_std": [
+      0.98109,
+      0.95445,
+      0.56732
+    ],
+    "u_absmean": [
+      0.80072,
+      3.06219,
+      1.35075
+    ]
+  },
+  "velocity_consistency_relative_error": [
+    0.06755683213773034,
+    0.11322560823071065,
+    0.16248142655094366
+  ],
+  "p1_input_semantics_reported_by_user": "joint torque / current command"
+}

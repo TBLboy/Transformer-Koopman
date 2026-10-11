@@ -1,0 +1,157 @@
+# Gate 1 frozen protocol — modelling comparison on Platform 2 (soft platform)
+#
+# Authority chain:
+#   1. Temporary_Modeling_and_Control_Experiments_Plan.md  sections 2, 3, 4
+#   2. reports/go_no_go.md  conditions C1-C5 (this file closes C5 and pins C3)
+#   3. configs/data_manifest.yaml  +  configs/split_manifest.yaml (frozen inputs)
+#
+# Rule: everything in this file is frozen before the first Gate-1 training run.
+# Any later change must be recorded as an explicit deviation in .project-log.
+
+schema_version: 1
+platform: platform2
+frozen_by: TASK-045
+frozen_against_git_commit: 1c7bca69d41e1a4ccaf972650c4568122d1e6269
+
+data:
+  dir: 数据备份/软体平台数据/处理后的数据
+  split_manifest: configs/split_manifest.yaml
+  split: {train: 70, val: 20, test: 10}          # trajectories, never windows
+  trajectory_length: 300
+  sampling_period_s: 0.2
+  normalisation:
+    fit_on: train_only
+    x_mean: [-0.696318, 0.048996]
+    x_std: [3.243583, 3.415089]
+    u_mean: [0.238027, -0.091383]
+    u_std: [27.962413, 28.133323]
+  # empirical envelope used only for saturation checks and control box constraints
+  u_observed_absmax: [68.508298, 65.290837]
+  u_limit_abs: 100.0            # source: code-projectv2/experiment3/.../config_snapshot.json:10 ; status: pending_confirmation
+
+architecture:
+  # frozen to the authoritative P=8 configuration (PHASE2-CONFIG-AUDIT-001)
+  history_length_P: 8
+  patch_length_p: 2
+  latent_dim_d: 10
+  state_dim_n: 2
+  control_dim_m: 2
+  d_model: 16
+  n_layers: 1
+  n_heads: 2
+  d_ff: 64
+  dropout: 0.1
+  readout_method: mean
+  latent_form: "z = [x_k ; h_k],  C_x = [I_n | 0],  C_x z_k = x_k"
+  # context map, faithful to Theory_Package/01_Model_Definition.md
+  context:
+    input: "c_k = C_phi(X_k, U_k^in)"
+    X_k: "P measurements, oldest to newest, last entry is the current x_k"
+    U_k_in: "P-1 past inputs, oldest to newest; u_k is EXCLUDED"
+    input_dim: 30                 # P*n + (P-1)*m = 8*2 + 7*2
+    hidden_dim: 64
+    output_dim: 16
+    activation: tanh
+    normalisation_inside_context: none
+  modulation:
+    # per Theory_Package/01_Model_Definition.md lines 77-122
+    A: "A(c) = A_0 + U_A diag(gamma_A(c)) V_A^T"
+    B: "B(chi) = B_0 + U_B diag(gamma_B(chi)) V_B^T"
+    gamma_A: "gamma_{A,j}(c) = g_A * pi_{A,j}(c) * tanh([W_A c + b_A]_j),  pi_A(c) = softmax(W_A^pi c + b_A^pi)"
+    gamma_B: "gamma_{B,j}(chi) = g_B * pi_{B,j}(chi) * tanh([W_B chi + b_B]_j),  pi_B(chi) = softmax(W_B^pi chi + b_B^pi)"
+    chi: "chi_k = C_x z_k = x_k   (current measurement, NOT the context vector)"
+    column_norm_constraint: "||u_{A,j}||_2 <= 1 and ||v_{A,j}||_2 <= 1 (same for B)"
+    rank:
+      r_A: "searched in {1,2,3,5}; default 3"
+      r_B: "searched in {1,2,3,5}; default 3"
+    gains:
+      g_A: "searched; theory bound uses sup, not max"
+      g_B: "searched"
+    deviations_from_existing_code:
+      - "杂项/老版本/研究代码/gate_context_koopman.py CtxKoopman: gamma is a raw linear output (no softmax, no tanh) -> must NOT be reused as M5"
+      - "gate14_stabilize.py BudgetedCtxKoopman: softmax acts on a constant parameter, and B is fixed at B_0 -> usable only as an ablation variant, not as M5"
+      - "no existing platform implementation conditions B on chi = C_x z_k; all existing B modulations use the context vector"
+
+prediction_task:
+  one_step: "given history ending at k and u_k, predict x_{k+1}"
+  rollout: "autoregressive open-loop H-step; only the start reads true history; u_{k:k+H-1} supplied to every model as a known external input"
+  horizons_steps: {short: 5, mid: 25, long: 100}
+  horizons_seconds: {short: 1.0, mid: 5.0, long: 20.0}
+  start_indices: "pre-fixed per trajectory before training; no re-drawing after seeing results"
+  effective_sample_size: "number of trajectories (70/20/10), never the number of overlapping windows"
+
+metrics:
+  primary:
+    - per_horizon_RMSE
+    - per_horizon_MAE
+    - per_channel_RMSE            # mandatory; hiding a degraded channel is forbidden
+    - normalised_RMSE             # denominator = train-only x_std, stated explicitly
+  secondary:
+    - rollout_RMSE_vs_horizon_curve
+    - final_step_error
+    - error_quantiles
+    - cross_trajectory_variance
+    - inference_latency
+    - parameter_count
+    - training_wall_time
+    - peak_gpu_memory
+  multi_seed: "report mean and std (or CI) over >=3 seeds"
+  forbidden:
+    - "reporting only the pooled average while hiding a channel regression"
+    - "mixing teacher-forcing error with free-rollout error"
+    - "using the test split to select hyperparameters"
+
+model_matrix:
+  M0: {name: "DMDc / linear state space", interface: "x_{k+1}=Ax_k+Bu_k", priority: required, notes: "sanity baseline; delayed embedding allowed if needed"}
+  M1: {name: "EDMDc (fixed dictionary)", interface: "z=psi(x), z+=Az+Bu", priority: required, notes: "must be explicitly EDMD with control, not plain EDMD"}
+  M2: {name: "EDMD-DL with control", interface: "learnable psi_theta(x) + linear controlled latent dynamics", priority: required, notes: "controlled extension is project-specific; must not be attributed to the original paper"}
+  M3: {name: "LSTM/GRU controlled predictor", interface: "history (x,u) + current/future u, recursive", priority: required, notes: "hidden state initialised from past observations only"}
+  M4: {name: "A(c) + fixed B_0", interface: "history-conditioned A(c), fixed input matrix", priority: required, notes: "MOST IMPORTANT ABLATION; must not be dropped; shares everything with M5 except B"}
+  M5: {name: "A(c) + B(chi)", interface: "full new theory", priority: required, notes: "the project's main model; must be implemented faithfully per the architecture block above"}
+  M6: {name: "Controlled Transformer", interface: "history encoder + control-conditioned prediction head", priority: recommended, notes: "must not reuse a univariate forecaster that ignores future control inputs"}
+  second_round: [M7, M8, M9]
+
+fairness_rules:
+  paired_experiment:
+    statement: "M4 vs M5: same train set, same input history, same output measurement, same encoder backbone, same history window, same latent dimension, same loss, same optimisation budget; only B_0 is replaced by B(chi)"
+    must_report: "added parameter count"
+  capacity_matched_control:
+    statement: "add a capacity-matched M4 variant (extra width) so that added parameters are not mistaken for a scheduling gain"
+  shared_initialisation: "A/A0/B/AB variants initialise from the same frozen base where applicable"
+  budget:
+    pilot_trials_per_model: 3
+    formal_trials_per_model: 12
+    seeds_final: 3
+    seeds_final_if_budget_allows: 5
+    budget_status: to_be_confirmed   # main-agent proposal; user may re-scope
+  search_space:
+    shared: [P, d, width, layers, lr, weight_decay, batch_size, rollout_loss_weight, horizon, patience]
+    edmd_only: [dictionary_order_or_rbf_count, ridge_coefficient]
+    new_model_only: [r_A, r_B, g_A, g_B]
+  selection_metric: "validation multi-step rollout metric only"
+  final_test: "evaluated once, after the configuration is frozen"
+
+reproducibility:
+  record_for_every_trial: [config, git_commit, data_hash, environment, checkpoint, status]
+  record_failures: [divergence, OOM, timeout]
+  note: "Platform 2 training is non-deterministic (AMP + TF32 + cuDNN benchmark); multi-seed is mandatory and single-run results are not conclusions"
+
+paths:
+  root: 杂项/新版本/Temporary_Experiments
+  models: models/
+  scripts: scripts/
+  checkpoints: checkpoints/
+  results: results/modeling/
+  figures: figures/
+  reports: reports/
+
+read_only_archive:
+  - 代码部分/老版本/训练代码/
+  - 杂项/老版本/
+  - 论文/
+  - 数据备份/
+
+open_questions_from_gate_0:
+  - "physical units of x and u (Q1) -> wording only, not blocking"
+  - "provenance: real actuator log vs simulation export (Q2) -> forbids 'real platform' wording until confirmed"
+  - "u_limit = 100 authority (Q4) -> needed before Gate 3/4 only"

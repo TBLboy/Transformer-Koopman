@@ -1,0 +1,40 @@
+==============================================================================
+A. RAW RECORDINGS  (D:\Project\Transformer-Koopman\Transformer-Koopman\数据备份\软体平台数据\原始数据)
+==============================================================================
+  files found: 100
+  n samples per recording: [300] (all equal: True)
+  dt over ALL recordings: min=0.199933129 max=0.200197689 mean=0.200008607 std=5.732e-05
+  dt off-nominal count (|dt-mean|>1e-9): 0 / 29900
+  duplicate timestamps: 0 total
+  non-monotonic t: 0 recordings
+  NaN/Inf: x=0 u=0 t=0
+  t range per recording: [0.0, 59.85910892486572]
+  pooled x: {"min": [-10.457986, -10.302648], "max": [11.103394, 10.887755], "mean": [-0.579418, -0.005576], "std": [3.176625, 3.309465]}
+  pooled u: {"min": [-68.508298, -65.290837], "max": [57.196526, 61.600316], "mean": [0.262231, -0.126155], "std": [27.93626, 28.165738]}
+  max |dx| between consecutive samples across all recordings: 0.3234 (at 81.npz)
+
+==============================================================================
+B. SPLIT (string-sorted filename order, {'train': 70, 'val': 20, 'test': 10})
+==============================================================================
+  train 70 recordings: 01.npz ... 69.npz
+  val   20 recordings: 70.npz ... 89.npz
+  test  10 recordings: 90.npz ... 99.npz
+  NOTE string order: 01..09,10,100,11..99 (100 sorts right after 10)
+  train x=(21000, 2) u=(21000, 2) trajs=70 lengths=[300]
+        reproduces from raw: {"x": true, "u": true, "t": true, "trajectory_id": true}
+        within-traj dt: min=0.199933129 max=0.200197689 std=5.905e-05 off-nominal=20930
+  val   x=(6000, 2) u=(6000, 2) trajs=20 lengths=[300]
+        reproduces from raw: {"x": true, "u": true, "t": true, "trajectory_id": true}
+        within-traj dt: min=0.199961167 max=0.200196481 std=6.285e-05 off-nominal=5980
+  test  x=(3000, 2) u=(3000, 2) trajs=10 lengths=[300]
+        reproduces from raw: {"x": true, "u": true, "t": true, "trajectory_id": true}
+        within-traj dt: min=0.199967009 max=0.200002386 std=8.581e-06 off-nominal=2990
+
+==============================================================================
+C. ALIGNMENT & SATURATION EVIDENCE
+==============================================================================
+  u[0]: |u|max=68.5083  top repeated values: -11.547 x2, -68.508 x1, 16.377 x1, 16.373 x1
+  u[1]: |u|max=65.2908  top repeated values: -22.753 x2, -38.520 x2, 33.245 x2, 6.771 x2
+  samples within 1% of |u|max per channel: [1, 1]
+  max |corr(u_k, x_{k+1}-x_k)| over 25 recordings x channels: 0.7771
+  (weak evidence only: this is a nonlinear system and u enters through B(x))
