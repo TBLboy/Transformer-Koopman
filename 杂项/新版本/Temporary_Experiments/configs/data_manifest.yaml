@@ -70,9 +70,14 @@ time:
     uniform sampling, not raw wall-clock timestamps.
 
 units:
-  x: "platform coordinate unit (same frame as reference trajectories)"
-  u: "motor movement unit (pulse count)"
-  physical_conversion: pending_confirmation
+  x: "2-D screen coordinate of the light spot (platform coordinate unit, same frame as the reference trajectories)"
+  x_confirmed_by_user: true
+  x_confirmation: "用户 2026-10-11：平台状态 xy 表示光点在二维屏幕上的移动坐标"
+  u: "motor control command (movement unit / pulse count)"
+  u_confirmed_by_user: true
+  u_confirmation: "用户 2026-10-11：u 就是电机控制量"
+  physical_conversion: not_defined
+  physical_conversion_note: "像素/毫米换算未在任何项目文档中定义；数值比较与算法不受影响，故不再作为阻塞项"
   evidence:
     - "软控逻辑.txt:214  sampling period Ts default 0.2 s"
     - "软控逻辑.txt:224,227  u_k=(N_h,N_v) is motor movement unit (pulse), not physical distance"
@@ -120,12 +125,10 @@ quality:
   x_integer_valued: false
 
 provenance:
-  source_type: pending_confirmation   # real actuator log | simulation export | mixed
-  reason: >-
-    State/control signals are smooth and physically plausible, but dt is exactly
-    constant within every recording, which is atypical for raw wall-clock logs.
-    No evidence of mixed provenance. Must be confirmed by the user before any
-    "real platform" wording is used.
+  source_type: real_platform_recording
+  confirmed_by_user: true
+  confirmation: "用户 2026-10-11：数据来源于真实平台采集"
+  consequence: "「真实平台数据」措辞已被用户授权使用；WP-C 的闭环结论仍须区分离线回放 / 闭环仿真 / 真实硬件闭环（计划书第 6 节），不得把离线回放说成闭环控制"
 
 evaluation_protocol_inputs:
   recommended_horizons_steps: {short: 5, mid: 25, long: 100}

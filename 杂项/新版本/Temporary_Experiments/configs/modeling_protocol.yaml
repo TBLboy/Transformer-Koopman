@@ -152,6 +152,6 @@ read_only_archive:
   - 数据备份/
 
 open_questions_from_gate_0:
-  - "physical units of x and u (Q1) -> wording only, not blocking"
-  - "provenance: real actuator log vs simulation export (Q2) -> forbids 'real platform' wording until confirmed"
-  - "u_limit = 100 authority (Q4) -> needed before Gate 3/4 only"
+  - "Q1 units: RESOLVED (user 2026-10-11): x = 2-D screen coordinate of the light spot; u = motor control command"
+  - "Q2 provenance: RESOLVED (user 2026-10-11): data is a real-platform recording; 'real platform data' wording authorised, but WP-C must still separate offline replay / closed-loop simulation / real hardware"
+  - "Q3 u_limit = 100 authority: still pending -> needed before Gate 3/4 only"

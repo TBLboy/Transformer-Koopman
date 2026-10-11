@@ -1,0 +1,135 @@
+# Gate 3/4/5 control protocol -- frozen BEFORE any control result is produced.
+#
+# Honesty rules carried over from the plan:
+#   * a controller is NEVER evaluated on the plant it uses internally;
+#   * the plant is a declared, separately trained model, and every control
+#     conclusion is scoped to that plant (offline closed-loop simulation only);
+#   * control hyperparameters are searched on VALIDATION scenarios only.
+schema_version: 1
+
+units:
+  state: "2-D screen coordinate of the light spot (normalised with the frozen train-only constants)"
+  control: "motor control command (normalised with the frozen train-only constants)"
+  u_limit_physical: 100.0          # authority: deployment config u_limit (Q3, still pending)
+  u_limit_note: >-
+    u_limit = 100 comes from the legacy deployment config only and has NOT been
+    re-confirmed by the user.  It is used as the frozen control constraint and is
+    reported as an assumption (Q3) in reports/control_comparison.md.
+  u_normalised:                    # (u_phys - u_mean) / u_std, per channel
+    lower: [-3.584351, -3.552817]
+    upper: [3.567328, 3.559557]
+
+mpc:
+  horizon_N: 10                    # 2.0 s at dt = 0.2 s
+  Q: [[1.0, 0.0], [0.0, 1.0]]      # state (measurement) cost, normalised units
+  P_terminal: [[1.0, 0.0], [0.0, 1.0]]
+  R: [[0.001, 0.0], [0.0, 0.001]]  # input magnitude
+  S: [[0.01, 0.0], [0.0, 0.01]]    # input rate
+  u_ref: 0.0                       # no feed-forward reference in the main comparison
+  tail_fill: repeat                # warm-start tail policy (documented, deterministic)
+  solver: osqp
+  eps_abs: 1.0e-8
+  eps_rel: 1.0e-8
+  max_iter: 20000
+
+controllers:
+  C0:
+    name: "fixed linear model + LTI-MPC"
+    internal_model: "M_base (A0+B0)"
+    purpose: "basic linear control reference; same QP solver and cost"
+  C1:
+    name: "old model A(c)+B0 + frozen-schedule LTV-MPC"
+    internal_model: "M4 (Ac+B0)"
+    purpose: "isolates the contribution of the measurement-scheduled B branch"
+  C2:
+    name: "new model A(c)+B(x) + frozen-schedule LTV-MPC"
+    internal_model: "M5 (Ac+Bx)"
+    purpose: "main scheme"
+  C3_optional:
+    name: "new model + full non-linear MPC"
+    status: not_implemented
+    reason: >-
+      the full problem is non-convex (Theory_Package/06 section 1); without a
+      global solver the result could only be reported as a local-NLP reference,
+      which is out of scope for this temporary experiment
+  C4_optional:
+    name: "new model + K-fold schedule update"
+    status: not_implemented
+    reason: "computational trade-off study; deferred, not silently dropped"
+
+plants:
+  # Declared BEFORE looking at any control result.  Both plants are different
+  # model families from every controller's internal model.
+  plant_A:
+    model: "M3 (GRU controlled predictor)"
+    role: "primary plant"
+    independence: "recurrent baseline, not a scheduled-Koopman model"
+  plant_B:
+    model: "M6 (Controlled Transformer)"
+    role: "secondary plant (robustness of the ranking to the plant family)"
+    independence: "attention-based, not a scheduled-Koopman model"
+  plant_C_reference_only:
+    model: "M5 full (non-frozen) scheduled model"
+    role: "sanity reference only; MUST NOT be used as the sole plant"
+    restriction: "M5 is C2's internal model -- using it alone would be circular"
+  fidelity_reporting:
+    required: "each plant's Gate-1 test rollout RMSE is quoted next to every control table"
+
+scenarios:
+  dt: 0.2
+  start_indices:
+    rule: "evenly spaced legal starts inside the TEST split, frozen by integer arithmetic"
+    n_setpoint: 3
+    n_tracking: 3
+  setpoint:
+    rule: >-
+      targets are fixed quantiles of the TRAIN-split measurements only:
+      centre = (median x1, median x2); mid = (p75 x1, p25 x2); edge = (p95 x1, p05 x2)
+    horizon_steps: 100            # 20 s
+    initial_condition: "true test history at the scenario start index"
+  tracking:
+    - name: slow_sinusoid
+      form: "x_ref[k] = c + A * [sin(2*pi*k/T1), cos(2*pi*k/T1)], T1 = 100 steps (20 s)"
+      horizon_steps: 200
+    - name: fast_sinusoid
+      form: "T1 = 40 steps (8 s), same amplitude"
+      horizon_steps: 200
+    - name: piecewise_setpoints
+      form: "4 held targets of 50 steps each, drawn from the same quantile rule"
+      horizon_steps: 200
+  amplitude:
+    rule: "amplitude = 0.5 * min(train p95 - median, median - train p05) per channel"
+
+metrics:
+  - steady_state_error
+  - settling_time_2pct
+  - overshoot_pct
+  - control_energy                # sum ||u||^2
+  - input_variation               # sum ||u_k - u_{k-1}||^2
+  - constraint_violations
+  - solve_failures
+  - solve_time_ms (median, p95, p99)
+  - tracking_rmse / mae / max_error / phase_lag
+  - plant_fidelity_rmse           # the plant's own Gate-1 test RMSE
+
+control_hyperparameter_search:
+  budget: "<= 12 configurations, validation scenarios only"
+  search_space:
+    N: [5, 10, 20]
+    R_scale: [1e-4, 1e-3, 1e-2]
+    S_scale: [1e-3, 1e-2, 1e-1]
+    P_terminal_scale: [0.1, 1.0]
+  rule: >-
+    all three controllers use the SAME weights and constraints (the plan's
+    fairness requirement).  If a baseline needs different tuning it must be
+    reported with its own budget and justification.
+  frozen_test_scenarios: >-
+    after the search, the selected weights are applied to the test scenarios
+    exactly once; test scenarios are never used for tuning.
+
+not_claimed:
+  - "closed-loop stability"
+  - "recursive feasibility"
+  - "real-time / deadline compliance (offline QP solve time is NOT the closed-loop period)"
+  - "real hardware control (no hardware test was performed)"
+  - "global optimality of the non-convex full problem"

@@ -87,6 +87,15 @@ def frozen_starts(traj_len: int, horizon: int, n_starts: int) -> np.ndarray:
     return np.unique(idx)
 
 
+def dense_starts(traj_len: int, horizon: int, stride: int = 1) -> np.ndarray:
+    """All legal start indices inside one trajectory with a fixed stride."""
+    lo = P - 1
+    hi = traj_len - horizon - 1
+    if hi < lo:
+        return np.empty(0, dtype=np.int64)
+    return np.arange(lo, hi + 1, stride, dtype=np.int64)
+
+
 def all_starts(horizon_key: str, n_traj: int, traj_len: int = 300) -> np.ndarray:
     """(n_traj, n_starts) frozen start matrix for one horizon key."""
     n = STARTS_PER_TRAJ[horizon_key]
