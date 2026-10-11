@@ -1,0 +1,19 @@
+﻿==============================================================================
+Gate 1 harness self-test (protocol: configs/modeling_protocol.yaml)
+==============================================================================
+  shapes: train (21000, 2)/(21000, 2) trajs=70 | val (6000, 2) trajs=20 | test (3000, 2) trajs=10
+  frozen start-set digests (test split, 10 trajs):
+    short H=  5  starts/traj=4  digest=5a4a177b09ac864f
+    mid   H= 25  starts/traj=3  digest=282ef8ef3a95d81e
+    long  H=100  starts/traj=2  digest=be334900a3865bea
+  windows (H=5, train): Xh (280, 8, 2) Uin (280, 7, 2) Ut (280, 2) Xn (280, 2) XF (280, 5, 2) UF (280, 5, 2)
+  context input dim: 30 (expected P*n+(P-1)*m = 30)
+  leakage checks: Xh[-1]!=x_k in 0, XF[0]!=x_{k+1} in 0, Ut!=u_k in 0
+  u_k found inside U_k^in: 0 / 200 checked (must be 0)
+  windows crossing a trajectory boundary: 0 (must be 0)
+  metric sanity: rmse(zeros,ones)=1.000000  per_channel_rmse=[1.41421356 0.        ]
+  train-only normalisation (frozen): x_mean=[-0.696318  0.048996] x_std=[3.243583 3.415089] u_std=[27.962413 28.133323]
+  train split recomputed mean/std (for reference only, NOT used):
+    x_mean=[-0.696318  0.048996] x_std=[3.243583 3.415089]
+
+  RESULT: PASS (all protocol invariants hold)
