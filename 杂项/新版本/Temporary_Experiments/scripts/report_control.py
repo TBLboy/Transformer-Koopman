@@ -133,16 +133,34 @@ def main():
         A("**控制器**：C0 = 固定线性模型（`A0,B0`）+ LTI-MPC；C1 = M4 `A(c)+B0` + 冻结调度 LTV-MPC；")
         A("C2 = M5 `A(c)+B(x)` + 冻结调度 LTV-MPC。三者使用**相同代价权重、相同约束、相同求解器**。")
         A("")
-        A("### 3.1 plant 保真度（来自 Gate 1 的 test rollout RMSE）")
+        A("### 3.1 plant 保真度（**实际使用的 plant**，test 冻结起点）")
         A("")
-        A("| plant | one-step | roll H=5 | roll H=25 | roll H=100 |")
+        A("| plant | one-step | roll H=5 | roll H=25 | roll H=100 | 来源 |")
+        A("|---|---|---|---|---|---|")
+        rc = test.get("model_reproduction_check") or {}
+        for pn, spec in (("plant_A_M3_GRU", "M3"), ("plant_B_M6_Transformer", "M6")):
+            af = (rc.get(spec) or {}).get("actual_model_fidelity")
+            li = (rc.get(spec) or {}).get("load_info") or {}
+            src = ("checkpoint %s" % li.get("path")) if li.get("loaded") else "本进程重训 seed0"
+            if af:
+                A("| %s (%s) | %.4f | %.4f | %.4f | %.4f | %s |"
+                  % (pn, spec, af["one_step"], af["roll5"], af["roll25"], af["roll100"], src))
+        A("")
+        A("### 3.1b 模型复现一致性检查（本进程模型 vs Gate-1 ledger 的 seed 0）")
+        A("")
+        A("| 模型 | 本进程 one-step | ledger seed0 one-step | 绝对差 | 判定 |")
         A("|---|---|---|---|---|")
-        for pn, pf in (test.get("plant_fidelity") or {}).items():
-            if pf:
-                A("| %s | %.4f | %.4f | %.4f | %.4f |" % (pn, pf["one_step"], pf["roll5"],
-                                                          pf["roll25"], pf["roll100"]))
+        for spec in ("M3", "M4", "M5", "M6"):
+            c = rc.get(spec)
+            if not c:
+                continue
+            d = c["abs_diff_one_step"]
+            verdict = "一致（<=1e-3）" if d <= 1e-3 else "**不一致：种子 0 训练不可复现**"
+            A("| %s | %.6f | %.6f | %.2e | %s |"
+              % (spec, c["retrained_one_step"], c["ledger_seed0_one_step"], d, verdict))
         A("")
-        A("> 闭环结论的强度受此限制：plant 本身的 H=25 rollout RMSE 就是上表的量级。")
+        A("> 若某模型不一致，说明其**训练过程本身不可复现**（同种子重跑得到不同模型）。")
+        A("> 此时控制结论只对**本进程实际使用的那个模型**成立，不得用 ledger 的数值充当该 plant 的保真度。")
         A("")
 
         runs = test["runs"]["default"]
@@ -180,6 +198,9 @@ def main():
         A("### 3.4 plant 外推诚实指标（超出 train 数据范围的比例）")
         A("")
         A("学习到的 plant 只在训练数据分布内可信；控制器把 plant 推出该范围时，结果属于外推。")
+        A("")
+        A("> **重要警告**：若下表输入越界比例很高，说明闭环结果**大部分是外推**。")
+        A("> 此时这些数字只能作为「在所学 plant 上的相对比较」，**不能**当作真实平台性能或闭环可行性证据。")
         A("")
         A("| plant | 控制器 | 状态越界比例 | 输入越界比例 |")
         A("|---|---|---|---|")

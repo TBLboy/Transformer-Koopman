@@ -149,7 +149,7 @@ def main():
     A("")
 
     # paired comparison: same seed, same start set -> paired differences
-    A("### 2.5 配对比较（同 seed 差值，H=25）")
+    A("### 2.4 配对比较（同 seed 差值，H=25）")
     A("")
     A("计划书 §10 要求「必要时做配对比较」。由于所有模型使用**同一测试起点集合**且每个模型用相同种子 0/1/2，")
     A("同 seed 差值就是配对量。n = 3，**不做显著性断言**，只列出差值。")
@@ -175,7 +175,7 @@ def main():
     xp = os.path.join(RES, "xtraj_variance.json")
     if os.path.exists(xp):
         xt = json.load(open(xp, encoding="utf-8"))
-        A("### 2.4 跨轨迹方差（统计单位 = 一条独立测试轨迹；seed 0 补充诊断）")
+        A("### 2.5 跨轨迹方差（统计单位 = 一条独立测试轨迹；seed 0 补充诊断）")
         A("")
         A("计划书 §2.3 要求以**独立实验轨迹**为统计单位，避免重叠窗口造成的伪重复。")
         A("本节为**单 seed** 补充诊断（`%s`），不替代多 seed 主表。" % xt["note"])
@@ -189,7 +189,7 @@ def main():
                   % (s, e["mean"], e["var"], e["min"], e["max"], e["worst_traj"]))
         A("")
     else:
-        A("### 2.4 跨轨迹方差")
+        A("### 2.5 跨轨迹方差")
         A("")
         A("*待运行 `python scripts/xtraj_variance.py`。*")
         A("")

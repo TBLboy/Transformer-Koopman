@@ -211,6 +211,12 @@ def load_models(ledger, seed=0):
         led0 = ledger.get("test", {}).get(spec, [{}])[seed]
         check[spec] = {
             "load_info": info,
+            "actual_model_fidelity": {
+                "one_step": float(ev["one_step"]["short"]),
+                "roll5": float(ev["rollout"]["short"]),
+                "roll25": float(ev["rollout"]["mid"]),
+                "roll100": float(ev["rollout"]["long"]),
+            },
             "retrained_one_step": float(ev["one_step"]["short"]),
             "ledger_seed0_one_step": float(led0.get("test", {}).get("one_step", {}).get("short", float("nan"))),
             "retrained_roll25": float(ev["rollout"]["mid"]),
