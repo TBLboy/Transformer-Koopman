@@ -1,0 +1,159 @@
+repo root : D:\Project\Transformer-Koopman\Transformer-Koopman
+scanned   : 2026-10-11 09:17:48
+
+=== 1. Theory_Package inventory ===
+  aux      11853 B  sha256=ee07b4d7c34e46c9  00_Index.md
+  aux       7773 B  sha256=8f022348d921b367  00_assembly_scan.py
+  aux      13598 B  sha256=d3f14d115c0fcc4e  00_assembly_scan.txt
+  nine      9874 B  sha256=da6456a4173846fa  01_Model_Definition.md
+  nine      7561 B  sha256=920565ddf5d80211  02_Assumptions.md
+  nine      5121 B  sha256=bd99786ff274510f  03_Low_rank_Boundedness.md
+  nine      6841 B  sha256=6f59b55aee8712a3  04_Scheduling_Lipschitz.md
+  nine     10853 B  sha256=af556ab4b888bfee  05_Prediction_Error_Bound.md
+  nine     11848 B  sha256=739dc7f8f9f32e74  06_Frozen_LTV_QP_Proof.md
+  nine     11157 B  sha256=05c8dcaaea323630  07_Freezing_Error_Bound.md
+  nine     10010 B  sha256=aeb9f5f4d88b75d3  08_Conditional_Suboptimality.md
+  nine     25896 B  sha256=90b7960e37449cbd  09_Reference_List.md
+
+  nine-piece checklist : 9/9 present
+
+=== 2. cross-reference self-consistency ===
+  01_Model_Definition.md             -> 03
+  02_Assumptions.md                  -> 01,03,04,05,06,07,08
+  03_Low_rank_Boundedness.md         -> 01
+  04_Scheduling_Lipschitz.md         -> 01,02,03,05,07
+  05_Prediction_Error_Bound.md       -> 01,02,03,04
+  06_Frozen_LTV_QP_Proof.md          -> 01,02,04,06,07,08
+  07_Freezing_Error_Bound.md         -> 01,02,03,04,05,06,08
+  08_Conditional_Suboptimality.md    -> 01,02,03,04,06,07
+  09_Reference_List.md               -> 01,02,03,04,06,07,08
+
+  external path references mentioned inside the pieces:
+    notes/literature/            mentioned in: 09_Reference_List.md
+    validation/                  mentioned in: 07_Freezing_Error_Bound.md
+    论文/                          mentioned in: 01_Model_Definition.md, 09_Reference_List.md
+    citation_audit_report.md     mentioned in: 09_Reference_List.md
+    _audit_bib.json              mentioned in: 09_Reference_List.md
+    framework-defects.md         mentioned in: (none)
+    exists? notes/literature/01_search_log.md              True
+    exists? notes/literature/02_ref_scan.py                True
+    exists? notes/literature/03_ref_scan_output.txt        True
+    exists? validation/validate_theory.py                  True
+    exists? validation/results.md                          True
+    exists? validation/results.json                        True
+  dangling internal refs: none
+
+=== 3. prohibition scan ===
+  --- 01_Model_Definition.md : 10 hit(s), 2 unclassified
+      [bilinear] L4: > **术语**：本阶段统一使用 *scheduled Koopman predictor* 与 *measurement-dependent input modulation*；按计划书「当前禁止修改事项」，本阶段**不作 bilinear Koopman 
+      [experiment] L5: > **本文件不含任何实验数值。**
+      [bilinear] L141: ## 6. 与「严格双线性 Koopman」的关系（本阶段**不声称**）
+      [bilinear ?] L143: 把 $(c_k, \chi_k)$ 视为**外部调度信号**时，本模型是**调度线性（scheduled linear）**的：给定调度，$z \mapsto z_{k+1}$ 关于 $(z_k, u_k)$ 是仿射的。只有当把 $u$ 与 $z$ 的乘积项显
+      [bilinear] L145: 计划书明确要求本阶段**不使用**严格 bilinear Koopman 术语，并把它列入禁止清单（连同「不改摘要/Introduction/实验/标题」）。因此：
+      [introduction] L145: 计划书明确要求本阶段**不使用**严格 bilinear Koopman 术语，并把它列入禁止清单（连同「不改摘要/Introduction/实验/标题」）。因此：
+      [experiment] L145: 计划书明确要求本阶段**不使用**严格 bilinear Koopman 术语，并把它列入禁止清单（连同「不改摘要/Introduction/实验/标题」）。因此：
+      [bilinear ?] L148: - 旧路线文件中的 bilinear 框架**推迟**到论文阶段由用户裁决，**不是**被判为错误（`DEC-079`）。
+      [experiment] L158: | 3 | $d, n_\psi, d_c, r_A, r_B$ 的具体数值 | 未定；属实验阶段 |
+      [experiment] L159: | 4 | $P$ 的取值 | 未定；属实验阶段 |
+  --- 02_Assumptions.md : 5 hit(s), 2 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+      [experiment] L69: - **这是本文件里唯一无法由参数化推出的量**：它衡量真实系统与模型的差距，必须由数据或辨识实验界定。
+      [closedloop] L84: | 闭环稳定性 | 计划书禁止清单明确排除 |
+      [closedloop ?] L85: | 递归可行性 | 同上 |
+      [realtime ?] L86: | 实时性 / 满足截止时间 | 同上；且本阶段没有任何计时数据 |
+  --- 03_Low_rank_Boundedness.md : 1 hit(s), 0 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+  --- 04_Scheduling_Lipschitz.md : 1 hit(s), 0 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+  --- 05_Prediction_Error_Bound.md : 5 hit(s), 0 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+      [closedloop] L6: > **本文件的两个结论都是开环、有限时域的**：不涉及闭环稳定性、不涉及递归可行性。
+      [closedloop] L184: 1. **这是开环、有限时域的界。** 它不含任何反馈，因此**不**说明闭环稳定、**不**说明递归可行性、**不**说明误差会衰减。
+      [realtime] L192: 6. **不越级。** 本文件不声称：闭环稳定、递归可行、$L<1$、误差单调、或与实时性有关的任何结论。
+      [closedloop] L192: 6. **不越级。** 本文件不声称：闭环稳定、递归可行、$L<1$、误差单调、或与实时性有关的任何结论。
+  --- 06_Frozen_LTV_QP_Proof.md : 4 hit(s), 0 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+      [realtime] L207: - 可用的求解器（OSQP / HPIPM / qpOASES）属于**实现选择**；本阶段**没有实现**，也**不声称**任何求解时间、迭代次数或实时性；
+      [realtime] L215: 4. **不声称闭环稳定、不声称递归可行性、不声称实时性。** 命题 4 是单次求解问题的凸性，与闭环性质无关。
+      [closedloop] L215: 4. **不声称闭环稳定、不声称递归可行性、不声称实时性。** 命题 4 是单次求解问题的凸性，与闭环性质无关。
+  --- 07_Freezing_Error_Bound.md : 4 hit(s), 1 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+      [closedloop] L6: > **本文件是开环、有限时域的**：不涉及闭环稳定性、不涉及递归可行性。
+      [experiment ?] L218: 5. **$\Delta_u, \delta_u$ 是已知量，$\delta$ 是假设量**（`05` A5）。这是冻结误差与模型误差最重要的区别：前者可由输入序列直接算出，后者只能由数据或辨识实验界定。
+      [closedloop] L219: 6. **开环、有限时域。** 不含反馈，故**不**说明闭环稳定、**不**说明递归可行、**不**说明误差衰减；$L$ 不要求小于 1。
+  --- 08_Conditional_Suboptimality.md : 3 hit(s), 0 unclassified
+      [experiment] L3: > **状态**：前期材料，**不是论文正文**；不含实验数值。
+      [realtime] L134: 4. **不声称闭环稳定、不声称递归可行性、不声称实时性。** 定理 3 是单次求解的次优性，与闭环性质无关。
+      [closedloop] L134: 4. **不声称闭环稳定、不声称递归可行性、不声称实时性。** 定理 3 是单次求解的次优性，与闭环性质无关。
+  --- 09_Reference_List.md : 10 hit(s), 4 unclassified
+      [bilinear ?] L31: > **命名提示（DEC-079）**：当 `B` 依赖状态时，`B(chi)u` 是状态与输入的乘积项，形式上与双线性系统同族。但「bilinear Koopman」在文献中通常特指**提升坐标下的双线性模型**这一类构造。本阶段**不使用**「biline
+      [realtime] L66: | T3-4 | *Networked Systems: Model-Predictive Grid Control*（Koopman-inspired deep NN 编码-解码 + MPC；IEEE 39-bus） | arXiv:2206.01272 |
+      [realtime] L81: | T4-9 | 控制侧（LPV / qLMPC / RTI / 高级步） | 旧稿 keys `diehl2005realtime`、`diehl2005rtistability`、`gros2020rti`、`cisneros2016qlmpc`、`cis
+      [bilinear ?] L115: ### 2.4 关于「双线性 Koopman」与计划书 §6.1 的那篇文献
+      [bilinear ?] L117: - 计划书 §6.1 提到「你读到的双线性 Koopman 论文」。用户明确表示记不得该文，并授权独立检索（搜不到即跳过）。
+      [bilinear] L119: - 术语处理见 §0 提示：本阶段**不使用**「bilinear Koopman」名称（DEC-079）。
+      [bilinear ?] L202: 5. 计划书 §6.1 所指「双线性 Koopman 论文」的**具体身份** —— 需用户提供线索或原文。
+      [experiment] L208: - 没有对任何一篇的**实验设置、结果数字或优先权**作出判断；§1 的「关系」列只描述**建模立场**的异同。
+      [abstract] L210: - 没有把本清单中的任何条目写进论文、摘要、Introduction 或标题（本阶段禁止，REQ-002 / DEC-079）。
+      [introduction] L210: - 没有把本清单中的任何条目写进论文、摘要、Introduction 或标题（本阶段禁止，REQ-002 / DEC-079）。
+
+  TOTAL hits=43  unclassified=9  (unclassified must be 0)
+
+  --- unclassified hits, listed for MANUAL adjudication (the classifier is deliberately crude:
+      it looks 40 chars before / 20 chars after the keyword for a negation marker, so
+      cross-row table cells, section headings and long sentences will show up here).
+      01_Model_Definition.md L143 [bilinear]: 把 $(c_k, \chi_k)$ 视为**外部调度信号**时，本模型是**调度线性（scheduled linear）**的：给定调度，$z \mapsto z_{k+1}$ 关于 $(z_k, u_k)$ 是仿射的。只有当把 $u$ 与 $z$ 的乘积项显
+      01_Model_Definition.md L148 [bilinear]: - 旧路线文件中的 bilinear 框架**推迟**到论文阶段由用户裁决，**不是**被判为错误（`DEC-079`）。
+      02_Assumptions.md L85 [closedloop]: | 递归可行性 | 同上 |
+      02_Assumptions.md L86 [realtime]: | 实时性 / 满足截止时间 | 同上；且本阶段没有任何计时数据 |
+      07_Freezing_Error_Bound.md L218 [experiment]: 5. **$\Delta_u, \delta_u$ 是已知量，$\delta$ 是假设量**（`05` A5）。这是冻结误差与模型误差最重要的区别：前者可由输入序列直接算出，后者只能由数据或辨识实验界定。
+      09_Reference_List.md L31 [bilinear]: > **命名提示（DEC-079）**：当 `B` 依赖状态时，`B(chi)u` 是状态与输入的乘积项，形式上与双线性系统同族。但「bilinear Koopman」在文献中通常特指**提升坐标下的双线性模型**这一类构造。本阶段**不使用**「biline
+      09_Reference_List.md L115 [bilinear]: ### 2.4 关于「双线性 Koopman」与计划书 §6.1 的那篇文献
+      09_Reference_List.md L117 [bilinear]: - 计划书 §6.1 提到「你读到的双线性 Koopman 论文」。用户明确表示记不得该文，并授权独立检索（搜不到即跳过）。
+      09_Reference_List.md L202 [bilinear]: 5. 计划书 §6.1 所指「双线性 Koopman 论文」的**具体身份** —— 需用户提供线索或原文。
+
+  hard markers (must be absent from the nine pieces):
+    \begin{abstract}         ABSENT
+    \section{Introduction}   ABSENT
+    \title{                  ABSENT
+    \maketitle               ABSENT
+
+=== 4. 论文/ file mtimes (git-level check is done separately by the main agent) ===
+  2026-09-28 02:50  新版本\IEEEtran.cls
+  2026-10-09 16:21  新版本\学术论文写作与精修方法论_未来Skill素材.md
+  2026-10-10 16:46  新版本\新版本.txt
+  2026-09-28 02:51  新版本\bibtex\IEEEabrv.bib
+  2026-09-28 02:51  新版本\bibtex\IEEEexample.bib
+  2026-09-28 02:51  新版本\bibtex\IEEEfull.bib
+  2026-09-28 02:51  新版本\bibtex\IEEEtran.bst
+  2026-09-28 02:51  新版本\bibtex\IEEEtranN.bst
+  2026-09-28 02:51  新版本\bibtex\IEEEtranS.bst
+  2026-09-28 02:51  新版本\bibtex\IEEEtranSA.bst
+  2026-09-28 02:51  新版本\bibtex\IEEEtranSN.bst
+  2026-09-28 02:50  新版本\bibtex\IEEEtran_bst_HOWTO.pdf
+  2026-09-28 02:50  新版本\bibtex\README
+  2026-09-28 02:51  新版本\bibtex\changelog.txt
+  2026-09-28 02:50  新版本\pictures\Figure1.pdf
+  2026-09-28 02:50  新版本\pictures\Figure2.pdf
+  2026-09-28 02:50  新版本\pictures\Figure3.pdf
+  2026-10-06 18:09  新版本\pictures\Figure_mechanism.pdf
+  2026-10-06 18:09  新版本\pictures\Figure_mechanism.png
+  2026-09-28 02:50  老版本\IEEEtran.cls
+  2026-10-10 21:04  老版本\Main.pdf
+  2026-10-10 21:04  老版本\Main.tex
+  2026-09-28 02:51  老版本\bibtex\IEEEabrv.bib
+  2026-09-28 02:51  老版本\bibtex\IEEEexample.bib
+  2026-09-28 02:51  老版本\bibtex\IEEEfull.bib
+  2026-09-28 02:51  老版本\bibtex\IEEEtran.bst
+  2026-09-28 02:51  老版本\bibtex\IEEEtranN.bst
+  2026-09-28 02:51  老版本\bibtex\IEEEtranS.bst
+  2026-09-28 02:51  老版本\bibtex\IEEEtranSA.bst
+  2026-09-28 02:51  老版本\bibtex\IEEEtranSN.bst
+  2026-09-28 02:50  老版本\bibtex\IEEEtran_bst_HOWTO.pdf
+  2026-09-28 02:50  老版本\bibtex\README
+  2026-09-28 02:51  老版本\bibtex\changelog.txt
+  2026-09-28 02:50  老版本\pictures\Figure1.pdf
+  2026-09-28 02:50  老版本\pictures\Figure2.pdf
+  2026-09-28 02:50  老版本\pictures\Figure3.pdf
+  2026-10-06 18:09  老版本\pictures\Figure_mechanism.pdf
+  2026-10-06 18:09  老版本\pictures\Figure_mechanism.png

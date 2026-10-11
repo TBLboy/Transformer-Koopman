@@ -1,0 +1,21 @@
+=== 07 theorem 2: counterexample replay (scalar, P=2, A(c)=tanh(c), B=100) ===
+
+trajectories (index: z_full, z_fr, z_bar, e=full-fr, g=fr-bar, h=full-bar)
+  i=0  z_full=+0.000000  z_fr=+0.000000  z_bar=+0.000000  e=+0.000000  g=+0.000000  h=+0.000000
+  i=1  z_full=+1.000000  z_fr=+1.000000  z_bar=+0.000000  e=+0.000000  g=+1.000000  h=+1.000000
+  i=2  z_full=+1.761594  z_fr=+1.000000  z_bar=+0.000000  e=+0.761594  g=+1.000000  h=+1.761594
+
+constants: M_A=1.0000 M_B=100.0000 L_A=1.0000 L_B=0.0000 L_phi=1.0000 M_Z=2.0000 P=2
+  delta_u=0.010000  Delta_u=0.010000  G_N=2.000000  L=3.828427
+  delta_frz(v1)=0.020000   delta_frz(v2)=5.676854
+
+i=2: true ||e_2|| = 0.761594
+     v1 bound     = 0.096569   -> VIOLATED
+     v2 bound     = 27.410277   -> HOLDS
+
+diagnosis: v1 under-estimated because it used the *nominal rollout* z_bar as if it were
+the frozen trajectory z_fr. Here g_1 = 1.0000 != 0, so the B-channel difference
+|B(x_full_1) - B_bar_1| = 1.0000 is driven by g, not by e (= +0.000000).
+
+sanity check (bar U = U): the three trajectories coincide and both bounds -> 0.
+  max |z_full - z_bar| over i<=N = 0.000e+00 ;  max |e| = 0.000e+00

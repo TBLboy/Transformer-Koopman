@@ -1,0 +1,101 @@
+repo root : D:\Project\Transformer-Koopman\Transformer-Koopman
+Main.tex  : 74273 B  sha256=80fb881e6b78c79c35a2a6ea333b3e53f5092bdc15f1b49fa0b259618053c204
+（既有审计报告记录的指纹：sha256 0DA30C3EDC56…, 80917 B）
+
+=== 1. inline thebibliography ===
+  block at lines 824..982
+  bibitem entries : 52
+  cite keys       : 48
+  cited \ bibitem : []
+  bibitem \ cited : ['duran2025control', 'han2020deep', 'shi2022deep', 'strasser2026overview']
+
+=== 2. .bib inventory ===
+     20899 B  论文\新版本\bibtex\IEEEabrv.bib                     entries=263  IEEEexample-refs=0
+     39685 B  论文\新版本\bibtex\IEEEexample.bib                  entries=72   IEEEexample-refs=71
+     24832 B  论文\新版本\bibtex\IEEEfull.bib                     entries=263  IEEEexample-refs=0
+     20899 B  论文\老版本\bibtex\IEEEabrv.bib                     entries=263  IEEEexample-refs=0
+     39685 B  论文\老版本\bibtex\IEEEexample.bib                  entries=72   IEEEexample-refs=71
+     24832 B  论文\老版本\bibtex\IEEEfull.bib                     entries=263  IEEEexample-refs=0
+  total .bib files: 6
+
+=== 3. draft 杂项/老版本/_new_*.tex ===
+  _new_abstract.tex                  0 keys
+  _new_intro.tex                     15 keys
+  _new_related.tex                   47 keys
+  _new_related2.tex                  47 keys
+  _new_related3.tex                  47 keys
+  _new_related4.tex                  47 keys
+  _new_related5.tex                  47 keys
+  union of draft keys : 52
+  draft-only (not cited in Main.tex): 11 ['choromanski2021performer', 'duran2025control', 'forootani2026deepkoopformer', 'han2020deep', 'shi2022deep', 'strasser2026overview', 'wang2020linformer', 'wu2021autoformer', 'yuan2022variational', 'zhou2021informer', 'zhou2022fedformer']
+  key universe = |bibitem| + |draft-only| = 52 + 11 = 63
+
+=== 4. 既有 strict 审计（_audit_bib.json）的可继承范围 ===
+  audit json: order=50 entries=50
+  |audit keys|=50 |current bibitem|=52
+  audit \ current = []
+  current \ audit = ['han2024robust', 'shenoy2025temporal']
+  text-identical  : 50
+  text-different  : 0 []
+
+  text-identical keys (可继承审计核验):
+      arbabi2017ergodic
+      azencot2020forecasting
+      brunton2016invariant
+      brunton2017chaos
+      brunton2022modern
+      cisneros2016qlmpc
+      cisneros2020qlpv
+      das2019delay
+      daubechies1992sets
+      diehl2005realtime
+      diehl2005rtistability
+      duran2025control
+      feizi2025deepkoopman
+      forgione2021dynonet
+      forootani2025deepkoopformer
+      forootani2026spectral
+      gros2020rti
+      han2020deep
+      jungers2009joint
+      kamb2020timedelay
+      klus2018data
+      koopman1931hamiltonian
+      koopman1932spectra
+      korda2018linear
+      leith1998velocity
+      li2025mamko
+      liu2023koopa
+      ljung1999system
+      lusch2018deep
+      mezic2005spectral
+      morton2019deep
+      nelles2020nonlinear
+      nie2023time
+      otto2019linearly
+      otto2021koopman
+      proctor2016dmdc
+      proctor2018generalizing
+      rota1960joint
+      rowley2009spectral
+      rugh2000gain
+      shi2022deep
+      strasser2026overview
+      takeishi2017koopman
+      vanoverschee1994n4sid
+      vaswani2017attention
+      williams2015data
+      williams2015kernel
+      wu2026multistep
+      yeung2019learning
+      zavala2009advancedstep
+
+=== 5. §3.5 计数自洽性 ===
+  A' (= text-identical)      : 50
+  B  (not audited, 2 new)    : ['han2024robust', 'shenoy2025temporal']
+  A' + B                     : 52  (应为 |bibitem| = 52)
+  draft-only                 : 11
+  D  (already-removed keys)  : yuan2022variational(in draft)=True  rank2019recurrent(in draft)=False
+  draft-only 分解            : C=6 + yuan(in D)=1 + Main 未引 bibitem=4 → 11
+  （其中 Main 未引 bibitem = ['duran2025control', 'han2020deep', 'shi2022deep', 'strasser2026overview']，已计入 A'）
+  核对宇宙 = |bibitem| + |draft-only| = 63
