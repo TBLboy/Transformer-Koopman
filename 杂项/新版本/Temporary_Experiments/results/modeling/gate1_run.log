@@ -1,0 +1,364 @@
+﻿START 2026-10-11T12:13:52
+=== M0 formal 12:13:52 ===
+device=cuda cuda=True
+
+=== M0 : 6 trials (formal) ===
+  trial  0  val_roll25=0.272526  params=0  0.3s  {'delay': 2, 'epochs': 50}
+  trial  1  val_roll25=0.265515  params=0  0.1s  {'delay': 1, 'epochs': 50}
+  trial  2  val_roll25=0.265515  params=0  0.1s  {'delay': 1, 'epochs': 50}
+  trial  3  val_roll25=0.299212  params=0  0.1s  {'delay': 0, 'epochs': 50}
+  trial  4  val_roll25=0.299212  params=0  0.1s  {'delay': 0, 'epochs': 50}
+  trial  5  val_roll25=0.299212  params=0  0.1s  {'delay': 0, 'epochs': 50}
+  -> best M0: val_roll25=0.265515 cfg={'delay': 1, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M0 final 12:13:54 ===
+device=cuda cuda=True
+
+=== M0 : 3 seeds (final) ===
+  seed 0  val one-step=0.018110  roll5=0.094285  roll25=0.276837
+  seed 1  val one-step=0.018110  roll5=0.094285  roll25=0.276837
+  seed 2  val one-step=0.018110  roll5=0.094285  roll25=0.276837
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M0 test 12:13:56 ===
+device=cuda cuda=True
+
+=== M0 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.017610  roll5=0.096535  roll25=0.259100  roll100=0.613458
+  seed 1  TEST one-step=0.017610  roll5=0.096535  roll25=0.259100  roll100=0.613458
+  seed 2  TEST one-step=0.017610  roll5=0.096535  roll25=0.259100  roll100=0.613458
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M1 formal 12:13:58 ===
+device=cuda cuda=True
+
+=== M1 : 6 trials (formal) ===
+  trial  0  val_roll25=0.341256  params=0  3.3s  {'n_rbf': 64, 'sigma': 1.0, 'ridge': 1e-06, 'epochs': 50}
+  trial  1  val_roll25=0.299170  params=0  1.9s  {'n_rbf': 0, 'sigma': 0.5, 'ridge': 1e-08, 'epochs': 50}
+  trial  2  val_roll25=0.299170  params=0  2.1s  {'n_rbf': 0, 'sigma': 0.5, 'ridge': 1e-08, 'epochs': 50}
+  trial  3  val_roll25=0.341790  params=0  3.9s  {'n_rbf': 64, 'sigma': 1.0, 'ridge': 0.0001, 'epochs': 50}
+  trial  4  val_roll25=0.336053  params=0  3.5s  {'n_rbf': 32, 'sigma': 1.0, 'ridge': 0.0001, 'epochs': 50}
+  trial  5  val_roll25=0.339054  params=0  3.6s  {'n_rbf': 32, 'sigma': 1.0, 'ridge': 1e-06, 'epochs': 50}
+  -> best M1: val_roll25=0.299170 cfg={'n_rbf': 0, 'sigma': 0.5, 'ridge': 1e-08, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M1 final 12:14:18 ===
+device=cuda cuda=True
+
+=== M1 : 3 seeds (final) ===
+  seed 0  val one-step=0.043434  roll5=0.111677  roll25=0.311703
+  seed 1  val one-step=0.043434  roll5=0.111677  roll25=0.311703
+  seed 2  val one-step=0.043434  roll5=0.111677  roll25=0.311703
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M1 test 12:14:24 ===
+device=cuda cuda=True
+
+=== M1 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.044400  roll5=0.123842  roll25=0.281178  roll100=0.744505
+  seed 1  TEST one-step=0.044400  roll5=0.123842  roll25=0.281178  roll100=0.744505
+  seed 2  TEST one-step=0.044400  roll5=0.123842  roll25=0.281178  roll100=0.744505
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M2 formal 12:14:31 ===
+device=cuda cuda=True
+
+=== M2 : 6 trials (formal) ===
+  trial  0  val_roll25=0.225761  params=2174  1.4s  {'d_lift': 32, 'hidden': 32, 'ridge': 1e-06, 'lr': 0.001, 'epochs': 40}
+  trial  1  val_roll25=0.167295  params=230  1.1s  {'d_lift': 8, 'hidden': 16, 'ridge': 1e-08, 'lr': 0.001, 'epochs': 80}
+  trial  2  val_roll25=0.169471  params=1390  1.3s  {'d_lift': 16, 'hidden': 64, 'ridge': 1e-06, 'lr': 0.003, 'epochs': 80}
+  trial  3  val_roll25=0.172486  params=2174  1.3s  {'d_lift': 32, 'hidden': 32, 'ridge': 1e-06, 'lr': 0.003, 'epochs': 80}
+  trial  4  val_roll25=0.167745  params=662  0.7s  {'d_lift': 8, 'hidden': 64, 'ridge': 0.0001, 'lr': 0.001, 'epochs': 40}
+  trial  5  val_roll25=0.313912  params=2174  1.3s  {'d_lift': 32, 'hidden': 32, 'ridge': 1e-08, 'lr': 0.003, 'epochs': 80}
+  -> best M2: val_roll25=0.167295 cfg={'d_lift': 8, 'hidden': 16, 'ridge': 1e-08, 'lr': 0.001, 'epochs': 80}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M2 final 12:14:40 ===
+device=cuda cuda=True
+
+=== M2 : 3 seeds (final) ===
+  seed 0  val one-step=0.046677  roll5=0.078781  roll25=0.172392
+  seed 1  val one-step=0.046687  roll5=0.078815  roll25=0.173130
+  seed 2  val one-step=0.046656  roll5=0.078844  roll25=0.172983
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M2 test 12:14:47 ===
+device=cuda cuda=True
+
+=== M2 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.043264  roll5=0.082891  roll25=0.154431  roll100=0.409802
+  seed 1  TEST one-step=0.043434  roll5=0.082891  roll25=0.154725  roll100=0.401271
+  seed 2  TEST one-step=0.043218  roll5=0.082490  roll25=0.154596  roll100=0.404254
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M3 formal 12:14:53 ===
+device=cuda cuda=True
+
+=== M3 : 6 trials (formal) ===
+  trial  0  val_roll25=0.065716  params=55490  12.2s  {'cell': 'lstm', 'hidden': 64, 'layers': 2, 'lr': 0.001, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  1  val_roll25=0.034825  params=4770  51.8s  {'cell': 'gru', 'hidden': 32, 'layers': 1, 'lr': 0.003, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  2  val_roll25=0.043607  params=55490  66.9s  {'cell': 'lstm', 'hidden': 64, 'layers': 2, 'lr': 0.003, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  3  val_roll25=0.050514  params=85378  35.5s  {'cell': 'lstm', 'hidden': 128, 'layers': 1, 'lr': 0.003, 'w_roll': 5.0, 'roll_h': 5, 'epochs': 50}
+  trial  4  val_roll25=0.041699  params=167298  70.3s  {'cell': 'gru', 'hidden': 128, 'layers': 2, 'lr': 0.001, 'w_roll': 5.0, 'roll_h': 10, 'epochs': 50}
+  trial  5  val_roll25=0.064974  params=5986  7.5s  {'cell': 'lstm', 'hidden': 32, 'layers': 1, 'lr': 0.003, 'w_roll': 0.0, 'roll_h': 10, 'epochs': 50}
+  -> best M3: val_roll25=0.034825 cfg={'cell': 'gru', 'hidden': 32, 'layers': 1, 'lr': 0.003, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M3 final 12:18:59 ===
+device=cuda cuda=True
+
+=== M3 : 3 seeds (final) ===
+  seed 0  val one-step=0.015359  roll5=0.018756  roll25=0.029533
+  seed 1  val one-step=0.014394  roll5=0.018627  roll25=0.029243
+  seed 2  val one-step=0.015768  roll5=0.020702  roll25=0.034320
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M3 test 12:21:38 ===
+device=cuda cuda=True
+
+=== M3 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.016351  roll5=0.023827  roll25=0.037548  roll100=0.071055
+  seed 1  TEST one-step=0.018491  roll5=0.026042  roll25=0.034892  roll100=0.066213
+  seed 2  TEST one-step=0.018429  roll5=0.025962  roll25=0.040760  roll100=0.072826
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M4 formal 12:24:14 ===
+device=cuda cuda=True
+
+=== M4 : 6 trials (formal) ===
+  trial  0  val_roll25=0.115059  params=6910  13.7s  {'r_A': 5, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  1  val_roll25=0.034626  params=20926  58.7s  {'r_A': 5, 'r_B': 3, 'g_A': 0.3, 'g_B': 0.1, 'd_model': 32, 'n_layers': 2, 'lr': 0.003, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  2  val_roll25=0.086344  params=12274  69.4s  {'r_A': 3, 'r_B': 5, 'g_A': 0.02, 'g_B': 0.3, 'd_model': 32, 'n_layers': 1, 'lr': 0.001, 'w_roll': 5.0, 'roll_h': 10, 'epochs': 50}
+  trial  3  val_roll25=0.331943  params=6694  4.9s  {'r_A': 1, 'r_B': 5, 'g_A': 0.3, 'g_B': 0.3, 'd_model': 16, 'n_layers': 1, 'lr': 0.003, 'w_roll': 0.0, 'roll_h': 10, 'epochs': 50}
+  trial  4  val_roll25=0.596452  params=6694  7.3s  {'r_A': 1, 'r_B': 2, 'g_A': 0.1, 'g_B': 0.1, 'd_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  5  val_roll25=0.025498  params=20818  119.7s  {'r_A': 3, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 32, 'n_layers': 2, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 20, 'epochs': 50}
+  -> best M4: val_roll25=0.025498 cfg={'r_A': 3, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 32, 'n_layers': 2, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 20, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+=== M4 final 12:28:50 ===
+device=cuda cuda=True
+
+=== M4 : 3 seeds (final) ===
+python.exe : Traceback (most recent call last):
+所在位置 行:12 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage final --seeds 3 --epochs 50 ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 388
+, in <module>
+    main()
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 353
+, in main
+    model, info = make_train_rollout(spec, best["cfg"], seed=s)
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 260
+, in make_train_rollout
+    model, info = train_one(spec, cfg, seed, tr, va, w_roll=w_roll,
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 243
+, in train_one
+    model, info = train_gradient(spec, cfg, seed, tr, va, epochs=epochs, lr=lr,
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 142
+, in train_gradient
+    model.to(DEV)
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\nn\modules\module.py", line 1343, in to
+    return self._apply(convert)
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\nn\modules\module.py", line 903, in _apply
+    module._apply(fn)
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\nn\modules\module.py", line 903, in _apply
+    module._apply(fn)
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\nn\modules\module.py", line 930, in _apply
+    param_applied = fn(param)
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\nn\modules\module.py", line 1329, in convert
+    return t.to(
+RuntimeError: CUDA error: out of memory
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+=== M4 test 12:28:52 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:14 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage test --seeds 3 --epochs 50  ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 27,
+ in <module>
+    import torch
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 57, in <module>
+    from torch._utils_internal import (
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\_utils_internal.py", line 11, in <module>
+    from torch._strobelight.compile_time_profiler import StrobelightCompileTimeProfiler
+ModuleNotFoundError: No module named 'torch._strobelight.compile_time_profiler'
+=== M5 formal 12:28:56 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:10 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage formal --trials 6 --epochs  ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 27,
+ in <module>
+    import torch
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 274, in <module>
+    _load_dll_libraries()
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 257, in _load_dll_libraries
+    raise err
+OSError: [WinError 1455] 页面文件太小，无法完成操作。 Error loading "D:\conda\envs\edmddl2\lib\site-packages\torch\lib\cublas64_12.dl
+l" or one of its dependencies.
+=== M5 final 12:29:01 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:12 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage final --seeds 3 --epochs 50 ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 27,
+ in <module>
+    import torch
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 274, in <module>
+    _load_dll_libraries()
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 257, in _load_dll_libraries
+    raise err
+OSError: [WinError 1455] 页面文件太小，无法完成操作。 Error loading "D:\conda\envs\edmddl2\lib\site-packages\torch\lib\cublas64_12.dl
+l" or one of its dependencies.
+=== M5 test 12:29:07 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:14 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage test --seeds 3 --epochs 50  ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 27,
+ in <module>
+    import torch
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 274, in <module>
+    _load_dll_libraries()
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 257, in _load_dll_libraries
+    raise err
+OSError: [WinError 1455] 页面文件太小，无法完成操作。 Error loading "D:\conda\envs\edmddl2\lib\site-packages\torch\lib\caffe2_nvrtc.d
+ll" or one of its dependencies.
+=== M6 formal 12:29:14 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:10 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage formal --trials 6 --epochs  ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 27,
+ in <module>
+    import torch
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 274, in <module>
+    _load_dll_libraries()
+  File "D:\conda\envs\edmddl2\lib\site-packages\torch\__init__.py", line 257, in _load_dll_libraries
+    raise err
+OSError: [WinError 1455] 页面文件太小，无法完成操作。 Error loading "D:\conda\envs\edmddl2\lib\site-packages\torch\lib\caffe2_nvrtc.d
+ll" or one of its dependencies.
+=== M6 final 12:29:21 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:12 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage final --seeds 3 --epochs 50 ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 26,
+ in <module>
+    import numpy as np
+  File "D:\conda\envs\edmddl2\lib\site-packages\numpy\__init__.py", line 127, in <module>
+    _delvewheel_patch_1_5_2()
+  File "D:\conda\envs\edmddl2\lib\site-packages\numpy\__init__.py", line 106, in _delvewheel_patch_1_5_2
+    import ctypes
+  File "D:\conda\envs\edmddl2\lib\ctypes\__init__.py", line 8, in <module>
+    from _ctypes import Union, Structure, Array
+ImportError: DLL load failed while importing _ctypes: 页面文件太小，无法完成操作。
+=== M6 test 12:29:21 ===
+python.exe : Traceback (most recent call last):
+所在位置 行:14 字符: 3
++   & $py -u "scripts\run_gate1.py" --stage test --seeds 3 --epochs 50  ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\scripts\run_gate1.py", line 26,
+ in <module>
+    import numpy as np
+  File "D:\conda\envs\edmddl2\lib\site-packages\numpy\__init__.py", line 159, in <module>
+    from numpy.__config__ import show as show_config
+  File "D:\conda\envs\edmddl2\lib\site-packages\numpy\__config__.py", line 4, in <module>
+    from numpy.core._multiarray_umath import (
+  File "D:\conda\envs\edmddl2\lib\site-packages\numpy\core\__init__.py", line 24, in <module>
+    from . import multiarray
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 846, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 941, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1040, in get_data
+MemoryError
+ALL DONE 2026-10-11T12:29:21
+=== M5 formal retry 12:44:15 ===
+device=cuda cuda=True
+
+=== M5 : 6 trials (formal) ===
+  trial  0  val_roll25=0.114352  params=6964  20.3s  {'r_A': 5, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  1  val_roll25=0.031389  params=20980  62.9s  {'r_A': 5, 'r_B': 3, 'g_A': 0.3, 'g_B': 0.1, 'd_model': 32, 'n_layers': 2, 'lr': 0.003, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  2  val_roll25=0.035497  params=12364  76.6s  {'r_A': 3, 'r_B': 5, 'g_A': 0.02, 'g_B': 0.3, 'd_model': 32, 'n_layers': 1, 'lr': 0.001, 'w_roll': 5.0, 'roll_h': 10, 'epochs': 50}
+  trial  3  val_roll25=0.415740  params=6784  5.8s  {'r_A': 1, 'r_B': 5, 'g_A': 0.3, 'g_B': 0.3, 'd_model': 16, 'n_layers': 1, 'lr': 0.003, 'w_roll': 0.0, 'roll_h': 10, 'epochs': 50}
+  trial  4  val_roll25=0.597383  params=6730  8.8s  {'r_A': 1, 'r_B': 2, 'g_A': 0.1, 'g_B': 0.1, 'd_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  5  val_roll25=0.025055  params=20872  141.0s  {'r_A': 3, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 32, 'n_layers': 2, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 20, 'epochs': 50}
+  -> best M5: val_roll25=0.025055 cfg={'r_A': 3, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 32, 'n_layers': 2, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 20, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+formal exit=0
+=== M5 test 12:49:38 ===
+device=cuda cuda=True
+
+=== M5 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.009645  roll5=0.016094  roll25=0.026518  roll100=0.313599
+  seed 1  TEST one-step=0.008892  roll5=0.015029  roll25=0.024680  roll100=0.221641
+  seed 2  TEST one-step=0.009624  roll5=0.015326  roll25=0.026073  roll100=0.610364
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+test exit=0
+=== M4 test retry 12:56:49 ===
+device=cuda cuda=True
+
+=== M4 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.009445  roll5=0.016057  roll25=0.026046  roll100=0.307162
+  seed 1  TEST one-step=0.009038  roll5=0.015597  roll25=0.027576  roll100=0.242474
+  seed 2  TEST one-step=0.009561  roll5=0.015355  roll25=0.025774  roll100=0.629904
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+M4 test exit=0
+=== M6 formal 13:01:32 ===
+device=cuda cuda=True
+
+=== M6 : 6 trials (formal) ===
+  trial  0  val_roll25=0.067460  params=55042  12.1s  {'d_model': 64, 'n_layers': 2, 'lr': 0.001, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  1  val_roll25=0.131199  params=4578  8.4s  {'d_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 10, 'epochs': 50}
+  trial  2  val_roll25=0.071376  params=28034  122.0s  {'d_model': 32, 'n_layers': 3, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  3  val_roll25=0.068192  params=55042  112.0s  {'d_model': 64, 'n_layers': 2, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  4  val_roll25=0.087423  params=11138  19.7s  {'d_model': 16, 'n_layers': 3, 'lr': 0.003, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  5  val_roll25=0.069378  params=55042  110.3s  {'d_model': 64, 'n_layers': 2, 'lr': 0.0005, 'w_roll': 5.0, 'roll_h': 10, 'epochs': 50}
+  -> best M6: val_roll25=0.067460 cfg={'d_model': 64, 'n_layers': 2, 'lr': 0.001, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+M6 formal exit=0
+=== M6 test 13:08:40 ===
+device=cuda cuda=True
+
+=== M6 : frozen TEST evaluation ===
+  seed 0  TEST one-step=0.041539  roll5=0.049780  roll25=0.085071  roll100=0.171060
+  seed 1  TEST one-step=0.033762  roll5=0.048595  roll25=0.073970  roll100=0.127922
+  seed 2  TEST one-step=0.032520  roll5=0.036803  roll25=0.070380  roll100=0.129141
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\modeling\gate1_ledger.json
+M6 test exit=0

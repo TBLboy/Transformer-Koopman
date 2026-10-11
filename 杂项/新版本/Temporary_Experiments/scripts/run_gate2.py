@@ -124,6 +124,12 @@ def main():
 
     report = {"paired_cfg": cfg, "source": "gate1_ledger.json best['M5']",
               "em3": {}, "em4": {}, "em5": {}, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
+    out = os.path.join(RESULTS, "gate2_diagnostics.json")
+
+    def dump():
+        """Write incrementally so an interrupted run still leaves usable results."""
+        with io.open(out, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(report, fh, ensure_ascii=False, indent=1)
 
     # ---------------------------------------------------------------- E-M3
     models = {}
@@ -140,6 +146,8 @@ def main():
                      ev["rollout"]["long"], n_params(model), time.time() - t0))
             if s == 0:
                 models[variant] = model
+            report["em3"][variant] = runs
+            dump()
             g1.free()
         report["em3"][variant] = runs
 
@@ -180,6 +188,8 @@ def main():
         runs.append({"seed": s, "test": ev, "params": n_params(model), "info": info})
         print("  matched seed %d  roll25=%.6f roll100=%.6f params=%d"
               % (s, ev["rollout"]["mid"], ev["rollout"]["long"], n_params(model)))
+        report["em4"]["matched_AcB0"] = runs
+        dump()
         g1.free()
     report["em4"]["matched_AcB0"] = runs
     report["em4"]["matched_summary"] = {

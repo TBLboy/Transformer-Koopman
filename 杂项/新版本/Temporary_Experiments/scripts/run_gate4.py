@@ -127,6 +127,19 @@ def run_scenario(plant, controller, scen, N):
     return X, U, R, np.asarray(times), int(np.sum(fails))
 
 
+def train_ranges():
+    """Empirical train-split ranges (normalised). Used ONLY as an honesty metric:
+    driving a learned plant outside its training range is extrapolation and must be
+    reported, not hidden."""
+    x_tr, u_tr, _ = proto.load_split("train")
+    xn, un = proto.normalise(x_tr, u_tr)
+    return {"x_min": xn.min(0), "x_max": xn.max(0),
+            "u_min": un.min(0), "u_max": un.max(0)}
+
+
+RANGE = {}
+
+
 def metrics(X, U, R, times, fails, kind, target=None, dt=0.2):
     e = X - R
     m = {"rmse": float(np.sqrt(np.mean(e ** 2))), "mae": float(np.mean(np.abs(e))),
@@ -138,6 +151,11 @@ def metrics(X, U, R, times, fails, kind, target=None, dt=0.2):
          "solve_ms_median": float(np.median(times)),
          "solve_ms_p95": float(np.quantile(times, 0.95)),
          "solve_ms_p99": float(np.quantile(times, 0.99))}
+    if RANGE:
+        m["plant_state_out_of_train_range_frac"] = float(np.mean(
+            (X < RANGE["x_min"] - 1e-9).any(1) | (X > RANGE["x_max"] + 1e-9).any(1)))
+        m["input_out_of_train_range_frac"] = float(np.mean(
+            (U < RANGE["u_min"] - 1e-9).any(1) | (U > RANGE["u_max"] + 1e-9).any(1)))
     if kind == "setpoint":
         tail = slice(int(0.8 * len(X)), len(X))
         ss = float(np.mean(np.abs(X[tail] - R[tail])))
@@ -170,11 +188,19 @@ def _phase_lag(X, R):
 
 # ------------------------------------------------------------------ main
 def load_models(ledger, seed=0):
+    """Trained models, moved to CPU.
+
+    Rationale (documented): the closed-loop loop runs one controller solve and one
+    plant step per time step with batch size 1, so GPU offload buys nothing and
+    would add per-step synchronisation.  The models are small (<= 70k parameters),
+    so CPU evaluation is deterministic and fast.  This choice affects nothing about
+    the *training* protocol, which stays on GPU (see reports/modeling_comparison.md).
+    """
     out = {}
     for spec in ("M3", "M4", "M5", "M6"):
         cfg = ledger["best"][spec]["cfg"]
         m, _ = g1.make_train_rollout(spec, cfg, seed=seed)
-        m.eval()
+        m.to("cpu").eval()
         out[spec] = m
     return out
 
@@ -204,40 +230,65 @@ def main():
                                   "one_step": float(np.mean([r["test"]["one_step"]["short"] for r in t]))})
         print("  plant %s (%s) fidelity: %s" % (pname, spec, plant_fidelity[pname]))
 
-    settings = [("default", 1.0, 1e-3, 1e-2)]
+    settings = [{"name": "default", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": args.N,
+                 "ulim": "frozen"}]
     if args.search:
-        settings = [("default", 1.0, 1e-3, 1e-2), ("loose_R", 1.0, 1e-4, 1e-2),
-                    ("tight_R", 1.0, 1e-2, 1e-2), ("more_rate", 1.0, 1e-3, 1e-1),
-                    ("N5", 1.0, 1e-3, 1e-2), ("N20", 1.0, 1e-3, 1e-2)]
+        settings = [
+            {"name": "default", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": args.N, "ulim": "frozen"},
+            {"name": "data_range_u", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": args.N, "ulim": "data"},
+            {"name": "loose_R", "q": 1.0, "r": 1e-4, "s": 1e-2, "N": args.N, "ulim": "frozen"},
+            {"name": "tight_R", "q": 1.0, "r": 1e-2, "s": 1e-2, "N": args.N, "ulim": "frozen"},
+            {"name": "more_rate", "q": 1.0, "r": 1e-3, "s": 1e-1, "N": args.N, "ulim": "frozen"},
+            {"name": "N5", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": 5, "ulim": "frozen"},
+            {"name": "N20", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": 20, "ulim": "frozen"},
+        ]
         print("\nsensitivity settings (applied IDENTICALLY to every controller): %s"
-              % [s[0] for s in settings])
+              % [s["name"] for s in settings])
+        print("  note: 'data_range_u' constrains u to the empirical TRAIN range, because the")
+        print("        frozen u_limit=+-100 exceeds it (plant extrapolation risk).")
+
+    global RANGE
+    RANGE = train_ranges()
+    print("train ranges (normalised): x [%s, %s]  u [%s, %s]"
+          % (np.round(RANGE["x_min"], 3), np.round(RANGE["x_max"], 3),
+             np.round(RANGE["u_min"], 3), np.round(RANGE["u_max"], 3)))
+    U_DATA_LOWER, U_DATA_UPPER = RANGE["u_min"], RANGE["u_max"]
 
     out = {"split": args.split, "scenario_meta": meta, "plant_fidelity": plant_fidelity,
            "u_limit_physical_assumed": U_PHYS,
+           "u_limits_normalised": {"frozen": [U_LOWER.tolist(), U_UPPER.tolist()],
+                                   "data_range": [U_DATA_LOWER.tolist(),
+                                                  U_DATA_UPPER.tolist()]},
            "frame": ("offline closed-loop simulation; the plant is a separately trained "
                      "model; no hardware experiment was performed"),
            "runs": {}, "sensitivity": {}, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
 
-    for setting, q, r, s in settings:
-        N = 5 if setting == "N5" else (20 if setting == "N20" else args.N)
+    for st in settings:
+        setting, q, r, s = st["name"], st["q"], st["r"], st["s"]
+        N = st["N"]
+        lo, hi = ((U_LOWER, U_UPPER) if st["ulim"] == "frozen"
+                  else (U_DATA_LOWER, U_DATA_UPPER))
         key = setting
         out["runs"].setdefault(key, {})
-        print("\n=== setting=%s  N=%d  R=%.0e  S=%.0e ===" % (setting, N, r, s))
+        print("\n=== setting=%s  N=%d  R=%.0e  S=%.0e  u_limit=%s ==="
+              % (setting, N, r, s, st["ulim"]))
         for pname, pspec in PLANTS.items():
             plant = models[pspec]
             for cname, (mspec, cls) in CTRL.items():
                 ctrl = cls(models[mspec], N=N, Q=q * np.eye(2), P_term=q * np.eye(2),
                            R=r * np.eye(2), S=s * np.eye(2),
-                           u_min=U_LOWER, u_max=U_UPPER)
+                           u_min=lo, u_max=hi)
                 for sc in scen:
                     X, U, R, times, fails = run_scenario(plant, ctrl, sc, N)
                     mm = metrics(X, U, R, times, fails, sc["kind"])
                     out["runs"][key].setdefault(pname, {}).setdefault(cname, {})[sc["name"]] = mm
-                    print("  %-22s %-3s %-20s rmse=%.4f ss=%.4f e=%.3g viol=%d fail=%d ms=%.2f"
+                    print("  %-22s %-3s %-20s rmse=%.4f ss=%.4f e=%.3g viol=%d fail=%d ms=%.2f oorX=%.2f oorU=%.2f"
                           % (pname, cname, sc["name"], mm["rmse"],
                              mm.get("steady_state_error", float("nan")),
                              mm["control_energy"], mm["constraint_violations"],
-                             mm["solve_failures"], mm["solve_ms_median"]))
+                             mm["solve_failures"], mm["solve_ms_median"],
+                             mm.get("plant_state_out_of_train_range_frac", 0.0),
+                             mm.get("input_out_of_train_range_frac", 0.0)))
                     out["runs"][key][pname][cname][sc["name"]]["_traj"] = {
                         "X": X.tolist(), "U": U.tolist()}
 

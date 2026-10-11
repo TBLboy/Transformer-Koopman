@@ -108,14 +108,14 @@ def main():
     cfg = ledger["best"][args.model]["cfg"]
     print("model=%s cfg=%s" % (args.model, cfg))
     model, _ = g1.make_train_rollout(args.model, cfg, seed=args.seed)
-    model.eval()
+    model.to("cpu").eval()
 
     H = args.horizon
     w, raw = g1.tensors("test", H, frozen_eval=True)
     idx = np.arange(min(args.n_starts, len(w["k"])))
-    xh = g1.batchify(w, "Xh", idx)
-    uin = g1.batchify(w, "Uin", idx)
-    Utrue = g1.batchify(w, "UF", idx)                 # recorded inputs = nominal bar U
+    xh = g1.batchify(w, "Xh", idx).cpu()
+    uin = g1.batchify(w, "Uin", idx).cpu()
+    Utrue = g1.batchify(w, "UF", idx).cpu()            # recorded inputs = nominal bar U
 
     Q = np.eye(N_STATE)
     P_term = np.eye(N_STATE)

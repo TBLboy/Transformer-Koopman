@@ -1,0 +1,8 @@
+﻿paired E-M3 config (from M5's selected config): {'r_A': 3, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 32, 'n_layers': 2, 'lr': 0.001, 'w_roll': 1.0, 'roll_h': 20, 'epochs': 50}
+
+=== E-M3 A0B0 (M_base) x 3 seeds ===
+  seed 0  one-step=0.020986 roll5=0.041883 roll25=0.077066 roll100=1.574717 params=20656 48s
+  seed 1  one-step=0.021298 roll5=0.043587 roll25=0.075469 roll100=0.741839 params=20656 48s
+  seed 2  one-step=0.021113 roll5=0.042297 roll25=0.074139 roll100=0.324206 params=20656 49s
+
+=== E-M3 AcB0 (M4) x 3 seeds ===

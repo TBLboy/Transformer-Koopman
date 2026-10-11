@@ -279,9 +279,31 @@ def t7_latent_propagation():
           float(torch.max(torch.abs(out - out2))) > 1e-6)
 
 
+def t8_gate5_helper_consistency():
+    """The Gate-5 helper ``roll(..., freeze=None)`` must reproduce the model's own
+    rollout exactly -- otherwise the freezing statistics would not be comparable
+    with the Gate-1 numbers."""
+    torch.manual_seed(13)
+    sys.path.insert(0, os.path.join(EXP, "scripts"))
+    from run_gate5 import roll as g5_roll
+    for spec in ("M5", "M4", "M_base"):
+        model = build_model(spec, seed=13, r_A=2, r_B=2, g_A=0.1, g_B=0.1)
+        model.eval()
+        xh = torch.randn(3, 8, 2)
+        uin = torch.randn(3, 7, 2)
+        U = torch.randn(3, 6, 2)
+        with torch.no_grad():
+            a = model.rollout(xh, uin, U)
+            Z, _, _, _ = g5_roll(model, xh, uin, U)
+        err = float(torch.max(torch.abs(a - Z[:, 1:, :2])))
+        check("T8 %s: Gate-5 helper matches the model rollout" % spec, err < 1e-6,
+              "max|err|=%.3e" % err)
+
+
 def main():
     for fn in (t1_prediction_matrices, t2_objective, t3_solver, t4_nominal_rollout,
-               t5_lti_degeneracy, t6_controller, t7_latent_propagation):
+               t5_lti_degeneracy, t6_controller, t7_latent_propagation,
+               t8_gate5_helper_consistency):
         try:
             fn()
         except Exception as exc:                      # noqa: BLE001

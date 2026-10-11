@@ -1,0 +1,85 @@
+# Actual hyper-parameter search spaces used in Gate 1 / Gate 2.
+#
+# These are the METHOD-SPECIFIC spaces implemented in scripts/run_gate1.py
+# (search_space).  The plan requires method-specific spaces rather than one shared
+# table (plan section 4.1), and requires every trial - including failures - to be
+# recorded in results/modeling/gate1_ledger.json.
+schema_version: 1
+
+budget:
+  pilot_trials_per_model: 3          # smoke run confirming stability (done)
+  formal_trials_per_model: 6         # plan suggests 12; reduced for compute and RECORDED
+  budget_reason: >-
+    16 GB host RAM / 8 GB GPU laptop; ~60-200 s per trial.  The reduced trial
+    count is a documented budget choice, not a silent deviation.
+  seeds_per_selected_config: 3       # plan section 4.5 (>= 3)
+  selection_metric: "validation rollout RMSE at H=25 (never test)"
+  retrain_policy: "the selected config is retrained from scratch for every seed"
+
+spaces:
+  M0:   # DMDc -- closed form, deterministic
+    delay: [0, 1, 2]
+  M1:   # EDMDc -- closed form ridge regression
+    n_rbf: [0, 32, 64]               # 0 = identity + poly2 only
+    sigma: [0.5, 1.0, 2.0]
+    ridge: [1e-8, 1e-6, 1e-4]
+  M2:   # EDMD-DL with control -- alternating least squares + encoder gradient steps
+    d_lift: [8, 16, 32]
+    hidden: [16, 32, 64]
+    ridge: [1e-8, 1e-6, 1e-4]
+    lr: [1e-3, 3e-3]
+    epochs: [40, 80]
+  M3:   # LSTM/GRU controlled predictor
+    cell: [gru, lstm]
+    hidden: [32, 64, 128]
+    layers: [1, 2]
+    lr: [1e-3, 3e-3]
+    w_roll: [0.0, 1.0, 5.0]
+    roll_h: [5, 10]
+  M4/M5/M7:   # scheduled Koopman variants
+    r_A: [1, 2, 3, 5]
+    r_B: [1, 2, 3, 5]
+    g_A: [0.02, 0.1, 0.3]
+    g_B: [0.02, 0.1, 0.3]
+    d_model: [16, 32]
+    n_layers: [1, 2]
+    lr: [5e-4, 1e-3, 3e-3]
+    w_roll: [0.0, 1.0, 5.0]
+    roll_h: [5, 10, 20]
+  M6:   # Controlled Transformer
+    d_model: [16, 32, 64]
+    n_layers: [1, 2, 3]
+    lr: [5e-4, 1e-3, 3e-3]
+    w_roll: [0.0, 1.0, 5.0]
+    roll_h: [5, 10]
+  M_base/M7 (E-M3 ablation):
+    note: >-
+      NOT searched independently.  The E-M3 ablation is a PAIRED experiment: all
+      four structural variants (A0B0 / A(c)+B0 / A0+B(x) / A(c)+B(x)) are trained
+      with the SAME config selected for M5 (same encoder, window, latent dim, loss,
+      optimiser budget and seeds).  Only the scheduling branch changes.
+
+fixed_for_all_models:
+  history_length_P: 8
+  latent_dim_d: 10
+  batch_size: 128
+  optimizer: AdamW
+  weight_decay: 1e-4
+  grad_clip: 5.0
+  early_stop_patience_epochs: 18
+  lr_scheduler: "ReduceLROnPlateau(factor=0.5, patience=6)"
+  train_window_stride: 4            # dense starts inside each training trajectory
+  val_window_stride: 4
+  normalisation: "frozen train-only constants (models/protocol.py)"
+
+excluded_and_why:
+  M8_PatchTST_style_controlled: >-
+    optional in the plan; not implemented.  Our M6 is a small causal transformer
+    over (x,u) tokens, NOT the official PatchTST architecture - it is never
+    described as a PatchTST reproduction.
+  M9_deep_koopman: >-
+    optional; not implemented.  M2 (EDMD-DL with control) already provides a
+    learnable-dictionary linear-latent-dynamics comparison.
+  Optuna: >-
+    not installed in the environment; random search with a fixed trial budget was
+    used instead (plan section 4.2 explicitly allows random search).
