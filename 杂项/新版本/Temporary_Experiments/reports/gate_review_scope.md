@@ -50,9 +50,104 @@
 | `configs/*.yaml` | 数据/划分/建模协议/搜索空间/控制协议 | 冻结口径 |
 | `.project-log/docs/framework-defects.md` | D-010..D-017 | 本轮框架缺陷 |
 
-## 4. 主 Agent 代跑并粘贴的原始输出（复核者无 shell）
+## 4. 主 Agent 代跑并粘贴的原始输出（复核者无 shell，无法自行执行）
 
-（本节在 Gate 2/4/5 完成后补齐：git 提交哈希、文件 sha256、关键命令与退出码。）
+### 4.1 版本绑定
+
+- git 提交：`096e2cc`（分支 `paper`，已推送 origin）
+- 证据记录：`EV-GATE1-MODELS-002`、`EV-GATE2-DIAG-001`、`EV-GATE3-QP-002`、
+  `EV-GATE4-CONTROL-001`、`EV-GATE5-FREEZE-001`（均绑定 `096e2cc`）
+- 被 `evidence refresh` 标记 stale 的旧记录：`EV-GATE1-MODELS-001`、`EV-GATE3-QP-001`、
+  `EV-TASK044-GATE0-002`（覆盖文件在记录之后变化；旧记录保留不删）
+
+### 4.2 文件 sha256（工作区字节；证据绑定使用同一算法）
+
+| 文件（项目根相对路径） | sha256 |
+|---|---|
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/control_protocol.yaml` | `a0887e8644678aaff81e54b13475b618d307bf4aab9236b8cb64dc01561d5eef` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/modeling_protocol.yaml` | `a7ea5ef77d2f4968882876a65283ce98658b8933fbcf2d15ee4f7a79b1f12c4b` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/configs/search_spaces.yaml` | `cd3fe31473d26a6491eb0d5dab22225d2a111260155b4dd30b9882d19fa45f5b` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/controllers/ltv_mpc.py` | `39354803b93682178bef9b8a4d4b31aca804c3abd2618d841e9edb74b85e81fc` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/models/library.py` | `ee71135dad75e414b547a9238954acdf4a5459c7c69f7334ef347f892bdf7bb0` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/models/protocol.py` | `ead56041e0dfa6bbe54a7f3bb3cb5e1bd71e5e80a4d229a7dd1c928382a3528e` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/control_comparison.md` | `2d2ea7c96f15790464adcf958fdc183294bfd0fc0ca621f86891ac7f702e5481` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/final_research_report.md` | `35aad7fb97f3d1b58413975712626a9b145a57ed9139e43635a6326bab8b8555` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/gate_review_scope.md` | `5cc9a876aed6f0e8aa4be17654131dcb8121945ef7022921e44d77920270a565` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/literature_baselines.md` | `01653669c1dc62faa5acb1afec88af517da3f55a5b1bd9978d1de09c5642aae5` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/reports/modeling_comparison.md` | `37fde922a334ff3a62a4cf691839db4939ca49051348202921289eb6dca4f9ec` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/control_test.json` | `527ef2d7ca3127187611d831de623e5b8490df1221d41499902360324d389dfc` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/control_val_search.json` | `7b385d83cbe1eb77bea7abcfc9c354de048d9b74df099f54c6c65aece808eb7a` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/control/gate3_unit_tests.txt` | `da832012b7fcf8cc553a5921a60fc9b38b1cbc194f2bd00a7671a410418e1393` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/modeling/gate1_ledger.json` | `9d93eafd835b1c8e7ec5fc52a557a49611a4343212508b9d5dedd8f11c9f0e4c` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/modeling/gate2_diagnostics.json` | `a90b7263499d3ec3b304dab61a0e4301ae8170d8103520d19828dc61766b2f0f` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/modeling/xtraj_variance.json` | `f42a6d9df99f5bfa0675bf91b4e7564de7922756f6e6e8866c6953c48185a94d` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/results/theory_diagnostics/freezing_diagnostics.json` | `35c7405ce07256fea0441f20eeaccfc2aa265c189f8208bf906836f93bf838c2` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/report_control.py` | `0fae03557d0b64f50ab3420389e515ef0a1757d1c547ccc1b3ca1a0979b7bc39` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/report_modeling.py` | `dd572a29856fef2f5c9ad895514e615835fe640b6f6bcb89aaedd1e59d76604c` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate1.py` | `2df06cb82d5f2f2728992d1460e253e996d9394ad6050942327e6ceb018b73db` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate2.py` | `eaa32f32ce64af82eb9b7d429e68e091de477455178f0206a53afbc09830fd83` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate4.py` | `6474db729e6c50756df30901d4be3df6f41d81aea4c9e85ceca07b49eedb3fe6` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/run_gate5.py` | `376b6e6297d341d69282e28c4d20a29d9261b881092c231ff362799360b42664` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/scripts/xtraj_variance.py` | `f75418f6c1b2bfd4cc08ae34d7947599207bfd94c14839ee05828755384a5dbb` |
+| `Transformer-Koopman/杂项/新版本/Temporary_Experiments/tests/test_ltv_qp.py` | `ddbbdd0184aa4d402dd82c289aed34bf9b6e7ae524adccb81803251219ddbba5` |
+
+### 4.3 关键命令与原始输出
+
+**(a) Gate 3 单测（`python tests/test_ltv_qp.py`，原始输出见 `results/control/gate3_unit_tests.txt`）**
+
+```text
+T7 encoder is applied exactly once per rollout (latent propagation) PASS  encoder calls=1
+T7b rollout step 0 equals the one-step prediction          PASS  
+T7c rollout depends on the future control inputs           PASS  
+T8 M5: Gate-5 helper matches the model rollout             PASS  max|err|=0.000e+00
+T8 M4: Gate-5 helper matches the model rollout             PASS  max|err|=0.000e+00
+T8 M_base: Gate-5 helper matches the model rollout         PASS  max|err|=0.000e+00
+31/31 tests passed
+```
+
+**(b) Gate 4 模型复现一致性检查（`python scripts/run_gate4.py --split test` 原始输出）**
+
+```text
+﻿  M3 reproduction check: one-step 0.016351 vs ledger 0.016351 (|d|=0.00e+00)
+M4 reproduction check: one-step 0.009565 vs ledger 0.009445 (|d|=1.20e-04)
+M5 reproduction check: one-step 0.009795 vs ledger 0.009645 (|d|=1.50e-04)
+M6 reproduction check: one-step 0.024095 vs ledger 0.041539 (|d|=1.74e-02)
+```
+
+**(c) Gate 5 理论核验（`results/theory_diagnostics/freezing_diagnostics.json`）**
+
+```json
+{
+ "P1_zero_mismatch_gives_zero_error": true,
+ "P1_detail": "delta=0 means U == bar U; the frozen and full trajectories must coincide (07 section 2: the driver is the input mismatch)",
+ "P2_monotone_growth": true
+}
+```
+
+```text
+delta=0.00 |dU|=0.000  max||z_f-z_r||=0.000e+00  A_dev=0.000e+00  B_dev=0.000e+00  cost_gap=0.000e+00
+delta=0.25 |dU|=1.716  max||z_f-z_r||=1.495e-01  A_dev=1.289e-02  B_dev=9.111e-04  cost_gap=5.402e-04
+delta=0.50 |dU|=3.610  max||z_f-z_r||=3.481e-01  A_dev=2.681e-02  B_dev=1.931e-03  cost_gap=1.721e-03
+delta=1.00 |dU|=7.001  max||z_f-z_r||=1.026e+00  A_dev=4.532e-02  B_dev=5.486e-03  cost_gap=9.519e-03
+delta=2.00 |dU|=13.914  max||z_f-z_r||=1.223e+00  A_dev=4.895e-02  B_dev=5.722e-03  cost_gap=7.866e-03
+decision: J_full(U_fr)=0.004962  J_full(U_nominal)=0.004133  J_full(U_local)=0.003337  gap=1.625e-03
+```
+
+**(d) 门禁当前判定（`vibe gate --task TASK-045`）**
+
+```text
+decision = blocked；唯一阻塞项 = high-risk task TASK-045 lacks an independent review
+（证据失效问题已通过绑定最终字节的新证据解决）
+```
+
+### 4.4 需要复核者特别注意的三处偏离与限制
+
+1. **Q3 / N3 / Q4（`u_limit = ±100`）未由用户确认**。Gate 0 的 `go_no_go.md` 原定「Gate 3/4 前确认」，实际未确认即运行了 Gate 3/4，处置方式为：
+   - 所有位置标注为**假设**（`control_test.json` 的 `u_limit_physical_assumed`）；
+   - 额外做 `data_range_u` 敏感性设置，把输入约束收到 train 经验范围以隔离 plant 外推影响；
+   - 这是**已知偏离**，需要用户裁决，不得被复核判定为已满足 Gate 0 的 N3。
+2. **M6（Transformer）种子 0 训练不可复现**（|Δone-step| = 1.74e-2，约 40%）。plant B 的结论只对本进程实际使用的 M6 成立；报告已改用实际 plant 保真度并给出复现检查表。
+3. **Gate 0 证据重绑定**：`EV-TASK044-GATE0-002` 覆盖的 4 个文件在 DEC-084（用户确认 `x`/`u` 语义与数据来源）之后被更新，故已 stale；新增 `EV-TASK044-GATE0-003` 绑定当前字节。该更新方向是**把「待确认」变为「已确认」**，属增强而非削弱，但复核者应确认该判断（对照 `reports/data_audit.md` §3/§6/§8 与 `configs/data_manifest.yaml`）。
 
 ## 5. 已知限制（复核时请确认报告是否已披露，而非要求消除）
 
