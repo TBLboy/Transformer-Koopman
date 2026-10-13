@@ -1,0 +1,70 @@
+{
+ "device": "soft_platform",
+ "what": "same checkpoints evaluated by the pre-refactor and the refactored harness; isolates the device-parameterisation",
+ "artifacts": {
+  "new_code": "results\\modeling\\eval_soft_newcode.json",
+  "old_code": "results\\modeling\\eval_soft_oldcode.json"
+ },
+ "models": {
+  "M0": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 0,
+   "params_old": 0
+  },
+  "M1": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 0,
+   "params_old": 0
+  },
+  "M2": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 230,
+   "params_old": 230
+  },
+  "M3": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 4770,
+   "params_old": 4770
+  },
+  "M4": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 20818,
+   "params_old": 20818
+  },
+  "M5": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 20872,
+   "params_old": 20872
+  },
+  "M6": {
+   "metrics": 151,
+   "differing": 0,
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "params_new": 55042,
+   "params_old": 55042
+  }
+ },
+ "total_metrics": 1057,
+ "total_differing": 0,
+ "max_abs_diff": 0.0,
+ "verdict": "IDENTICAL"
+}

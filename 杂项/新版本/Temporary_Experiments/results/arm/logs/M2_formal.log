@@ -1,0 +1,13 @@
+device=arm_3link (3-joint robotic arm)  compute=cuda cuda=True
+  n_state=6 n_ctrl=3 P=8 latent=14 horizons={'short': 5, 'mid': 25, 'long': 100, 'long2': 500, 'long3': 1000}
+
+=== M2 : 6 trials (formal) ===
+  trial  0  val_roll25=0.284986  params=2202  3.5s  {'d_lift': 32, 'hidden': 32, 'ridge': 1e-06, 'lr': 0.001, 'epochs': 40}
+  trial  1  val_roll25=0.351535  params=234  4.5s  {'d_lift': 8, 'hidden': 16, 'ridge': 1e-08, 'lr': 0.001, 'epochs': 80}
+  trial  2  val_roll25=0.228447  params=1402  4.5s  {'d_lift': 16, 'hidden': 64, 'ridge': 1e-06, 'lr': 0.003, 'epochs': 80}
+  trial  3  val_roll25=0.303721  params=2202  4.7s  {'d_lift': 32, 'hidden': 32, 'ridge': 1e-06, 'lr': 0.003, 'epochs': 80}
+  trial  4  val_roll25=0.291994  params=666  2.4s  {'d_lift': 8, 'hidden': 64, 'ridge': 0.0001, 'lr': 0.001, 'epochs': 40}
+  trial  5  val_roll25=0.317095  params=2202  4.7s  {'d_lift': 32, 'hidden': 32, 'ridge': 1e-08, 'lr': 0.003, 'epochs': 80}
+  -> best M2: val_roll25=0.228447 cfg={'d_lift': 16, 'hidden': 64, 'ridge': 1e-06, 'lr': 0.003, 'epochs': 80}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\arm\modeling\gate1_ledger.json

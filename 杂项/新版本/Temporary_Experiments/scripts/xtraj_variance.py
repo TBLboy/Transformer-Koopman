@@ -30,10 +30,13 @@ EXP = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(EXP, "models"))
 sys.path.insert(0, HERE)
 
+import device as dev                        # noqa: E402
+dev.bootstrap_from_argv()
+
 import protocol as proto                     # noqa: E402
 import run_gate1 as g1                       # noqa: E402
 
-RES = os.path.join(EXP, "results", "modeling")
+RES = dev.results_dir("modeling")
 SPECS = ["M0", "M1", "M2", "M3", "M4", "M5", "M6"]
 
 
@@ -41,6 +44,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", nargs="*", default=SPECS,
                     help="subset of models (default: all)")
+    ap.add_argument("--device", "-d", default=None,
+                    help="device spec; consumed by device.bootstrap_from_argv()")
     args = ap.parse_args()
     specs = args.models
     led = json.load(open(os.path.join(RES, "gate1_ledger.json"), encoding="utf-8"))
@@ -53,7 +58,7 @@ def main():
     if os.path.exists(path):                     # merge so partial runs accumulate
         out["models"] = json.load(open(path, encoding="utf-8")).get("models", {})
 
-    w, _ = g1.tensors("test", 25, frozen_eval=True)
+    w, _ = g1.tensors("test", proto.SELECTION_HORIZON, frozen_eval=True)
     traj = w["traj"]
 
     for spec in specs:

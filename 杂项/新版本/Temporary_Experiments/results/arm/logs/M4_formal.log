@@ -1,0 +1,9 @@
+device=arm_3link (3-joint robotic arm)  compute=cuda cuda=True
+  n_state=6 n_ctrl=3 P=8 latent=14 horizons={'short': 5, 'mid': 25, 'long': 100, 'long2': 500, 'long3': 1000}
+
+=== M4 : 6 trials (formal) ===
+  trial  0  val_roll25=1.738921  params=9692  103.0s  {'r_A': 5, 'r_B': 3, 'g_A': 0.1, 'g_B': 0.02, 'd_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}
+  trial  1  val_roll25=0.114320  params=23836  1410.3s  {'r_A': 5, 'r_B': 3, 'g_A': 0.3, 'g_B': 0.1, 'd_model': 32, 'n_layers': 2, 'lr': 0.003, 'w_roll': 1.0, 'roll_h': 10, 'epochs': 50}
+  trial  2  val_roll25=0.234825  params=15168  1188.5s  {'r_A': 3, 'r_B': 5, 'g_A': 0.02, 'g_B': 0.3, 'd_model': 32, 'n_layers': 1, 'lr': 0.001, 'w_roll': 5.0, 'roll_h': 10, 'epochs': 50}
+  trial  3  val_roll25=3.249119  params=9444  95.7s  {'r_A': 1, 'r_B': 5, 'g_A': 0.3, 'g_B': 0.3, 'd_model': 16, 'n_layers': 1, 'lr': 0.003, 'w_roll': 0.0, 'roll_h': 10, 'epochs': 50}
+  trial  4  val_roll25=1.540957  params=9444  87.9s  {'r_A': 1, 'r_B': 2, 'g_A': 0.1, 'g_B': 0.1, 'd_model': 16, 'n_layers': 1, 'lr': 0.0005, 'w_roll': 0.0, 'roll_h': 5, 'epochs': 50}

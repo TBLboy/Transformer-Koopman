@@ -41,14 +41,21 @@ sys.path.insert(0, os.path.join(EXP, "models"))
 sys.path.insert(0, os.path.join(EXP, "controllers"))
 sys.path.insert(0, HERE)
 
+import device as dev                                          # noqa: E402
+dev.bootstrap_from_argv()
+
 import run_gate1 as g1                                        # noqa: E402
+import protocol as proto                                      # noqa: E402
 from ltv_mpc import (prediction_matrices, cost_matrices, cost_value,   # noqa: E402
                      solve_qp)
 from scipy.optimize import minimize                           # noqa: E402
 
-RESULTS = os.path.join(EXP, "results", "theory_diagnostics")
+DEVICE = dev.current()["name"]
+RESULTS = dev.results_dir("theory_diagnostics")
 os.makedirs(RESULTS, exist_ok=True)
-N_STATE = 2
+N_STATE = int(dev.current()["n_state"])
+N_CTRL = int(dev.current()["n_ctrl"])
+U_BOUND = float(dev.current()["gate5_u_bound"])
 DELTAS = [0.0, 0.25, 0.5, 1.0, 2.0]      # ||U - bar U|| levels (normalised units)
 
 
@@ -103,6 +110,8 @@ def main():
                          "25 uses the 'mid' frozen start set")
     ap.add_argument("--model", default="M5")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--device", "-d", default=None,
+                    help="device spec; consumed by device.bootstrap_from_argv()")
     args = ap.parse_args()
 
     ledger = json.load(open(os.path.join(RESULTS, "..", "modeling", "gate1_ledger.json"),
@@ -121,8 +130,8 @@ def main():
 
     Q = np.eye(N_STATE)
     P_term = np.eye(N_STATE)
-    R = 1e-3 * np.eye(2)
-    S = 1e-2 * np.eye(2)
+    R = 1e-3 * np.eye(N_CTRL)
+    S = 1e-2 * np.eye(N_CTRL)
     x_ref = g1.batchify(w, "XF", idx).cpu().numpy()
     x_ref = np.concatenate([g1.batchify(w, "Xh", idx)[:, -1:, :].cpu().numpy(), x_ref], axis=1)
 
@@ -136,7 +145,7 @@ def main():
             if delta == 0.0:
                 U = Ubar.clone()
             else:
-                noise = torch.as_tensor(rng.normal(size=(1, H, 2)), dtype=Ubar.dtype,
+                noise = torch.as_tensor(rng.normal(size=(1, H, N_CTRL)), dtype=Ubar.dtype,
                                         device=Ubar.device)
                 U = Ubar + delta * noise
             with torch.no_grad():
@@ -184,28 +193,28 @@ def main():
         zb, Ab, Bb = model.nominal_rollout(xh[s:s + 1], uin[s:s + 1], Ubar)
     F, G = prediction_matrices(Ab[0].cpu().numpy(), Bb[0].cpu().numpy(),
                                zb[0, 0].cpu().numpy())
-    M, f, _ = cost_matrices(F, G, x_ref_s, np.zeros((H, 2)), Q, P_term, R, S, u_prev)
-    Ufr, info = solve_qp(M, f, -3.5, 3.5, H, 2)
+    M, f, _ = cost_matrices(F, G, x_ref_s, np.zeros((H, N_CTRL)), Q, P_term, R, S, u_prev)
+    Ufr, info = solve_qp(M, f, -U_BOUND, U_BOUND, H, N_CTRL)
     with torch.no_grad():
         Zf_fr, _, _, _ = roll(model, xh[s:s + 1], uin[s:s + 1],
-                              torch.as_tensor(Ufr.reshape(1, H, 2), dtype=torch.float32))
+                              torch.as_tensor(Ufr.reshape(1, H, N_CTRL), dtype=torch.float32))
         Zf_ref, _, _, _ = roll(model, xh[s:s + 1], uin[s:s + 1], Ubar)
-    J_fr_dec = trajectory_cost(Zf_fr[0].cpu().numpy(), Ufr.reshape(H, 2), x_ref_s, Q, P_term,
+    J_fr_dec = trajectory_cost(Zf_fr[0].cpu().numpy(), Ufr.reshape(H, N_CTRL), x_ref_s, Q, P_term,
                                R, S, u_prev)
     J_ref_dec = trajectory_cost(Zf_ref[0].cpu().numpy(), Ubar[0].cpu().numpy(), x_ref_s,
                                 Q, P_term, R, S, u_prev)
     def full_cost(Uflat, xh1, uin1, xref):
-        U = torch.as_tensor(Uflat.reshape(1, H, 2), dtype=torch.float32)
+        U = torch.as_tensor(Uflat.reshape(1, H, N_CTRL), dtype=torch.float32)
         with torch.no_grad():
             Z, _, _, _ = roll(model, xh1, uin1, U)
-        return trajectory_cost(Z[0].cpu().numpy(), Uflat.reshape(H, 2), xref, Q, P_term,
+        return trajectory_cost(Z[0].cpu().numpy(), Uflat.reshape(H, N_CTRL), xref, Q, P_term,
                                R, S, u_prev)
 
     xh1, uin1 = xh[s:s + 1], uin[s:s + 1]
     res = minimize(lambda v: full_cost(v, xh1, uin1, x_ref_s), Ufr.copy(),
-                   method="L-BFGS-B", bounds=[(-3.5, 3.5)] * (H * 2),
+                   method="L-BFGS-B", bounds=[(-U_BOUND, U_BOUND)] * (H * N_CTRL),
                    options={"maxiter": 300, "ftol": 1e-12})
-    U_loc = res.x.reshape(H, 2)
+    U_loc = res.x.reshape(H, N_CTRL)
     J_loc = full_cost(res.x, xh1, uin1, x_ref_s)
     decision = {
         "note": ("J_full(U_fr) - J_full(U_loc) is measured against a LOCAL "
@@ -219,7 +228,7 @@ def main():
         "local_solver_success": bool(res.success),
         "qp_status": info["status"],
         "same_feasible_set": True,
-        "constraint": "u in [-3.5, 3.5] (both problems, input-only constraints)",
+        "constraint": "u in [-%g, %g] (both problems, input-only constraints)" % (U_BOUND, U_BOUND),
     }
     print("\n  decision: J_fr(U)=%.6f  J_full(U_fr)=%.6f  J_full(U_loc)=%.6f  gap=%.3e"
           % (J_fr_dec, J_fr_dec, J_loc, decision["gap_vs_local_NLP"]))

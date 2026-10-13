@@ -36,57 +36,104 @@ sys.path.insert(0, os.path.join(EXP, "models"))
 sys.path.insert(0, os.path.join(EXP, "controllers"))
 sys.path.insert(0, HERE)
 
+import device as dev                                         # noqa: E402
+dev.bootstrap_from_argv()
+
 import protocol as proto                                     # noqa: E402
 import run_gate1 as g1                                       # noqa: E402
 from ltv_mpc import ScheduledLTVMPC, LTIMPC                   # noqa: E402
 
-RESULTS = os.path.join(EXP, "results", "control")
+DEVICE = dev.current()["name"]
+DEV_SPEC = dev.current()
+RESULTS = dev.results_dir("control")
 os.makedirs(RESULTS, exist_ok=True)
 
-U_LOWER = np.array([-3.584351, -3.552817])
-U_UPPER = np.array([3.567328, 3.559557])
-U_PHYS = 100.0
+U_LOWER, U_UPPER = dev.u_limits_normalised()   # frozen control box, per device
 CTRL = {"C0": ("M4", LTIMPC), "C1": ("M4", ScheduledLTVMPC), "C2": ("M5", ScheduledLTVMPC)}
 PLANTS = {"plant_A_M3_GRU": "M3", "plant_B_M6_Transformer": "M6"}
 P = proto.P
+N_STATE = proto.N
+N_CTRL = proto.M
+DT = proto.DT
 
 
 # ------------------------------------------------------------------ scenarios
-def build_scenarios(split, n_setpoint=3, n_tracking=3, traj_len=300):
-    """Scenario definitions. Targets come from the TRAIN split only (no test leakage)."""
+def build_scenarios(split, n_setpoint=3, n_tracking=3):
+    """Scenario definitions. Targets come from the TRAIN split only (no test leakage).
+
+    Generalised across devices:
+      * only the device's POSITION channels get non-zero targets; the paired
+        velocity channels are held at 0, which is a physically meaningful set point;
+      * tracking references live in the full measurement space, with the velocity
+        channels set to the ANALYTIC derivative of the position reference, so the
+        reference itself is self-consistent;
+      * the scenario length is the device's own (step counts are NOT comparable
+        across devices: 100 steps is 20 s on the soft platform but 0.4 s on the arm).
+    """
+    pos = list(DEV_SPEC["pos_channels"])
+    pos_to_vel = DEV_SPEC["pos_to_vel"]
+    n = proto.N
     x_tr, _, _ = proto.load_split("train")
     xn_tr, _ = proto.normalise(x_tr, np.zeros_like(x_tr))
     med = np.median(xn_tr, axis=0)
     p05, p25, p75, p95 = (np.quantile(xn_tr, q, axis=0) for q in (0.05, 0.25, 0.75, 0.95))
-    targets = [med.copy(), np.array([p75[0], p25[1]]), np.array([p95[0], p05[1]])][:n_setpoint]
+
+    def target_of(kind):
+        t = med.copy()
+        for j, c in enumerate(pos):
+            if kind == 1:
+                t[c] = p75[c] if j == 0 else p25[c]
+            elif kind == 2:
+                t[c] = p95[c] if j == 0 else p05[c]
+        return t
+
+    targets = [target_of(k) for k in range(max(1, min(n_setpoint, 3)))]
     amp = 0.5 * np.minimum(p95 - med, med - p05)
 
     x, u, tid = proto.load_split(split)
     xn, un = proto.normalise(x, u)
-    n_traj = int(tid.max()) + 1
-    starts = proto.frozen_starts(traj_len, 200, max(n_setpoint, n_tracking))
+    traj_len = int(np.sum(tid == 0))
+    n_starts = max(n_setpoint, n_tracking)
+    starts = proto.frozen_starts(traj_len, DEV_SPEC["scenario_tracking_steps"], n_starts)
     scen = []
+    T_set = int(DEV_SPEC["scenario_setpoint_steps"])
     for i, target in enumerate(targets):
-        T = 100
-        ref = np.tile(target, (T + 1, 1))
+        ref = np.tile(target, (T_set + 1, 1))
         scen.append({"name": "setpoint_%d" % i, "kind": "setpoint", "split": split,
                      "start": int(starts[min(i, len(starts) - 1)]), "target": target.tolist(),
-                     "horizon": T, "ref": ref})
-    specs = [("slow_sinusoid", 100), ("fast_sinusoid", 40), ("piecewise_setpoints", 0)]
+                     "horizon": T_set, "ref": ref})
+    T_trk = int(DEV_SPEC["scenario_tracking_steps"])
+    # period rule kept from the soft-platform design: slow = half the scenario,
+    # fast = a fifth of it (soft: 100 / 40 steps at T = 200)
+    specs = [("slow_sinusoid", max(2, T_trk // 2)),
+             ("fast_sinusoid", max(1, T_trk // 5)),
+             ("piecewise_setpoints", 0)]
     for j, (nm, T1) in enumerate(specs[:n_tracking]):
-        T = 200
+        T = T_trk
         if nm == "piecewise_setpoints":
             seg = T // 4
             ref = np.vstack([np.tile(targets[min(k // seg, len(targets) - 1)], (seg, 1))
                              for k in range(4)] + [targets[-1][None]])
         else:
             k = np.arange(T + 1)
-            ref = np.stack([med[0] + amp[0] * np.sin(2 * np.pi * k / T1),
-                            med[1] + amp[1] * np.cos(2 * np.pi * k / T1)], axis=1)
+            w = 2.0 * np.pi / T1
+            ref = np.tile(med.copy(), (T + 1, 1))
+            for jj, c in enumerate(pos):
+                if jj % 2 == 0:
+                    ref[:, c] = med[c] + amp[c] * np.sin(w * k)
+                    vel = amp[c] * w * np.cos(w * k)
+                else:
+                    ref[:, c] = med[c] + amp[c] * np.cos(w * k)
+                    vel = -amp[c] * w * np.sin(w * k)
+                v = pos_to_vel.get(c)
+                if v is not None:
+                    ref[:, v] = vel
         scen.append({"name": nm, "kind": "tracking", "split": split,
                      "start": int(starts[min(j, len(starts) - 1)]), "horizon": T, "ref": ref})
     return scen, {"targets": [t.tolist() for t in targets], "amplitude": amp.tolist(),
-                  "median": med.tolist()}
+                  "median": med.tolist(), "pos_channels": pos,
+                  "setpoint_steps": T_set, "tracking_steps": T_trk,
+                  "dt": DT, "traj_len": traj_len}
 
 
 def history_at(split, start):
@@ -140,7 +187,8 @@ def train_ranges():
 RANGE = {}
 
 
-def metrics(X, U, R, times, fails, kind, target=None, dt=0.2):
+def metrics(X, U, R, times, fails, kind, target=None, dt=None):
+    dt = DT if dt is None else dt
     e = X - R
     m = {"rmse": float(np.sqrt(np.mean(e ** 2))), "mae": float(np.mean(np.abs(e))),
          "max_error": float(np.max(np.abs(e))),
@@ -168,14 +216,14 @@ def metrics(X, U, R, times, fails, kind, target=None, dt=0.2):
         m["overshoot_pct"] = float(100.0 * max(peak - np.linalg.norm(R[0]), 0.0)
                                    / max(np.linalg.norm(R[0]), 1e-9))
     else:
-        m["phase_lag_steps"] = _phase_lag(X, R)
+        m["phase_lag_steps"] = _phase_lag(X, R, max(15, int(round(2.0 / DT))))
     return m
 
 
-def _phase_lag(X, R):
+def _phase_lag(X, R, max_lag=15):
     """Best integer lag (in steps) minimising the RMSE between X and shifted R."""
     best, bl = None, 0
-    for lag in range(0, 15):
+    for lag in range(0, max_lag):
         if lag == 0:
             d = X - R
         else:
@@ -238,14 +286,32 @@ def main():
     ap.add_argument("--split", default="test", choices=["val", "test"])
     ap.add_argument("--search", action="store_true",
                     help="run the sensitivity study on validation scenarios")
-    ap.add_argument("--N", type=int, default=10)
+    ap.add_argument("--N", type=int, default=None,
+                    help="MPC horizon; default = the device's mpc_N")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--device", "-d", default=None,
+                    help="device spec; consumed by device.bootstrap_from_argv()")
+    ap.add_argument("--search-scenarios", default=None,
+                    help="comma-separated scenario names; when given, EVERY setting "
+                         "of this run (including 'default') uses only those scenarios. "
+                         "Used to bound the compute of the sensitivity study on a "
+                         "device where one control step is expensive.  Default: all.")
     args = ap.parse_args()
+    if args.N is None:
+        args.N = int(DEV_SPEC["mpc_N"])
+    print("device=%s (%s)  N=%d  dt=%g s  u_limit_phys=%s"
+          % (DEVICE, DEV_SPEC["label"], args.N, DT, DEV_SPEC["u_limit_phys"]))
 
-    ledger = json.load(open(os.path.join(EXP, "results", "modeling", "gate1_ledger.json"),
+    ledger = json.load(open(os.path.join(dev.results_dir("modeling"), "gate1_ledger.json"),
                             encoding="utf-8"))
     models, repro_check = load_models(ledger, seed=args.seed)
     scen, meta = build_scenarios(args.split)
+    if args.search_scenarios:
+        wanted = [x.strip() for x in args.search_scenarios.split(",") if x.strip()]
+        scen = [sc for sc in scen if sc["name"] in wanted]
+        if not scen:
+            raise SystemExit("no scenario matched --search-scenarios %r" % args.search_scenarios)
+        meta["scenario_subset"] = wanted
     print("split=%s scenarios=%s" % (args.split, [s["name"] for s in scen]))
 
     plant_fidelity = {}
@@ -261,19 +327,21 @@ def main():
     settings = [{"name": "default", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": args.N,
                  "ulim": "frozen"}]
     if args.search:
+        n_small, n_large = (int(v) for v in DEV_SPEC["mpc_N_sensitivity"])
         settings = [
             {"name": "default", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": args.N, "ulim": "frozen"},
             {"name": "data_range_u", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": args.N, "ulim": "data"},
             {"name": "loose_R", "q": 1.0, "r": 1e-4, "s": 1e-2, "N": args.N, "ulim": "frozen"},
             {"name": "tight_R", "q": 1.0, "r": 1e-2, "s": 1e-2, "N": args.N, "ulim": "frozen"},
             {"name": "more_rate", "q": 1.0, "r": 1e-3, "s": 1e-1, "N": args.N, "ulim": "frozen"},
-            {"name": "N5", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": 5, "ulim": "frozen"},
-            {"name": "N20", "q": 1.0, "r": 1e-3, "s": 1e-2, "N": 20, "ulim": "frozen"},
+            {"name": "N%d" % n_small, "q": 1.0, "r": 1e-3, "s": 1e-2, "N": n_small, "ulim": "frozen"},
+            {"name": "N%d" % n_large, "q": 1.0, "r": 1e-3, "s": 1e-2, "N": n_large, "ulim": "frozen"},
         ]
         print("\nsensitivity settings (applied IDENTICALLY to every controller): %s"
               % [s["name"] for s in settings])
         print("  note: 'data_range_u' constrains u to the empirical TRAIN range, because the")
-        print("        frozen u_limit=+-100 exceeds it (plant extrapolation risk).")
+        print("        frozen box %s exceeds it (plant extrapolation risk)."
+              % DEV_SPEC["u_limit_phys"])
 
     global RANGE
     RANGE = train_ranges()
@@ -284,7 +352,9 @@ def main():
 
     out = {"split": args.split, "scenario_meta": meta, "plant_fidelity": plant_fidelity,
            "model_reproduction_check": repro_check,
-           "u_limit_physical_assumed": U_PHYS,
+           "device": DEVICE,
+           "u_limit_physical_assumed": DEV_SPEC["u_limit_phys"],
+           "u_limit_source": DEV_SPEC["u_limit_source"],
            "u_limits_normalised": {"frozen": [U_LOWER.tolist(), U_UPPER.tolist()],
                                    "data_range": [U_DATA_LOWER.tolist(),
                                                   U_DATA_UPPER.tolist()]},
@@ -304,8 +374,8 @@ def main():
         for pname, pspec in PLANTS.items():
             plant = models[pspec]
             for cname, (mspec, cls) in CTRL.items():
-                ctrl = cls(models[mspec], N=N, Q=q * np.eye(2), P_term=q * np.eye(2),
-                           R=r * np.eye(2), S=s * np.eye(2),
+                ctrl = cls(models[mspec], N=N, Q=q * np.eye(N_STATE), P_term=q * np.eye(N_STATE),
+                           R=r * np.eye(N_CTRL), S=s * np.eye(N_CTRL),
                            u_min=lo, u_max=hi)
                 for sc in scen:
                     X, U, R, times, fails = run_scenario(plant, ctrl, sc, N)

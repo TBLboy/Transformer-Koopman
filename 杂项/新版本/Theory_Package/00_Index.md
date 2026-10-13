@@ -1,5 +1,9 @@
 # 00 — Theory_Package 装配索引（阶段八）
 
+> **最新整理：TASK-048 / DEC-091–093。** 六章布局与主文/附录边界见`../Theory_Package_Audit_and_Compact_Outline.md`。01–08保留三条主定理并局部对齐：控制采用测量输出成本，训练保持联合x+z，不研究加z是否更好。共同初始历史、全可行集工作域与最小假设依赖已显式化；不写论文正文。
+>
+> 最新定向验证：`../validation/validate_theory_reconciliation.py` 42/42；现有QP测试两设备各31/31（显式初始化可选后端的包装器，原27/28基线失败保留）。仅认证所测代数/路径，不认证真实设备统一常数、精确数值argmin或闭环性质。最终独立复核与状态以外层`.project-log`为准；本文旧阶段的历史门禁不自动适用于修订字节。
+
 > **本文件的性质**：前期工作的**装配索引与自检记录**。它描述 `01`–`09` 九件套的清单、依赖关系、禁止清单扫描结果与复现方法。
 >
 > **状态**：前期材料，**不是论文正文**；不含实验数值；**不进论文**（REQ-002 / BA-003）。
@@ -14,21 +18,22 @@
 
 | # | 文件 | 字节 | sha256（前 16 位） | 内容 |
 |---|---|---|---|---|
-| 01 | `01_Model_Definition.md` | 9874 | `da6456a4173846fa` | 模型定义、context 与窗口约定（`u_k` 不进 context）、$A(c)$/$B(\chi)$ 的低秩调制形式 |
-| 02 | `02_Assumptions.md` | 7561 | `920565ddf5d80211` | A1–A5 假设、常数对应关系、**不声称**清单 |
-| 03 | `03_Low_rank_Boundedness.md` | 5121 | `bd99786ff274510f` | 命题 1：$\|A(c)-A_0\|_2\le g_A$、$\|B(\chi)-B_0\|_2\le g_B$（**有界性，非稳定性**） |
-| 04 | `04_Scheduling_Lipschitz.md` | 6841 | `6f59b55aee8712a3` | 命题 2：$L_A$、$L_B$ 的显式表达与证明 |
-| 05 | `05_Prediction_Error_Bound.md` | 10853 | `af556ab4b888bfee` | 定理 1：开环有限时域预测误差界、$L$ 的定义 |
-| 06 | `06_Frozen_LTV_QP_Proof.md` | 11848 | `739dc7f8f9f32e74` | 冻结 LTV 问题、命题 4：$H=2(G^{\mathsf T}\bar QG+\bar R+\hat D^{\mathsf T}\bar S\hat D)\succeq0$、§6 第 8 条 $c_0$ |
-| 07 | `07_Freezing_Error_Bound.md` | 11157 | `05c8dcaaea323630` | 定理 2：同一输入序列下完整 vs 冻结 rollout 的误差界、三对象区分、$\delta_{\mathrm{frz}}$、§7 第 3 条 |
-| 08 | `08_Conditional_Suboptimality.md` | 10010 | `aeb9f5f4d88b75d3` | 定理 3：条件次优性 $0\le J_{\mathrm{full}}(u^{\mathrm{fr}})-J_{\mathrm{full}}(u^\*)\le 2\varepsilon_J$、$\varepsilon_J$ 显式化 |
+| 01 | `01_Model_Definition.md` | 10193 | `d74084d40fc50611` | 模型、共同历史/移位与A/B低秩调制；不保证可辨识 |
+| 02 | `02_Assumptions.md` | 8638 | `a948c9328037676b` | 统一工作域/全可行集量词、最小依赖与残差条件 |
+| 03 | `03_Low_rank_Boundedness.md` | 4877 | `d0b1740e485608b7` | 命题1有界性；族紧性不等于固定网络supremum |
+| 04 | `04_Scheduling_Lipschitz.md` | 6889 | `07d1e087dd500a4b` | 命题2常数与softmax最优Lipschitz常数备注 |
+| 05 | `05_Prediction_Error_Bound.md` | 11018 | `b2f5421bd2c9b315` | 定理1零初值、共享历史、统一残差的有限时域预测界 |
+| 06 | `06_Frozen_LTV_QP_Proof.md` | 12061 | `3032a763a94fc06c` | 测量空间成本、输出选择矩阵Hessian、输入盒约束凸QP；两侧索引一致 |
+| 07 | `07_Freezing_Error_Bound.md` | 11868 | `fd0fe6d624738f6f` | 定理2同U下full/frozen差；名义漂移与共享历史 |
+| 08 | `08_Conditional_Suboptimality.md` | 9244 | `7299985581479665` | 定理3条件2εJ及测量空间一致成本界；精确全局/局部参考边界 |
 | 09 | `09_Reference_List.md` | 25896 | `90b7960e37449cbd` | 四主题文献清单（支撑 / 竞争 / 待核实）、controlled Koopman 代理的合理性论证、旧稿参考文献核对 |
 
 **辅助文件**（不属于九件套，但同目录）：
 - `00_assembly_scan.py` — 本索引的**可复现扫描器**（只用标准库）。
 - `00_assembly_scan.txt` — 扫描器的原始输出（由脚本以 UTF-8 自行写出，不经 shell 重定向）。
+- `10_Reference_List_Supplement.md` — 辅助文献补充，不属于九件套。
 
-> 清单中的字节数与 sha256 由 `00_assembly_scan.py` 每次运行重新计算，**完整哈希见 `00_assembly_scan.txt`**。上表数字对应 `00_assembly_scan.txt` 的 `scanned` 时间戳。
+> 扫描器输出字节数和hash前16位；完整SHA256以外层本任务验证/证据绑定为准。上表为TASK-048修订版本，不把扫描器对自身旧输出的hash当成完整证据。
 
 ---
 
@@ -37,23 +42,25 @@
 由 `00_assembly_scan.py` 扫描每件里 `` `NN` `` 形式的引用，**全部指向存在的件，无悬空引用**（`dangling internal refs: none`）：
 
 ```
-01_Model_Definition.md             -> 03
+01_Model_Definition.md             -> 02,03
 02_Assumptions.md                  -> 01,03,04,05,06,07,08
-03_Low_rank_Boundedness.md         -> 01
+03_Low_rank_Boundedness.md         -> 01,04,05,07
 04_Scheduling_Lipschitz.md         -> 01,02,03,05,07
 05_Prediction_Error_Bound.md       -> 01,02,03,04
-06_Frozen_LTV_QP_Proof.md          -> 01,02,04,06,07,08     （含自引，属正常）
+06_Frozen_LTV_QP_Proof.md          -> 01,02,07,08
 07_Freezing_Error_Bound.md         -> 01,02,03,04,05,06,08
-08_Conditional_Suboptimality.md    -> 01,02,03,04,06,07
+08_Conditional_Suboptimality.md    -> 02,03,04,06,07
 09_Reference_List.md               -> 01,02,03,04,06,07,08
 ```
 
-逻辑依赖链（与 `ARCH-002` 的 `depends_on` 一致）：
+最新逻辑依赖（与早期任务执行顺序区分；05不是控制误差的真实模型前提）：
 
 ```
-01 → 02 → 03 → 04 → 05 ─┐
-                        ├→ 06 → 07 → 08
-                    01/02┘
+01/S3 → 03/04 → 05（共同历史 + A1/A3/A5）
+01/固定调度/半正定权重 → 06（仿射堆叠与凸性）
+03/04 + 06 + A1/A3/共同历史 → 07（05只提供归纳模板）
+07 + 全可行集统一条件 + 06测量成本 → 08显式εJ
+共同可行集 + 两个全局argmin + CA → 08抽象2εJ定理
 09 独立（文献），但 §2 的论证引用 03/04 的结论
 ```
 
@@ -70,7 +77,9 @@
 
 ---
 
-## 3. 禁止清单扫描
+## 3. 禁止清单扫描（旧阶段历史记录；最新结果如下）
+
+TASK-048扫描：`TOTAL hits=42, unclassified=8`，内部引用无悬空、四个论文硬标记均ABSENT。8项人工分类：01旧路线bilinear推迟为历史登记；02递归可行/实时两行继承禁止表；07残差由数据/辨识界定为来源说明；09四项为术语讨论、原话引述与未定文献身份。没有新增本项目bilinear命名、稳定性/实时保证或实验结论。下表保留旧阶段的9项分类与原行号，不能拿它替代新版本扫描。
 
 **扫描口径**：对九件套逐行匹配 `bilinear/双线性`、`real-time/实时/截止时间/deadline`、`closed-loop stability/闭环稳定/递归可行/recursive feasibility`、`摘要/abstract`、`Introduction`、`实验/experiment`、`标题/title`。分类器**故意保守**（只看关键词前 40 / 后 20 字符内的否定标记），因此会有假阳性，未分类命中**逐条人工裁定**（下表）。
 
@@ -101,7 +110,7 @@
 
 ---
 
-## 4. 论文目录未被改动（git 层面）
+## 4. 论文目录未被改动（旧阶段历史证据）
 
 本阶段**未**修改 `论文/` 下任何文件。核验方式与结果见 `TASK-041` 的证据（主 Agent 执行）：
 
@@ -127,7 +136,9 @@ D:\conda\envs\vibe-coding\python.exe 00_assembly_scan.py
 
 ---
 
-## 6. 未解决项与登记项（汇总）
+## 6. 未解决项与登记项（阶段八历史快照）
+
+下表不是TASK-048的当前阻塞列表。01的未证可辨识性/错误旧路径已去除；02统一域、08局部解与成本口径已按DEC-093修订。plant、文献身份与旧参考文献认证不在本次理论局部整理范围，保留未核实状态；历史证据变化转stale，不删除旧完成事实。
 
 | # | 事项 | 位置 | 状态 |
 |---|---|---|---|

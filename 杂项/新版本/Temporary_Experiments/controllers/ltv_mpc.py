@@ -20,14 +20,38 @@ consistency item in reports/control_comparison.md.
 """
 from __future__ import annotations
 
+import os
+import sys
+
 import numpy as np
 import scipy.sparse as sp
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_MODELS = os.path.join(os.path.dirname(_HERE), "models")
+if _MODELS not in sys.path:
+    sys.path.insert(0, _MODELS)
+import device as _device                            # noqa: E402
 
 try:
     import osqp
     HAVE_OSQP = True
 except Exception:                                   # pragma: no cover
     HAVE_OSQP = False
+
+
+def _dev_n_state():
+    return int(_device.current()["n_state"])
+
+
+def _dev_n_ctrl():
+    return int(_device.current()["n_ctrl"])
+
+
+def _model_n_ctrl(model):
+    """Control dimension of a trained scheduled model (B0 is (latent, n_ctrl))."""
+    if hasattr(model, "B0"):
+        return int(model.B0.shape[1])
+    return _dev_n_ctrl()
 
 
 # ------------------------------------------------------------------ affine map
@@ -60,14 +84,18 @@ def _prod(A_bar, a, b):
     return P
 
 
-def cost_matrices(F, G, x_ref, u_ref, Q, P_term, R, S, u_prev, n_state=2):
+def cost_matrices(F, G, x_ref, u_ref, Q, P_term, R, S, u_prev, n_state=None):
     """M, f, const with  J(U) = U^T M U + 2 f^T U + const  (06 section 4, measurement space).
 
     ``const`` is the U-independent part; it is returned so that the quadratic form
     can be compared with the direct summation (Gate 3 objective test).
+
+    ``n_state`` defaults to ``x_ref.shape[1]``, so the same code serves any device.
     """
     N, d, Nm = G.shape
     m = Nm // N
+    if n_state is None:
+        n_state = int(x_ref.shape[1])
     C = np.zeros((n_state, d))
     C[:, :n_state] = np.eye(n_state)
     Cbar = np.kron(np.eye(N), C)                                  # (N*n, N*d)
@@ -93,10 +121,12 @@ def cost_matrices(F, G, x_ref, u_ref, Q, P_term, R, S, u_prev, n_state=2):
     return M, f, const
 
 
-def cost_value(U, F, G, x_ref, u_ref, Q, P_term, R, S, u_prev, n_state=2):
+def cost_value(U, F, G, x_ref, u_ref, Q, P_term, R, S, u_prev, n_state=None):
     """Direct summation of the same cost -- used to validate M, f."""
     N, d, Nm = G.shape
     m = Nm // N
+    if n_state is None:
+        n_state = int(x_ref.shape[1])
     Z = F + np.tensordot(G.reshape(N, d, Nm), U, axes=([2], [0]))
     J = 0.0
     for i in range(N):
@@ -159,13 +189,20 @@ class ScheduledLTVMPC:
     """C1 / C2: scheduled model (M4 = A(c)+B0, M5 = A(c)+B(x)) + frozen LTV-MPC."""
 
     def __init__(self, model, N=10, Q=None, P_term=None, R=None, S=None,
-                 u_min=-100.0, u_max=100.0, tail_fill="repeat", device="cpu"):
+                 u_min=-100.0, u_max=100.0, tail_fill="repeat", device="cpu",
+                 n_state=None, m=None):
         self.model = model
         self.N = int(N)
-        self.Q = np.eye(2) if Q is None else np.asarray(Q, dtype=float)
+        self.n_state = int(n_state) if n_state is not None else _dev_n_state()
+        self.m = int(m) if m is not None else _model_n_ctrl(model)
+        n, mm = self.n_state, self.m
+        self.Q = np.eye(n) if Q is None else np.asarray(Q, dtype=float)
         self.P_term = self.Q.copy() if P_term is None else np.asarray(P_term, dtype=float)
-        self.R = 1e-3 * np.eye(2) if R is None else np.asarray(R, dtype=float)
-        self.S = 1e-2 * np.eye(2) if S is None else np.asarray(S, dtype=float)
+        self.R = 1e-3 * np.eye(mm) if R is None else np.asarray(R, dtype=float)
+        self.S = 1e-2 * np.eye(mm) if S is None else np.asarray(S, dtype=float)
+        # NOTE: the +-100 default is a deliberately loose fallback kept for
+        # backwards compatibility with the Gate-3 unit tests.  Every scenario run
+        # passes the device's own normalised box explicitly.
         self.u_min = np.asarray(u_min, dtype=float)
         self.u_max = np.asarray(u_max, dtype=float)
         self.tail_fill = tail_fill
@@ -175,7 +212,7 @@ class ScheduledLTVMPC:
 
     # ---- warm start
     def warm_start(self, u_prev):
-        m = self.model.B0.shape[1] if hasattr(self.model, "B0") else 2
+        m = self.m if self.m else _dev_n_ctrl()
         if self.last_U is None:
             U = np.tile(np.asarray(u_prev, dtype=float), (self.N, 1))
         else:
@@ -186,7 +223,7 @@ class ScheduledLTVMPC:
 
     # ---- one MPC step
     def step(self, xh, uin, u_prev, x_ref, u_ref=None):
-        """xh: (1,P,2), uin: (1,P-1,2), u_prev: (2,), x_ref: (N+1,2).
+        """xh: (1,P,n), uin: (1,P-1,m), u_prev: (m,), x_ref: (N+1,n).
 
         Returns (u0, U, info).  Nothing here reads future true measurements.
         """
@@ -195,7 +232,7 @@ class ScheduledLTVMPC:
         x_ref = np.asarray(x_ref, dtype=float)
         if x_ref.shape[0] < N + 1:
             raise ValueError("x_ref must have N+1 rows")
-        u_ref = np.zeros((N, 2)) if u_ref is None else np.asarray(u_ref, dtype=float)
+        u_ref = np.zeros((N, self.m)) if u_ref is None else np.asarray(u_ref, dtype=float)
 
         Ubar = self.warm_start(u_prev)
         with torch.no_grad():
@@ -234,7 +271,7 @@ class LTIMPC(ScheduledLTVMPC):
         import torch
         N = self.N
         x_ref = np.asarray(x_ref, dtype=float)
-        u_ref = np.zeros((N, 2)) if u_ref is None else np.asarray(u_ref, dtype=float)
+        u_ref = np.zeros((N, self.m)) if u_ref is None else np.asarray(u_ref, dtype=float)
         Ubar = self.warm_start(u_prev)
         with torch.no_grad():
             xh_t = torch.as_tensor(xh, dtype=torch.float32, device=self.device)
@@ -258,11 +295,13 @@ class LTIMPC(ScheduledLTVMPC):
 
 # ------------------------------------------------------------------ reference
 def cvxpy_reference(F, G, x_ref, u_ref, Q, P_term, R, S, u_prev, u_min, u_max,
-                    n_state=2):
+                    n_state=None):
     """Independent cvxpy model of the SAME frozen problem (unit-test reference)."""
     import cvxpy as cp
     N, d, Nm = G.shape
     m = Nm // N
+    if n_state is None:
+        n_state = int(x_ref.shape[1])
     U = cp.Variable(Nm)
     obj = 0
     for i in range(N):

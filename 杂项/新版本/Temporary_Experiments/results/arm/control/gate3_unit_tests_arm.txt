@@ -1,0 +1,39 @@
+﻿==============================================================================
+Gate 3 unit tests -- device=arm_3link (n_state=6, n_ctrl=3, P=8, latent=14)
+==============================================================================
+T1 prediction matrices Z=F+GU match explicit frozen rollout PASS  max|err|=6.661e-16
+T1b F equals zero-input response                           PASS  
+T1c G[r,r] == B_r (theory G_{i,i-1}=B_{i-1})               PASS  
+T1d G[r, t>r] is zero                                      PASS  max|blk|=0.000e+00
+T2 U^T M U + 2 f^T U + const equals direct cost summation  PASS  direct=42.5113251865 quad=42.5113251865
+T2b analytic gradient matches finite differences           PASS  rel err=7.762e-10
+T2c M is symmetric                                         PASS  
+T3 OSQP reports solved                                     PASS  solved
+T3b OSQP and cvxpy objectives agree                        PASS  osqp=17.8250601831 cvxpy=17.8250601831
+T3c OSQP and cvxpy solutions agree                         PASS  max|dU|=2.442e-15
+T3d box constraints satisfied                              PASS  [-1.897412, 3.000000]
+T3e tight box saturates                                    PASS  max|u|=0.01000000
+T4 nominal_rollout schedule consistent with states         PASS  max|err|=2.384e-07
+T4b frozen affine map reproduces the frozen rollout        PASS  max|err|=2.877e-07
+T4c M5 input map depends on the measurement state          PASS  max|dB|=3.671e-02
+T4d low-rank column norms <= 1                             PASS  
+T5 A0B0 schedule is constant across the horizon            PASS  
+T5b LTI: frozen LTV model equals the full rollout          PASS  max|err|=1.907e-07
+Polishing not needed - no active set detected at optimal point
+T6 controller returns a finite first input                 PASS  u0=[-6.2572  2.5961 -0.5045]
+T6b QP solved inside the controller                        PASS  solved
+T6c cost consistency inside the controller                 PASS  quad=5.00376617 direct=5.00376617
+T6d inputs within the box                                  PASS  
+Polishing not needed - no active set detected at optimal point
+T6e deterministic for identical inputs                     PASS  
+T6f warm start shifts the previous solution and repeats the tail PASS  tail=[ 0.2938 -0.2437  0.2432]
+Polishing not needed - no active set detected at optimal point
+T6g warm start changes the frozen schedule (hence the optimum) PASS  max|dU|=5.066e-02
+T7 encoder is applied exactly once per rollout (latent propagation) PASS  encoder calls=1
+T7b rollout step 0 equals the one-step prediction          PASS  
+T7c rollout depends on the future control inputs           PASS  
+T8 M5: Gate-5 helper matches the model rollout             PASS  max|err|=0.000e+00
+T8 M4: Gate-5 helper matches the model rollout             PASS  max|err|=0.000e+00
+T8 M_base: Gate-5 helper matches the model rollout         PASS  max|err|=0.000e+00
+
+31/31 tests passed

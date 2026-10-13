@@ -1,0 +1,9 @@
+device=arm_3link (3-joint robotic arm)  compute=cuda cuda=True
+  n_state=6 n_ctrl=3 P=8 latent=14 horizons={'short': 5, 'mid': 25, 'long': 100, 'long2': 500, 'long3': 1000}
+
+=== M2 : 3 seeds (final) ===
+  seed 0  val one-step=0.105704  roll5=0.192543  roll25=0.332499
+  seed 1  val one-step=0.097544  roll5=0.168842  roll25=0.323972
+  seed 2  val one-step=0.093547  roll5=0.197167  roll25=0.344703
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\杂项\新版本\Temporary_Experiments\results\arm\modeling\gate1_ledger.json

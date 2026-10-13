@@ -1,0 +1,13 @@
+device=arm_3link (3-joint robotic arm)  compute=cuda cuda=True
+  n_state=6 n_ctrl=3 P=8 latent=14 horizons={'short': 5, 'mid': 25, 'long': 100, 'long2': 500, 'long3': 1000}
+
+=== M0 : 6 trials (formal) ===
+  trial  0  val_roll25=2.266227  params=0  0.5s  {'delay': 2, 'epochs': 50}
+  trial  1  val_roll25=2.260427  params=0  0.3s  {'delay': 1, 'epochs': 50}
+  trial  2  val_roll25=2.260427  params=0  0.3s  {'delay': 1, 'epochs': 50}
+  trial  3  val_roll25=2.784352  params=0  0.2s  {'delay': 0, 'epochs': 50}
+  trial  4  val_roll25=2.784352  params=0  0.2s  {'delay': 0, 'epochs': 50}
+  trial  5  val_roll25=2.784352  params=0  0.3s  {'delay': 0, 'epochs': 50}
+  -> best M0: val_roll25=2.260427 cfg={'delay': 1, 'epochs': 50}
+
+done -> D:\Project\Transformer-Koopman\Transformer-Koopman\ÔÓÏî\ĞÂ°æ±¾\Temporary_Experiments\results\arm\modeling\gate1_ledger.json

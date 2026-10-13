@@ -1,0 +1,92 @@
+{
+ "device": "soft_platform",
+ "ledger": "results\\modeling\\gate1_ledger.json",
+ "models": {
+  "M0": {
+   "params": 0,
+   "load": {
+    "loaded": false,
+    "trained": true,
+    "closed_form": true,
+    "delay": 1
+   },
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "n_mismatch": 0,
+   "n_metrics": 151
+  },
+  "M1": {
+   "params": 0,
+   "load": {
+    "loaded": false,
+    "trained": true,
+    "closed_form": true
+   },
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "n_mismatch": 0,
+   "n_metrics": 151
+  },
+  "M2": {
+   "params": 230,
+   "load": {
+    "loaded": false,
+    "trained": true,
+    "closed_form": true,
+    "alternating": true
+   },
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "n_mismatch": 0,
+   "n_metrics": 151
+  },
+  "M3": {
+   "params": 4770,
+   "load": {
+    "loaded": true,
+    "path": "M3_seed0.pt"
+   },
+   "max_abs_diff": 0.0,
+   "worst_key": null,
+   "n_mismatch": 0,
+   "n_metrics": 151
+  },
+  "M4": {
+   "params": 20818,
+   "load": {
+    "loaded": true,
+    "path": "M4_seed0.pt"
+   },
+   "max_abs_diff": 0.009957796335220648,
+   "worst_key": "quantiles/long/q0.9",
+   "n_mismatch": 151,
+   "n_metrics": 151
+  },
+  "M5": {
+   "params": 20872,
+   "load": {
+    "loaded": true,
+    "path": "M5_seed0.pt"
+   },
+   "max_abs_diff": 0.013997874259948695,
+   "worst_key": "quantiles/long/q0.99",
+   "n_mismatch": 151,
+   "n_metrics": 151
+  },
+  "M6": {
+   "params": 55042,
+   "load": {
+    "loaded": true,
+    "path": "M6_seed0.pt"
+   },
+   "max_abs_diff": 0.11659562468528722,
+   "worst_key": "quantiles/mid/q0.99",
+   "n_mismatch": 151,
+   "n_metrics": 151
+  }
+ },
+ "max_abs_diff": 0.11659562468528722,
+ "n_metrics": 1057,
+ "n_mismatch": 453,
+ "verdict": "CHANGED"
+}

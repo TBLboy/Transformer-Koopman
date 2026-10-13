@@ -30,11 +30,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 EXP = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(EXP, "models"))
 
+import device as dev              # noqa: E402
+dev.bootstrap_from_argv()         # MUST run before protocol/library freeze constants
+
 import protocol as proto          # noqa: E402
 from library import build_model, n_params   # noqa: E402
 
-RESULTS = os.path.join(EXP, "results", "modeling")
-CKPT = os.path.join(EXP, "checkpoints")
+DEVICE = dev.current()["name"]
+RESULTS = dev.results_dir("modeling")
+CKPT = dev.checkpoints_dir()
 os.makedirs(RESULTS, exist_ok=True)
 os.makedirs(CKPT, exist_ok=True)
 
@@ -96,10 +100,10 @@ def tensors(split, horizon, stride=None, frozen_eval=False):
     x, u, tid = proto.load_split(split)
     xn, un = proto.normalise(x, u)
     if frozen_eval:
-        starts = proto.all_starts({5: "short", 25: "mid", 100: "long"}[horizon], int(tid.max()) + 1)
+        starts = proto.frozen_starts_for(tid, proto.HORIZON_KEY[horizon])
     else:
-        starts = np.stack([proto.dense_starts(int(np.sum(tid == t)), horizon, stride or 1)
-                           for t in range(int(tid.max()) + 1)])
+        starts = [proto.dense_starts(int(np.sum(tid == t)), horizon, stride or 1)
+                  for t in range(int(tid.max()) + 1)]
     w = proto.make_windows(xn, un, tid, horizon, starts=starts)
     return w, (x, u, tid)
 
@@ -175,7 +179,7 @@ def train_gradient(spec, cfg, seed, tr, va, epochs, lr, w_roll, roll_h, wd=1e-4)
             tot += float(loss)
             nb += 1
         vidx = np.arange(len(va["k"]))
-        vsel = rollout_metric(model, va, 25, vidx) if len(vidx) else float("inf")
+        vsel = rollout_metric(model, va, proto.SELECTION_HORIZON, vidx) if len(vidx) else float("inf")
         sched.step(vsel)
         hist.append({"epoch": ep, "train": tot / max(nb, 1), "val_roll25": vsel})
         if vsel < best["val"]:
@@ -191,17 +195,18 @@ def train_gradient(spec, cfg, seed, tr, va, epochs, lr, w_roll, roll_h, wd=1e-4)
 
 def train_one(spec, cfg, seed, tr, va, w_roll=0.0, roll_h=10, epochs=80, lr=1e-3):
     if spec == "M0":
-        x, u, tid = tr["_raw"]
+        x, u, tid = tr["_fit"]
         model = build_model(spec, seed=seed, delay=cfg.get("delay", 0))
         model.fit(x, u, tid)
         return model, {"closed_form": True, "delay": cfg.get("delay", 0)}
     if spec == "M1":
-        x, u, tid = tr["_raw"]
+        x, u, tid = tr["_fit"]
         model = build_model(spec, seed=seed, **{k: v for k, v in cfg.items()})
         model.fit(x, u, tid)
         return model, {"closed_form": True}
     if spec == "M2":
-        x, u, tid = tr["_raw"]
+        # M2 never uses the raw triple: its dictionary is trained directly on the
+        # normalised windows below, so it was never affected by the unit mismatch.
         model = build_model(spec, seed=seed, d_lift=cfg["d_lift"], hidden=cfg["hidden"],
                             ridge=cfg["ridge"])
         model.to(DEV)
@@ -254,8 +259,17 @@ def make_train_rollout(spec, cfg, seed):
     """
     horizon = max(int(cfg.get("roll_h", 10)), 5)
     tr, raw_tr = tensors("train", horizon, stride=4)
-    tr["_raw"] = raw_tr
-    va, _ = tensors("val", 25, stride=4)
+    x_r, u_r, tid_r = raw_tr
+    xn_r, un_r = proto.normalise(x_r, u_r)
+    # The closed-form models M0/M1 are fitted on this triple and then evaluated on
+    # the NORMALISED windows, so the triple must be normalised as well.  Fitting on
+    # physical units silently biases the baseline: on the arm it made M1 (EDMDc)
+    # diverge (val roll25 non-finite) and inflated M0's H=25 rollout RMSE by ~6x.
+    tr["_fit"] = (xn_r, un_r, tid_r)
+    _scale = np.concatenate([xn_r.std(0), un_r.std(0)])
+    if not np.all(np.abs(_scale - 1.0) < 0.05):
+        raise AssertionError("closed-form fit arrays are not normalised: std=%s" % _scale)
+    va, _ = tensors("val", proto.SELECTION_HORIZON, stride=4)
     w_roll = float(cfg.get("w_roll", 0.0))
     model, info = train_one(spec, cfg, seed, tr, va, w_roll=w_roll,
                             roll_h=int(cfg.get("roll_h", 10)),
@@ -313,9 +327,9 @@ def load_or_train(spec, cfg, seed=0, save=True):
 
 
 def eval_all(model, split="test"):
-    """Full frozen evaluation on the pre-fixed start sets."""
+    """Full frozen evaluation on the pre-fixed start sets (the device's horizons)."""
     out = {"one_step": {}, "rollout": {}, "per_channel": {}, "curve": {}, "quantiles": {}}
-    for key, H in (("short", 5), ("mid", 25), ("long", 100)):
+    for key, H in proto.HORIZONS.items():
         w, raw = tensors(split, H, frozen_eval=True)
         idx = np.arange(len(w["k"]))
         out["one_step"][key] = one_step_metric(model, w, idx)
@@ -339,9 +353,21 @@ def main():
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--epochs", type=int, default=60)
+    ap.add_argument("--device", "-d", default=None,
+                    help="device spec; consumed by device.bootstrap_from_argv()")
+    ap.add_argument("--test-from-checkpoint", action="store_true",
+                    help="test stage: evaluate the checkpoints saved by the 'final' "
+                         "stage instead of retraining.  Default off keeps the original "
+                         "soft-platform behaviour.  Turning it on makes the reported "
+                         "test numbers correspond EXACTLY to the artifacts that "
+                         "run_gate4/run_gate5 load, which matters on a device whose "
+                         "neural training is not bit-reproducible.")
     args = ap.parse_args()
 
-    print("device=%s cuda=%s" % (DEV, torch.cuda.is_available()))
+    print("device=%s (%s)  compute=%s cuda=%s"
+          % (DEVICE, dev.current()["label"], DEV, torch.cuda.is_available()))
+    print("  n_state=%d n_ctrl=%d P=%d latent=%d horizons=%s"
+          % (proto.N, proto.M, proto.P, proto.D, proto.HORIZONS))
     ledger_path = os.path.join(RESULTS, "gate1_ledger.json")
     ledger = {}
     if os.path.exists(ledger_path):
@@ -365,14 +391,27 @@ def main():
                 t0 = time.time()
                 try:
                     model, info = make_train_rollout(spec, cfg, seed=1000 + i)
-                    va, _ = tensors("val", 25, stride=4)
+                    va, _ = tensors("val", proto.SELECTION_HORIZON, stride=4)
                     vidx = np.arange(len(va["k"]))
-                    vsel = rollout_metric(model, va, 25, vidx)
-                    runs.append({"trial": i, "cfg": cfg, "val_roll25": vsel,
-                                 "params": n_params(model), "seconds": time.time() - t0,
-                                 "info": info, "status": "ok"})
-                    print("  trial %2d  val_roll25=%.6f  params=%d  %.1fs  %s"
-                          % (i, vsel, n_params(model), time.time() - t0, cfg))
+                    vsel = rollout_metric(model, va, proto.SELECTION_HORIZON, vidx)
+                    if not np.isfinite(vsel):
+                        # A non-finite validation metric means the trial DIVERGED.
+                        # It must never be selected as 'best': min() over a list
+                        # containing NaN is order-dependent, which silently picked a
+                        # NaN config on the arm's M1 (EDMDc) and would have been
+                        # reported as the selected model.
+                        runs.append({"trial": i, "cfg": cfg, "val_roll25": vsel,
+                                     "params": n_params(model), "seconds": time.time() - t0,
+                                     "info": info, "status": "diverged",
+                                     "error": "non-finite validation rollout RMSE"})
+                        print("  trial %2d  DIVERGED (non-finite val_roll25=%r) %.1fs  %s"
+                              % (i, vsel, time.time() - t0, cfg))
+                    else:
+                        runs.append({"trial": i, "cfg": cfg, "val_roll25": vsel,
+                                     "params": n_params(model), "seconds": time.time() - t0,
+                                     "info": info, "status": "ok"})
+                        print("  trial %2d  val_roll25=%.6f  params=%d  %.1fs  %s"
+                              % (i, vsel, n_params(model), time.time() - t0, cfg))
                 except Exception as exc:      # noqa: BLE001 - record every failure
                     runs.append({"trial": i, "cfg": cfg, "status": "failed",
                                  "error": repr(exc), "seconds": time.time() - t0})
@@ -381,11 +420,18 @@ def main():
                 ledger["trials"].setdefault(spec, []).append(runs[-1])
                 with io.open(ledger_path, "w", encoding="utf-8", newline="\n") as fh:
                     json.dump(ledger, fh, ensure_ascii=False, indent=1)
-            ok = [r for r in runs if r["status"] == "ok"]
+            ok = [r for r in runs if r["status"] == "ok"
+                  and np.isfinite(r.get("val_roll25", float("nan")))]
             if ok:
                 best = min(ok, key=lambda r: r["val_roll25"])
                 ledger.setdefault("best", {})[spec] = best
                 print("  -> best %s: val_roll25=%.6f cfg=%s" % (spec, best["val_roll25"], best["cfg"]))
+            else:
+                # No usable config: remove any stale entry so downstream stages skip it
+                # instead of training a diverged configuration.
+                ledger.setdefault("best", {}).pop(spec, None)
+                print("  -> NO VALID CONFIG for %s: %d/%d trials diverged or failed"
+                      % (spec, len([r for r in runs if r["status"] == "diverged"]), len(runs)))
             with io.open(ledger_path, "w", encoding="utf-8", newline="\n") as fh:
                 json.dump(ledger, fh, ensure_ascii=False, indent=1)
 
@@ -417,10 +463,16 @@ def main():
             print("\n=== %s : frozen TEST evaluation ===" % spec)
             results = []
             for s in range(args.seeds):
-                model, _ = make_train_rollout(spec, best["cfg"], seed=s)
+                if args.test_from_checkpoint:
+                    model, info = load_or_train(spec, best["cfg"], seed=s, save=False)
+                else:
+                    model, _ = make_train_rollout(spec, best["cfg"], seed=s)
+                    info = {"retrained": True}
                 t0 = time.time()
                 ev = eval_all(model, "test")
                 results.append({"seed": s, "test": ev, "params": n_params(model),
+                                "source": ("checkpoint" if info.get("loaded")
+                                           else "retrain"),
                                 "eval_seconds": time.time() - t0})
                 print("  seed %d  TEST one-step=%.6f  roll5=%.6f  roll25=%.6f  roll100=%.6f"
                       % (s, ev["one_step"]["short"], ev["rollout"]["short"],

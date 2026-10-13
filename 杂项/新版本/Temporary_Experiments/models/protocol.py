@@ -34,21 +34,33 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 EXP_DIR = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(EXP_DIR)))
 
-DATA_DIR = os.path.join(REPO, "数据备份", "软体平台数据", "处理后的数据")
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
 
-# ---- frozen constants (configs/modeling_protocol.yaml) ----------------------
-P = 8            # history_length
-PATCH = 2
-D = 10           # latent_dim
-N = 2            # state_dim
-M = 2            # control_dim
-HORIZONS = {"short": 5, "mid": 25, "long": 100}
-STARTS_PER_TRAJ = {"short": 4, "mid": 3, "long": 2}
+import device as _device          # noqa: E402  (device specs + frozen constants)
 
-X_MEAN = np.array([-0.696318, 0.048996])
-X_STD = np.array([3.243583, 3.415089])
-U_MEAN = np.array([0.238027, -0.091383])
-U_STD = np.array([27.962413, 28.133323])
+DEV = _device.current()
+DEVICE = DEV["name"]
+
+DATA_DIR = DEV["data_dir"]
+
+# ---- frozen constants, per device (configs/modeling_protocol.yaml + device.py) ----
+P = int(DEV["history_P"])        # history_length
+PATCH = int(DEV["patch"])
+D = int(DEV["latent_dim"])       # latent_dim
+N = int(DEV["n_state"])          # state_dim
+M = int(DEV["n_ctrl"])           # control_dim
+HORIZONS = dict(DEV["horizons"])
+STARTS_PER_TRAJ = dict(DEV["starts_per_traj"])
+HORIZON_KEY = {int(v): k for k, v in HORIZONS.items()}
+SELECTION_HORIZON = int(DEV["selection_horizon"])
+TRAJ_LEN = int(DEV["trajectory_length"])
+DT = float(DEV["dt"])
+
+X_MEAN = np.array(DEV["x_mean"], dtype=np.float64)
+X_STD = np.array(DEV["x_std"], dtype=np.float64)
+U_MEAN = np.array(DEV["u_mean"], dtype=np.float64)
+U_STD = np.array(DEV["u_std"], dtype=np.float64)
 
 C_X = np.hstack([np.eye(N), np.zeros((N, D - N))])   # C_x z = x_k
 
@@ -96,16 +108,32 @@ def dense_starts(traj_len: int, horizon: int, stride: int = 1) -> np.ndarray:
     return np.arange(lo, hi + 1, stride, dtype=np.int64)
 
 
-def all_starts(horizon_key: str, n_traj: int, traj_len: int = 300) -> np.ndarray:
-    """(n_traj, n_starts) frozen start matrix for one horizon key."""
+def all_starts(horizon_key: str, n_traj: int, traj_len: int = None) -> np.ndarray:
+    """(n_traj, n_starts) frozen start matrix assuming a UNIFORM trajectory length."""
+    if traj_len is None:
+        traj_len = TRAJ_LEN
     n = STARTS_PER_TRAJ[horizon_key]
     rows = [frozen_starts(traj_len, HORIZONS[horizon_key], n) for _ in range(n_traj)]
     return np.stack(rows, axis=0)
 
 
-def starts_digest(horizon_key: str, n_traj: int) -> str:
-    a = all_starts(horizon_key, n_traj)
-    return hashlib.sha256(a.tobytes()).hexdigest()
+def frozen_starts_for(tid, horizon_key: str):
+    """Frozen starts per trajectory, using each trajectory's TRUE length.
+
+    Returns a list of index arrays (ragged when trajectory lengths differ, as on
+    the robotic arm).  Deterministic integer arithmetic only -- no RNG -- so every
+    model, seed and run sees exactly the same start set.
+    """
+    n = STARTS_PER_TRAJ[horizon_key]
+    H = HORIZONS[horizon_key]
+    return [frozen_starts(int(np.sum(tid == t)), H, n)
+            for t in range(int(np.max(tid)) + 1)]
+
+
+def starts_digest(horizon_key: str, tid) -> str:
+    rows = frozen_starts_for(tid, horizon_key)
+    flat = np.concatenate([np.asarray(r, dtype=np.int64).ravel() for r in rows])
+    return hashlib.sha256(flat.tobytes()).hexdigest()
 
 
 def make_windows(x, u, tid, horizon: int, starts=None):
@@ -196,7 +224,7 @@ def cross_trajectory_variance(pred, tgt, traj):
 # ---- self test -------------------------------------------------------------
 def self_test() -> int:
     print("=" * 78)
-    print("Gate 1 harness self-test (protocol: configs/modeling_protocol.yaml)")
+    print("Gate 1 harness self-test (device=%s, protocol: configs/modeling_protocol.yaml)" % DEVICE)
     print("=" * 78)
     problems = []
 
@@ -206,16 +234,20 @@ def self_test() -> int:
     print("  shapes: train %s/%s trajs=%d | val %s trajs=%d | test %s trajs=%d"
           % (x_tr.shape, u_tr.shape, tid_tr.max() + 1,
              x_va.shape, tid_va.max() + 1, x_te.shape, tid_te.max() + 1))
+    if x_tr.shape[1] != N or u_tr.shape[1] != M:
+        problems.append("device dims (n=%d, m=%d) do not match the data (%s / %s)"
+                        % (N, M, x_tr.shape, u_tr.shape))
 
     # 1. frozen start sets are identical across calls and across models
-    d = {k: starts_digest(k, 10) for k in HORIZONS}
+    n_te = int(tid_te.max()) + 1
+    d = {k: starts_digest(k, tid_te) for k in HORIZONS}
     for k in HORIZONS:
-        a1, a2 = all_starts(k, 10), all_starts(k, 10)
-        if not np.array_equal(a1, a2):
+        a1, a2 = frozen_starts_for(tid_te, k), frozen_starts_for(tid_te, k)
+        if any(not np.array_equal(x, y) for x, y in zip(a1, a2)):
             problems.append("start set for %s is not reproducible" % k)
-    print("  frozen start-set digests (test split, 10 trajs):")
+    print("  frozen start-set digests (test split, %d trajs):" % n_te)
     for k in HORIZONS:
-        print("    %-5s H=%3d  starts/traj=%d  digest=%s"
+        print("    %-5s H=%4d  starts/traj=%d  digest=%s"
               % (k, HORIZONS[k], STARTS_PER_TRAJ[k], d[k][:16]))
 
     # 2. window construction, normalised inputs
@@ -233,8 +265,9 @@ def self_test() -> int:
 
     # 3. no leakage: last history row == current measurement; XF[0] == x_{k+1}
     ctx = context_input(w["Xh"], w["Uin"])
-    if ctx.shape[1] != 30:
-        problems.append("context input dim is %d, expected 30" % ctx.shape[1])
+    expected_ctx = P * N + (P - 1) * M
+    if ctx.shape[1] != expected_ctx:
+        problems.append("context input dim is %d, expected %d" % (ctx.shape[1], expected_ctx))
     print("  context input dim: %d (expected P*n+(P-1)*m = %d)"
           % (ctx.shape[1], P * N + (P - 1) * M))
 
@@ -281,10 +314,12 @@ def self_test() -> int:
     r = rmse(np.zeros((10, N)), np.ones((10, N)))
     if abs(r - 1.0) > 1e-12:
         problems.append("rmse of unit error is %r, expected 1.0" % r)
-    pc = per_channel_rmse(np.array([[0.0, 0.0], [2.0, 0.0]]), np.zeros((2, N)))
-    # channel 0: sqrt(mean([0, 4])) = sqrt(2); channel 1: 0
-    if not np.allclose(pc, [np.sqrt(2.0), 0.0]):
-        problems.append("per_channel_rmse is %s, expected [sqrt(2), 0]" % pc)
+    pc = per_channel_rmse(np.vstack([np.zeros(N), np.r_[2.0, np.zeros(N - 1)]]),
+                          np.zeros((2, N)))
+    # channel 0: sqrt(mean([0, 4])) = sqrt(2); every other channel: 0
+    expect_pc = np.r_[np.sqrt(2.0), np.zeros(N - 1)]
+    if not np.allclose(pc, expect_pc):
+        problems.append("per_channel_rmse is %s, expected %s" % (pc, expect_pc))
     print("  metric sanity: rmse(zeros,ones)=%.6f  per_channel_rmse=%s" % (r, pc))
 
     # 7. train-only normalisation really comes from the train split

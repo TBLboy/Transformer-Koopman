@@ -33,10 +33,14 @@ sys.path.insert(0, os.path.join(EXP, "models"))
 sys.path.insert(0, os.path.join(EXP, "controllers"))
 sys.path.insert(0, HERE)
 
-import run_gate1 as g1                      # noqa: E402
-from library import build_model, n_params, ScheduledKoopman   # noqa: E402
+import device as dev                      # noqa: E402
+dev.bootstrap_from_argv()
 
-RESULTS = os.path.join(EXP, "results", "modeling")
+import run_gate1 as g1                      # noqa: E402
+import protocol as proto                    # noqa: E402
+from library import build_model, n_params, ScheduledKoopman, N_STATE   # noqa: E402
+
+RESULTS = dev.results_dir("modeling")
 os.makedirs(RESULTS, exist_ok=True)
 VARIANTS = [("A0B0", "M_base"), ("AcB0", "M4"), ("A0Bx", "M7"), ("AcBx", "M5")]
 
@@ -61,7 +65,7 @@ def train_and_eval(spec, cfg, seed):
 
 def scheduling_diagnostics(model, split="test", n_batch=30):
     """E-M5 diagnostics on the frozen mid-horizon test starts."""
-    w, _ = g1.tensors(split, 25, frozen_eval=True)
+    w, _ = g1.tensors(split, proto.SELECTION_HORIZON, frozen_eval=True)
     idx = np.arange(min(n_batch, len(w["k"])))
     xh = g1.batchify(w, "Xh", idx)
     uin = g1.batchify(w, "Uin", idx)
@@ -71,7 +75,7 @@ def scheduling_diagnostics(model, split="test", n_batch=30):
         c = model.ctx(xh, uin)
         z = model.encoder(xh)
         A = model.A_of(c)
-        B = model.B_of(z[:, :2])
+        B = model.B_of(z[:, :N_STATE])
         dA = (A - model.A0.unsqueeze(0)).cpu().numpy()
         sv = np.linalg.svd(dA.reshape(len(idx), -1), compute_uv=False)
         if float(sv[0]) <= 1e-12:
@@ -88,7 +92,7 @@ def scheduling_diagnostics(model, split="test", n_batch=30):
             out["dA_degenerate"] = False
         out["dA_spectrum_head"] = [float(v) for v in sv[:5]]
         # same input, different measured state -> how different is B(x)u ?
-        u = torch.tensor([[1.0, 1.0]], device=B.device)
+        u = torch.ones((1, proto.M), device=B.device)
         rels = []
         for i in range(0, len(idx) - 1, 2):
             b1 = B[i] @ u[0]
@@ -128,6 +132,8 @@ def main():
                     help="'em5' recomputes ONLY the scheduling diagnostics (seed 0) "
                          "and merges them into the existing JSON -- used after fixing "
                          "the 0/0 effective-rank artifact")
+    ap.add_argument("--device", "-d", default=None,
+                    help="device spec; consumed by device.bootstrap_from_argv()")
     args = ap.parse_args()
 
     ledger = json.load(open(os.path.join(RESULTS, "gate1_ledger.json"), encoding="utf-8"))

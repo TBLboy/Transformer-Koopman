@@ -19,7 +19,9 @@
 ## 2. 真正的假设
 
 ### A1（工作域有界，**含传播序列**）
-存在紧集 $\mathcal{Z} \subseteq \mathbb{R}^d$、$\mathcal{C} \subseteq \mathbb{R}^{d_c}$、$\mathcal{X} \subseteq \mathbb{R}^n$、$\mathcal{U} \subseteq \mathbb{R}^m$，使**真实轨迹、名义 rollout 与冻结轨迹**（`07` §1 区分的三个对象）都满足 $z_k \in \mathcal{Z}$、$c_k \in \mathcal{C}$、$\chi_k \in \mathcal{X}$、$u_k \in \mathcal{U}$；**并且**在 `05`/`07` 所考虑的预测时域内，**传播序列** $\hat z_i$、**名义 rollout** $\bar z_i$、**冻结轨迹** $z^{\mathrm{fr}}_i$ 及其各自窗口仍位于 $\mathcal{Z}$ 与 $C_\phi$ 的定义域内。记
+固定有限时域、共同初始历史及参数后，存在紧集 $\mathcal{Z} \subseteq \mathbb{R}^d$、$\mathcal{C} \subseteq \mathbb{R}^{d_c}$、$\mathcal{X} \subseteq \mathbb{R}^n$、紧凸输入集 $\mathcal{U} \subseteq \mathbb{R}^m$。`05` 比较的真实编码参考及自由传播、`07` 的名义/full/frozen 轨迹在所考虑时域内均处于该工作域，输入处于 $\mathcal U$；其测量/过去输入窗口属于同一个 $C_\phi$ 正则域 $\mathcal D$，并共享 A3 的常数。冻结轨迹使用名义调度，不在其自身窗口上重新计算调度。
+
+**用于 `08` 的统一量词**：固定合法名义 $\bar U\in\mathcal U_{\mathrm{feas}}$ 后，对每个 $U\in\mathcal U_{\mathrm{feas}}$ 及每个 $0\le i\le N$，$z_i^{\mathrm{full}}(U)$、$z_i^{\mathrm{fr}}(U;\bar U)$ 与 $\bar z_i$ 使用同一个 $\mathcal Z$ 和状态界；所有用于比较的 full/nominal 窗口处于同一个 $\mathcal D$，而非为每条轨迹分别选取常数。这是显式成本界的前提，不是模型训练后自动满足的性质。记
 
 $$
 M_Z = \sup_{z \in \mathcal{Z}} \|z\|_2, \qquad
@@ -42,18 +44,18 @@ $$
 - **作用**：**仅在显式拆分 lifting 残差时使用**（见 `05` 备注 4）；**主界（命题 3 / 定理 1）不使用它**——lifting 的一致性已被吸收进一步残差 $r_k$（A5）。它留在假设表里，是因为它是「若要单独讨论 lifting」时的必要正则性，**不是**因为它进入了 $L$。
 
 ### A3（context 映射的正则性）
-$C_\phi$ 在其定义域上 Lipschitz，常数 $L_\phi$：
+$C_\phi$ 在 A1 的共同窗口域 $\mathcal D$ 上 Lipschitz，常数 $L_\phi$；下面的不等式对域中任意两个窗口对都成立，而非仅在单条轨迹上成立：
 
 $$
 \| C_\phi(W, V) - C_\phi(W', V') \|_2 \le L_\phi \, \big\| (W,V) - (W',V') \big\|_2 .
 $$
 
-- **作用**：把「窗口之差」界成「状态与输入之差」；`04` 的 $L_A$ 与后续所有含调度变化的界都要乘 $L_\phi$。
+- **作用**：在 `05`/`07` 中把窗口差变成 context 差；`04` 直接关于 $c,\chi$ 的 $L_A,L_B$ 不含 $L_\phi$。
 
 ### A4（参数矩阵有界）
 四个权重矩阵有界：$\|W_A\|_2 \le M_{W_A}$、$\|W_A^{\pi}\|_2 \le M_{W_A^\pi}$、$\|W_B\|_2 \le M_{W_B}$、$\|W_B^{\pi}\|_2 \le M_{W_B^\pi}$。
 
-- **作用**：使 `04` 的 $L_A$、$L_B$ 有限。
+- **作用**：对固定训练后网络，有限权重已给出有限 $L_A,L_B$；A4 只有在对一族参数使用统一常数时才是额外限制。
 - **注意**：$A_0$、$B_0$ **不加任何谱假设**（不假设稳定、不假设可逆）。
 
 ### A5（一步模型残差有界）
@@ -63,10 +65,11 @@ $$
 r_k \;:=\; z^{\mathrm{enc}}_{k+1} - A(c_k)\, z^{\mathrm{enc}}_k - B(\chi_k)\, u_k ,
 $$
 
-并假设存在 $\delta \ge 0$ 使 $\| r_k \|_2 \le \delta$ 对所有 $k$ 成立。
+并假设存在统一 $\delta\ge0$，使 $\|r_k\|_2\le\delta$ 对所考虑工作域与时域内的真实编码参考成立。有限数据上的残差最大值不能自动认证整个工作域的统一界。
 
-- **作用**：`05` 的预测误差界；`07` 的冻结误差界。
-- **这是本文件里唯一无法由参数化推出的量**：它衡量真实系统与模型的差距，必须由数据或辨识实验界定。
+- **作用**：仅 `05` 的真实预测误差界；`07` 比较同一模型的两种递归，`08` 构造其成本差，均不使用 A5。
+- **不能由低秩参数化推出**：它衡量真实编码参考与模型的差距，需要额外认证；A1 的工作域和 A3 的 context 正则性也不是 S3 单独保证的。
+- **训练与理论分开**：DEC-091 默认联合 $L_x+w_zL_z$ 训练不自动证明本假设，也不在本理论包研究该损失的性能优势。
 - **与计划书「三类残差」的关系（重要）**：计划书把残差分成 lifting / transition / input-modulation 三类。本文件的做法是——
   - **lifting 的一致性并入 $r_k$**（$r_k$ 衡量的正是「编码器序列是否满足模型」，其中就包含「每步重编码」与「递推传播」的差异）。**主界（命题 3 / 定理 1）不使用 A2**；
   - **transition 残差与 input-modulation 残差也合并**为 $r_k$。
@@ -84,7 +87,7 @@ $$
 | 闭环稳定性 | 计划书禁止清单明确排除 |
 | 递归可行性 | 同上 |
 | 实时性 / 满足截止时间 | 同上；且本阶段没有任何计时数据 |
-| $C_\phi$ 单射 | 不需要；可辨识性论证（`01` §5）是启发式的，不作为定理 |
+| $C_\phi$ 单射或参数可辨识性 | `01` §5的双调度分离为设计选择，不证明可辨识性 |
 
 ## 4. 由前面条目**推出**的量（不是假设）
 
@@ -99,8 +102,8 @@ $$
 
 | 下游结果 | 需要哪些条目 |
 |---|---|
-| `04_Scheduling_Lipschitz.md` | A3（不需要）、A4；实际上 $L_A$ 只依赖 S3 与 A4 |
-| `05_Prediction_Error_Bound.md` | A1（**含传播序列留在工作域**）、A3、A4、A5；**A2 仅在显式拆分 lifting 残差时才需要**（见 `05` 备注 4） |
-| `06_Frozen_LTV_QP_Proof.md` | 无（纯代数与凸性） |
-| `07_Freezing_Error_Bound.md` | A1（含传播序列）、A3、A4；**不需要 A5**——冻结误差的驱动量 $\delta_u, \Delta_u$ 是**已知量**（由输入序列算出），不是假设 |
-| `08_Conditional_Suboptimality.md` | `07` 的 $\delta_{\mathrm{frz}}$ 与 $\|e_i\|$ 界 + 一致代价近似假设（(CA)，在 `08` 内单独登记） |
+| `04_Scheduling_Lipschitz.md` | S3与固定有限权重；族统一常数使用A4，不需A1/A2/A3/A5 |
+| `05_Prediction_Error_Bound.md` | 共同完整初始历史，A1（含传播）、A3、A5及03/04常数；固定网络不另需A4；主界不需A2 |
+| `06_Frozen_LTV_QP_Proof.md` | 固定调度与参考、半正定权重、凸输入集；标准QP为多面体约束，无需A2–A5 |
+| `07_Freezing_Error_Bound.md` | 共同初始历史，A1的full轨迹界、A3及03/04常数；不需A2/A5，族统一常数使用A4 |
+| `08_Conditional_Suboptimality.md` | 显式成本界：A1全可行集统一量词、A3、07；抽象定理：共同非空可行集、两个全局argmin及统一成本差(CA)，不需A5 |

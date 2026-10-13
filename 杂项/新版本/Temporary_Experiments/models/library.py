@@ -20,19 +20,30 @@ M5 implements the theory faithfully (Theory_Package/01_Model_Definition.md):
 from __future__ import annotations
 
 import math
+import os
+import sys
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-N_STATE = 2
-N_CTRL = 2
-LATENT = 10
-HIST = 8
-PATCH = 2
-CTX_DIM = 16
-CTX_HID = 64
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+import device as _device            # noqa: E402
+
+DEV = _device.current()
+
+# Device-dependent architecture constants (models/device.py).  The soft platform
+# keeps the exact values frozen by configs/modeling_protocol.yaml.
+N_STATE = int(DEV["n_state"])
+N_CTRL = int(DEV["n_ctrl"])
+LATENT = int(DEV["latent_dim"])
+HIST = int(DEV["history_P"])
+PATCH = int(DEV["patch"])
+CTX_DIM = int(DEV["ctx_dim"])
+CTX_HID = int(DEV["ctx_hidden"])
 
 
 # ============================================================ shared encoder
@@ -476,8 +487,14 @@ class RecurrentPredictor(nn.Module):
 
 
 class ControlledTransformer(nn.Module):
-    """M6: causal Transformer over history tokens [x_t, u_t] + control-conditioned
-    head; rollout appends predicted measurements with the known future inputs."""
+    """M6: Transformer encoder over history tokens [x_t, u_t] + control-conditioned
+    head; rollout appends predicted measurements with the known future inputs.
+
+    The encoder is BIDIRECTIONAL over the history window (no causal mask is passed
+    to ``nn.TransformerEncoder``).  This is not a leakage -- every token in the
+    window is built from quantities at or before k -- but it is a different
+    inductive bias from M3's strictly causal recurrence and is described as such.
+    """
 
     def __init__(self, d_model=32, n_layers=2, n_heads=2, d_ff=64, dropout=0.1,
                  max_len=256):

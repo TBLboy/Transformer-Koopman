@@ -18,10 +18,15 @@ EXP = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(EXP, "models"))
 sys.path.insert(0, os.path.join(EXP, "controllers"))
 
-from library import build_model                      # noqa: E402
+import device as dev                                 # noqa: E402
+dev.bootstrap_from_argv()                            # honours --device / TK_DEVICE
+
+from library import (build_model, N_STATE, N_CTRL, LATENT, HIST)   # noqa: E402
 from ltv_mpc import (prediction_matrices, cost_matrices, cost_value,          # noqa: E402
                      cost_value_quadratic, solve_qp, cvxpy_reference,
                      ScheduledLTVMPC)
+
+DEVICE = dev.current()["name"]
 
 RESULTS = []
 rng = np.random.default_rng(0)
@@ -139,11 +144,11 @@ def t4_nominal_rollout():
     torch.manual_seed(3)
     model = build_model("M5", seed=3, r_A=2, r_B=2, g_A=0.1, g_B=0.1)
     model.eval()
-    P = 8
-    xh = torch.randn(1, P, 2)
-    uin = torch.randn(1, P - 1, 2)
+    P = HIST
+    xh = torch.randn(1, P, N_STATE)
+    uin = torch.randn(1, P - 1, N_CTRL)
     N = 5
-    Ubar = torch.randn(1, N, 2)
+    Ubar = torch.randn(1, N, N_CTRL)
     with torch.no_grad():
         zb, Ab, Bb = model.nominal_rollout(xh, uin, Ubar)
     # consistency of the returned schedule with the returned states
@@ -160,7 +165,7 @@ def t4_nominal_rollout():
     for i in range(N):
         z = Ab[0, i].numpy() @ z + Bb[0, i].numpy() @ Ubar[0, i].numpy()
         Zs.append(z.copy())
-    err = float(np.max(np.abs(F + G.reshape(N, 10, N * 2) @ Ubar[0].numpy().reshape(-1)
+    err = float(np.max(np.abs(F + G.reshape(N, LATENT, N * N_CTRL) @ Ubar[0].numpy().reshape(-1)
                                 - np.asarray(Zs))))
     check("T4 nominal_rollout schedule consistent with states", ok,
           "max|err|=%.3e" % worst)
@@ -168,8 +173,8 @@ def t4_nominal_rollout():
           "max|err|=%.3e" % err)
     # schedule really depends on the measurement (chi = x_k) for M5
     with torch.no_grad():
-        d1 = model.B_of(torch.tensor([[0.0, 0.0]]))
-        d2 = model.B_of(torch.tensor([[5.0, -3.0]]))
+        d1 = model.B_of(torch.zeros(1, N_STATE))
+        d2 = model.B_of(torch.tensor([[5.0, -3.0] + [0.0] * (N_STATE - 2)]))
     check("T4c M5 input map depends on the measurement state",
           float(torch.max(torch.abs(d1 - d2))) > 1e-6,
           "max|dB|=%.3e" % float(torch.max(torch.abs(d1 - d2))))
@@ -187,9 +192,9 @@ def t5_lti_degeneracy():
     m_base = build_model("M_base", seed=5)      # A0B0 variant
     m_base.eval()
     N = 4
-    xh = torch.randn(1, 8, 2)
-    uin = torch.randn(1, 7, 2)
-    Ubar = torch.randn(1, N, 2)
+    xh = torch.randn(1, HIST, N_STATE)
+    uin = torch.randn(1, HIST - 1, N_CTRL)
+    Ubar = torch.randn(1, N, N_CTRL)
     with torch.no_grad():
         zb, Ab, Bb = m_base.nominal_rollout(xh, uin, Ubar)
     # A0B0: schedule must be constant
@@ -197,12 +202,12 @@ def t5_lti_degeneracy():
           float(torch.max(torch.abs(Ab - Ab[:, :1]))) < 1e-9)
     # a truly LTI model: frozen map == full rollout exactly
     F, G = prediction_matrices(Ab[0].numpy(), Bb[0].numpy(), zb[0, 0].numpy())
-    Z = F + G.reshape(N, 10, N * 2) @ Ubar[0].numpy().reshape(-1)
+    Z = F + G.reshape(N, LATENT, N * N_CTRL) @ Ubar[0].numpy().reshape(-1)
     # full rollout of the same LTI model (schedule recomputed each step -> same)
     # full (unfrozen) rollout of the same LTI model must equal the frozen LTV model
     with torch.no_grad():
         out = m_base.rollout(xh, uin, Ubar)
-    err = float(np.max(np.abs(Z[:, :2] - out[0].numpy())))
+    err = float(np.max(np.abs(Z[:, :N_STATE] - out[0].numpy())))
     check("T5b LTI: frozen LTV model equals the full rollout", err < 1e-4,
           "max|err|=%.3e" % err)
 
@@ -212,14 +217,14 @@ def t6_controller():
     torch.manual_seed(7)
     model = build_model("M5", seed=7, r_A=2, r_B=2, g_A=0.1, g_B=0.1)
     model.eval()
-    mpc = ScheduledLTVMPC(model, N=6, Q=np.eye(2), P_term=np.eye(2),
-                          R=1e-3 * np.eye(2), S=1e-2 * np.eye(2),
+    mpc = ScheduledLTVMPC(model, N=6, Q=np.eye(N_STATE), P_term=np.eye(N_STATE),
+                          R=1e-3 * np.eye(N_CTRL), S=1e-2 * np.eye(N_CTRL),
                           u_min=-100.0, u_max=100.0)
-    P = 8
-    xh = rng.normal(scale=0.5, size=(1, P, 2)).astype(np.float32)
-    uin = rng.normal(scale=5.0, size=(1, P - 1, 2)).astype(np.float32)
-    u_prev = np.zeros(2)
-    x_ref = np.tile(np.array([[1.0, -0.5]]), (7, 1))
+    P = HIST
+    xh = rng.normal(scale=0.5, size=(1, P, N_STATE)).astype(np.float32)
+    uin = rng.normal(scale=5.0, size=(1, P - 1, N_CTRL)).astype(np.float32)
+    u_prev = np.zeros(N_CTRL)
+    x_ref = np.tile(np.r_[1.0, np.zeros(N_STATE - 1)][None], (7, 1))
     u0, U, info = mpc.step(xh, uin, u_prev, x_ref)
     check("T6 controller returns a finite first input",
           np.all(np.isfinite(u0)), "u0=%s" % np.round(u0, 4))
@@ -230,14 +235,14 @@ def t6_controller():
     check("T6d inputs within the box",
           float(np.max(np.abs(U))) <= 100.0 + 1e-6)
     # determinism
-    mpc2 = ScheduledLTVMPC(model, N=6, Q=np.eye(2), P_term=np.eye(2),
-                           R=1e-3 * np.eye(2), S=1e-2 * np.eye(2))
+    mpc2 = ScheduledLTVMPC(model, N=6, Q=np.eye(N_STATE), P_term=np.eye(N_STATE),
+                           R=1e-3 * np.eye(N_CTRL), S=1e-2 * np.eye(N_CTRL))
     u0b, _, _ = mpc2.step(xh, uin, u_prev, x_ref)
     check("T6e deterministic for identical inputs",
           float(np.max(np.abs(u0 - u0b))) < 1e-10)
     # warm start: the shift/tail-fill policy is deterministic and IS used
-    mpc3 = ScheduledLTVMPC(model, N=6, Q=np.eye(2), P_term=np.eye(2),
-                           R=1e-3 * np.eye(2), S=1e-2 * np.eye(2))
+    mpc3 = ScheduledLTVMPC(model, N=6, Q=np.eye(N_STATE), P_term=np.eye(N_STATE),
+                           R=1e-3 * np.eye(N_CTRL), S=1e-2 * np.eye(N_CTRL))
     mpc3.last_U = U
     W = mpc3.warm_start(u_prev)
     check("T6f warm start shifts the previous solution and repeats the tail",
@@ -260,9 +265,9 @@ def t7_latent_propagation():
         calls["n"] += 1
 
     h = model.encoder.register_forward_hook(hook)
-    xh = torch.randn(2, 8, 2)
-    uin = torch.randn(2, 7, 2)
-    uf = torch.randn(2, 12, 2)
+    xh = torch.randn(2, HIST, N_STATE)
+    uin = torch.randn(2, HIST - 1, N_CTRL)
+    uf = torch.randn(2, 12, N_CTRL)
     with torch.no_grad():
         out = model.rollout(xh, uin, uf)
     h.remove()
@@ -289,18 +294,22 @@ def t8_gate5_helper_consistency():
     for spec in ("M5", "M4", "M_base"):
         model = build_model(spec, seed=13, r_A=2, r_B=2, g_A=0.1, g_B=0.1)
         model.eval()
-        xh = torch.randn(3, 8, 2)
-        uin = torch.randn(3, 7, 2)
-        U = torch.randn(3, 6, 2)
+        xh = torch.randn(3, HIST, N_STATE)
+        uin = torch.randn(3, HIST - 1, N_CTRL)
+        U = torch.randn(3, 6, N_CTRL)
         with torch.no_grad():
             a = model.rollout(xh, uin, U)
             Z, _, _, _ = g5_roll(model, xh, uin, U)
-        err = float(torch.max(torch.abs(a - Z[:, 1:, :2])))
+        err = float(torch.max(torch.abs(a - Z[:, 1:, :N_STATE])))
         check("T8 %s: Gate-5 helper matches the model rollout" % spec, err < 1e-6,
               "max|err|=%.3e" % err)
 
 
 def main():
+    print("=" * 78)
+    print("Gate 3 unit tests -- device=%s (n_state=%d, n_ctrl=%d, P=%d, latent=%d)"
+          % (DEVICE, N_STATE, N_CTRL, HIST, LATENT))
+    print("=" * 78)
     for fn in (t1_prediction_matrices, t2_objective, t3_solver, t4_nominal_rollout,
                t5_lti_degeneracy, t6_controller, t7_latent_propagation,
                t8_gate5_helper_consistency):
