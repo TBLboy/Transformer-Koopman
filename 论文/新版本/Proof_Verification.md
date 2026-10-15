@@ -23,8 +23,16 @@ Illustrative low-dimensional check (not a system experiment): take `P=2`, scalar
 
 ## QP and cost gap
 
-The QP source now uses `q=2f` in standard `1/2 U^T H U+q^T U` form. The input increment starts at `u_0-u_{-1}`. The cost gap uses common input terms cancellation and only measurement tracking terms. The `2 epsilon_J` chain is explicitly restricted to a common nonempty fixed feasible set, uniform cost approximation, and global minimizers.
+The QP source now uses `q=2f` in standard `1/2 U^T H_QP U+q^T U` form (the source denotes this Hessian by `\mathcal H`, avoiding collision with the prediction horizon `H`). The input increment starts at `u_0-u_{-1}`. The cost gap uses common input terms cancellation and only measurement tracking terms. The `2 epsilon_J` chain is explicitly restricted to a common nonempty fixed feasible set, uniform cost approximation, and global minimizers.
+
+## Implementation-alignment limitation
+
+The inspected tree is explicitly under `代码部分/老版本/训练代码`. Its `PatchTSTKoopmanModel` couples a PatchTST encoder to fixed learned matrices `A` and `B`; the inspected files do not implement the manuscript's separate `C_phi`, low-rank scheduled matrices, or frozen-QP controller. Therefore the theory is presently a manuscript specification, not verified documentation of that legacy implementation. No statement claiming the legacy code realizes the scheduled predictor or QP controller should be added unless a matching implementation is identified and checked.
 
 ## Environment verification
 
-`latexmk -xelatex -interaction=nonstopmode -halt-on-error Main_theory_revised.tex` completed and generated `Main_theory_revised.pdf` (9 pages). A subsequent XeLaTeX pass completed without fatal errors or undefined-reference/citation warnings. Remaining messages are layout warnings in the bibliography only. No numerical theorem certificate for `M_Z`, `M_U`, `L_phi`, or `delta` is claimed by this document.
+2026-10-14 recheck: two XeLaTeX passes completed and generated `Main_theory_revised.pdf` (10 pages). There were no fatal errors, unresolved citations/references, or overfull boxes. Remaining warnings are eleven underfull boxes: nine prose paragraphs and two bibliography entries; they do not contain a clipped formula. The PDF was rasterized and visually inspected on the formula-dense control and appendix pages. A static scan found 85 unique labels, no missing internal references, and no missing citation keys. No numerical theorem certificate for `M_Z`, `M_U`, `L_phi`, or `delta` is claimed by this document.
+
+## Independent final review
+
+An independent read-only reviewer completed a final audit after the A2/A4, `\mathcal H`, and empty-sum repairs. It returned **go**: the stated assumptions support the stage/freezing/cost results; the first-step identity, stage envelope, QP expansion, and `2 epsilon_J` argument are internally consistent; and all audited labels resolve. The reviewer could inspect the current `.aux` and `.log` but could not independently compile because its controlled `verification_runner.py` entry point is unavailable. Thus the fresh two-pass XeLaTeX build above remains the primary build evidence, while the independent verdict is static-review evidence.

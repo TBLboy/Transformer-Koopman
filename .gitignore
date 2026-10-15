@@ -17,3 +17,12 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# LaTeX build products (the rendered manuscript PDF is local output)
+*.aux
+*.log
+*.out
+*.xdv
+*.fls
+*.fdb_latexmk
+论文/新版本/Main.pdf

@@ -1,4 +1,4 @@
-﻿% XeTeX/Tectonic has no TU/ptm definition; map IEEEtran's Times (ptm) to TeX Gyre Termes.
+% XeTeX/Tectonic has no TU/ptm definition; map IEEEtran's Times (ptm) to TeX Gyre Termes.
 % Must precede \documentclass because IEEEtran selects its font while loading.
 \ifdefined\XeTeXversion
   \DeclareFontFamily{TU}{ptm}{}
@@ -28,7 +28,7 @@
 \usepackage{microtype}
 \usepackage{array}
 \usepackage{amsthm}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 
 \newtheorem{assumption}{Assumption}
 \newtheorem{definition}{Definition}
@@ -46,6 +46,7 @@
 \newcommand{\vs}{\mathbf{s}}
 \newcommand{\vz}{\mathbf{z}}
 \newcommand{\vc}{\mathbf{c}}
+\newcommand{\vq}{\mathbf{q}}
 \newcommand{\vchi}{\boldsymbol{\chi}}
 \newcommand{\ve}{\mathbf{e}}
 \newcommand{\vr}{\mathbf{r}}
@@ -92,26 +93,22 @@ Koopman modeling, temporal lifting, scheduled prediction, low-rank modulation, L
 \label{sec:introduction}
 % =========================================================
 
-Predicting nonlinear dynamical systems from observed input--output trajectories is a central task in data-driven modeling. In many applications, the measured variables provide only an incomplete description of the physical state, and the response to an input depends on dynamical information accumulated over time. A predictor based solely on the current measurement may therefore be unable to distinguish trajectories that appear similar at one instant but evolve differently thereafter. At the same time, a highly expressive nonlinear model is not necessarily easy to propagate, analyze, or incorporate into subsequent decision-making. These considerations motivate predictive representations that exploit observation histories without abandoning a useful dynamical structure \cite{ljung1999system,nelles2020nonlinear,forgione2021dynonet}.
+Accurate multi-step prediction is central to model-based control of nonlinear dynamical systems. In many applications, however, the available measurements do not uniquely determine the underlying physical state. Similar measurements can therefore be followed by different responses to the same control input, depending on the preceding evolution of the system. Using a history of measurements and inputs can help distinguish these situations. For model predictive control (MPC), the resulting predictor must also support repeated rollouts and optimization over a finite horizon \cite{ljung1999system,nelles2020nonlinear,forgione2021dynonet}.
 
-Koopman operator theory offers a framework for separating nonlinear state representation from the evolution of observables. Although the physical-state dynamics may be nonlinear, the Koopman operator acts linearly on observable functions \cite{koopman1931hamiltonian,mezic2005spectral,brunton2022modern}. Practical methods approximate this infinite-dimensional description using a finite set of observables, as in extended dynamic mode decomposition and controlled lifted predictors \cite{williams2015data,proctor2016dmdc,korda2018linear}. Neural Koopman models further learn the observable coordinates from data rather than prescribing them in advance \cite{takeishi2017koopman,lusch2018deep,otto2019linearly,han2020deep}. Their appeal lies in combining a flexible representation with a simple lifted evolution law. Nevertheless, finite-dimensional closure is generally approximate, and the quality of a learned predictor depends jointly on the information captured by its observables and the adequacy of its fitted evolution law.
+Koopman-based modeling offers a way to combine nonlinear system representations with structured prediction. The Koopman operator describes the evolution of functions of the system state, known as observables, through a linear action, even when the underlying dynamics are nonlinear \cite{koopman1931hamiltonian,mezic2005spectral,brunton2022modern}. Because this representation is generally infinite-dimensional, practical methods approximate it in a finite set of lifted coordinates. Examples include extended dynamic mode decomposition and lifted predictors incorporating control inputs \cite{williams2015data,proctor2016dmdc,korda2018linear}. Neural Koopman approaches further learn the lifted coordinates from data \cite{takeishi2017koopman,lusch2018deep,otto2019linearly,han2020deep}. Their usefulness for multi-step prediction depends on how well the lifted coordinates capture the relevant dynamics and how accurately the finite-dimensional evolution model propagates them.
 
-These two requirements become particularly important when the measured coordinates do not determine the relevant dynamical condition. One approach enriches the representation: delay-coordinate constructions incorporate past observations into Koopman observables \cite{kamb2020timedelay,das2019delay}, while temporal neural encoders learn features from measurement sequences \cite{han2024robust,shenoy2025temporal}. Transformer-based Koopman forecasting models similarly exploit temporal dependencies within an observation window \cite{forootani2025deepkoopformer}. Such methods provide richer lifted coordinates, but a predictor using a single fixed matrix must still represent the behavior of different histories through the same finite-dimensional transition. A complementary approach adapts the transition itself. Koopa uses context-aware operators for nonstationary forecasting \cite{liu2023koopa}, and MamKO generates Koopman matrices from recent data for dynamical modeling and predictive control \cite{li2025mamko}. Thus, neither temporal lifting nor history-dependent operators are new in isolation. The relevant question is how their roles can be coordinated within a structured recursive predictor.
+One line of research incorporates temporal information into the lifted representation. Delay-coordinate methods use past measurements to construct observables \cite{kamb2020timedelay,das2019delay}, while recurrent encoders and Transformer-based models learn features from observation histories \cite{han2024robust,shenoy2025temporal,forootani2025deepkoopformer}. A complementary line adapts the evolution model to the observed context. Koopa employs context-dependent operators for time-series forecasting \cite{liu2023koopa}, and MamKO generates Koopman matrices from recent data for prediction and control \cite{li2025mamko}. These developments make it possible to use history both to represent the system and to adjust its predicted dynamics. In a controlled recursive rollout, however, future histories contain predicted measurements and candidate inputs. The evolution matrices can then change with the trajectory being predicted. This coupling affects the propagation of prediction errors and makes direct MPC optimization with the fully scheduled model generally nonlinear. The central problem considered here is how to retain history-dependent dynamics while obtaining an analyzable multi-step predictor and a tractable MPC formulation.
 
-This question has consequences beyond the choice of network architecture. When the transition matrix is conditioned on a history window, a multi-step rollout must update that window using the model's own predicted measurements and the prescribed inputs. Errors then enter the prediction twice: directly through the propagated lifted state and indirectly through the context that schedules subsequent transitions. Consequently, an accurate one-step fit does not, by itself, characterize the behavior of the recursively scheduled model over a finite horizon. Moreover, unconstrained changes in learned transition matrices complicate the interpretation and analysis of the resulting predictor. A useful formulation should therefore make the roles of temporal representation and operator scheduling explicit, restrict the magnitude of scheduling-induced changes, and account for the feedback from prediction errors to future scheduling.
+We address this problem with a history-conditioned, Koopman-inspired predictor and a frozen linear time-varying (LTV) MPC formulation. A temporal Transformer extracts lifted features from a finite measurement history, while the current measurement is retained explicitly in the lifted state. A separate network uses past measurements and inputs to schedule the lifted transition matrix; the input matrix is modulated by the current measured coordinates. Both matrices are expressed as nominal matrices with bounded low-rank corrections. We analyze recursive prediction with histories updated from the model outputs and derive a finite-horizon error bound that accounts for history-dependent scheduling. For control, scheduling matrices are evaluated along a nominal rollout and held fixed during each optimization. This produces an LTV prediction model whose quadratic tracking objective and polyhedral input constraints lead to a convex quadratic program. We also bound the discrepancy introduced by freezing the matrices and derive a conditional bound on the resulting control-cost suboptimality.
 
-Motivated by these requirements, we develop a \emph{history-conditioned scheduled Koopman-inspired predictor}. A temporal Transformer extracts hidden lifted features from a finite window of measurements, while the latest measurement remains an explicit component of the lifted state. A separate context network processes recent measurements and past inputs to schedule the lifted transition matrix; the input matrix is modulated using the current measured component. Both matrices are expressed as nominal terms plus bounded low-rank corrections. This design distinguishes the information used to construct the lifted state from the information used to adapt its evolution, and it provides explicit bounds on the matrix modulation. The model is linear in the lifted state and input for prescribed scheduling signals, but its complete recursively scheduled evolution is generally nonlinear. We specify the associated history-update rule and derive a finite-horizon prediction-error bound that incorporates errors in the scheduling context under stated regularity, residual, and work-domain assumptions.
-
-The same structure also permits a natural, but nontrivial, extension to predictive control. Because future scheduling signals depend on the predicted trajectory, directly optimizing inputs through the complete scheduled model generally produces a nonlinear program. We instead generate a nominal rollout, freeze the resulting scheduling matrices over the optimization horizon, and obtain a linear time-varying predictor. With the quadratic measurement-tracking objective and polyhedral input constraints considered here, the corresponding model predictive control (MPC) problem is a convex quadratic program. This freezing procedure is an approximation rather than an exact reformulation. We therefore bound the discrepancy between the recursively scheduled and frozen trajectories for a common candidate input sequence and obtain a conditional cost-suboptimality bound under a uniform approximation condition and a common feasible set. These results concern finite-horizon prediction and optimization approximation; they do not imply closed-loop stability or recursive feasibility.
-
-The contributions of this paper are threefold:
+The main contributions are as follows:
 \begin{enumerate}
-    \item \emph{History-conditioned structured prediction:} We formulate a measurement-preserving temporal lifting together with a history-scheduled transition and a measurement-modulated input map. Bounded low-rank corrections define an explicit, analyzable parameterization of the lifted dynamics.
-    \item \emph{Analysis of recursive history-dependent prediction:} We formalize the update of measurement and input histories during open-loop rollout and establish a finite-horizon error bound that accounts for the influence of prediction errors on subsequent operator scheduling.
-    \item \emph{Frozen-LTV predictive control and approximation analysis:} We construct a nominal-rollout frozen-LTV MPC formulation that yields a convex quadratic program, quantify the finite-horizon error incurred by freezing the schedule, and establish a conditional control-cost bound relative to the complete scheduled optimization problem.
+    \item \emph{History-conditioned lifted prediction:} We construct a measurement-preserving temporal lifting and a scheduled predictor with bounded low-rank modulation of the transition and input matrices.
+    \item \emph{Finite-horizon prediction analysis:} We define a recursive rollout with updated measurement and input histories and derive an error bound that incorporates the effect of prediction errors on subsequent matrix scheduling.
+    \item \emph{Frozen-LTV predictive control:} We formulate a nominal-trajectory-based convex QP for MPC and establish bounds on the frozen-schedule prediction discrepancy and conditional control-cost suboptimality.
 \end{enumerate}
 
-The remainder of the paper is organized as follows. Section~\ref{sec:prelim} introduces the system setting and history-based prediction problem. Section~\ref{sec:model} develops the scheduled predictor and its error analysis. Section~\ref{sec:control} presents the frozen-LTV MPC formulation and approximation bounds. Section~\ref{sec:experiments} describes the experimental protocol, and Section~\ref{sec:conclusion} concludes the paper. Fig.~\ref{fig:overview} summarizes the proposed framework.
+The remainder of this paper is organized as follows. Section~\ref{sec:prelim} states the prediction and control problems. Section~\ref{sec:model} presents the predictor and its error analysis. Section~\ref{sec:control} develops frozen-LTV MPC and the associated approximation bounds. Sections~\ref{sec:experiments} and~\ref{sec:conclusion} present the experimental protocol and conclusions, respectively. Fig.~\ref{fig:overview} shows the overall framework.
 
 \begin{figure*}[!t]
 \centering
@@ -127,43 +124,67 @@ Lower branch: nominal rollout $\rightarrow$ frozen $\bar\mA_i$, $\bar\mB_i$ $\ri
 \label{sec:prelim}
 % =========================================================
 
-\subsection{Coordinates, controlled Koopman representation, and notation}
+\subsection{System Description and Koopman Background}
 
-Consider a discrete-time controlled system
+Consider the discrete-time nonlinear controlled system
 \begin{equation}
     \vs_{k+1}=f(\vs_k,\vu_k),\qquad \vx_k=h(\vs_k),
     \label{eq:physical_system}
 \end{equation}
-where $\vs_k\in\mathcal S$ is a physical state, $\vu_k\in\R^m$ is the input, and $\vx_k\in\R^n$ is the available measurement. For a fixed input, the controlled Koopman operator acts on an observable $\varphi$ according to
+where $\vs_k\in\mathcal S\subseteq\R^{n_s}$ is the underlying state, $f:\mathcal S\times\R^m\to\mathcal S$ is the state transition, $\vu_k\in\R^m$ is the control input, and $\vx_k=h(\vs_k)\in\R^n$ is the measured output with $h:\mathcal S\to\R^n$. The predictor is constructed from measurements and applied inputs; the underlying state serves only to state the physical system.
+
+For a fixed input $\vu$, the controlled Koopman operator maps an observable $\varphi:\mathcal S\to\R$ according to
 \begin{equation}
     (\mathcal K_{\vu}\varphi)(\vs)=\varphi(f(\vs,\vu)).
     \label{eq:koopman_operator}
 \end{equation}
-It is linear in the observable function, although the underlying state dynamics need not be linear. The finite-dimensional matrices used in this paper are a controlled prediction parameterization in selected lifted coordinates. They are not identified as an exact finite-dimensional truncation of the infinite-dimensional operator on the physical state.
+This operator is linear in the observable, although the state dynamics can be nonlinear. Finite-dimensional Koopman models replace the infinite observable space by selected coordinates with a structured evolution law. Here the coordinates are constructed from a finite measurement history rather than from an assumed instantaneous state observable. The resulting matrices therefore define a history-based controlled prediction parameterization in the selected lifted coordinates.
 
-For a vector $a$, let $\norm{a}_2$ denote the Euclidean norm; for a matrix, $\norm{M}_2$ denotes its spectral norm. For a positive semidefinite matrix $M$, write $\norm{a}_M^2=a^\top M a$. The symbol $P$ denotes the history length, whereas $P_x$ denotes a terminal cost matrix; these quantities are distinct.
+Finite-dimensional approximations select observables and model their evolution with matrices in the resulting coordinates. With an instantaneous measurement lifting, this construction has the familiar form
+\begin{equation}
+    \vz_k=g(\vx_k)\in\R^d,
+    \qquad
+    \vz_{k+1}\approx\mA\vz_k+\mB\vu_k.
+    \label{eq:instantaneous_lifting}
+\end{equation}
+The transition $\mA\in\R^{d\times d}$ describes the selected lifted coordinates, and $\mB\in\R^{d\times m}$ represents the contribution of the control input. When an instantaneous measurement does not distinguish the relevant dynamical condition, a finite observation history can instead supply the lifting coordinates. This motivates the history-based construction below.
 
-\subsection{Finite histories and prediction/control tasks}
+For a vector $a$, let $\norm{a}_2$ denote the Euclidean norm; for a matrix, $\norm{M}_2$ denotes the spectral norm. For a positive semidefinite matrix $M$, write $\norm{a}_M^2=a^\top M a$.
 
-Let $P\ge2$. At time $k$, define the measurement and past-input windows
+\subsection{History-Based Prediction and Control Problem}
+
+Let the available data consist of measured input--output trajectories
+\begin{equation}
+ \mathcal D=\{\tau^{(j)}\}_{j=1}^{N_{\mathrm{tr}}},
+ \qquad
+ \tau^{(j)}=\{(\vx_t^{(j)},\vu_t^{(j)})\}_{t=0}^{T_j}.
+ \label{eq:trajectory_dataset}
+\end{equation}
+For each admissible physical time $k$, let $P\ge2$ and assume that the required prehistory is available. The measurement and past-input histories are
 \begin{align}
     \mX_k&=\begin{bmatrix}\vx_{k-P+1}\\ \vdots\\ \vx_k\end{bmatrix}\in\R^{Pn},
     \label{eq:measurement_window}\\
     \mU_k^{\mathrm{in}}&=\begin{bmatrix}\vu_{k-P+1}\\ \vdots\\ \vu_{k-1}\end{bmatrix}\in\R^{(P-1)m}.
     \label{eq:history_windows}
 \end{align}
-The current input $\vu_k$ is not part of the context window; it enters the one-step update separately. Given $(\mX_k,\mU_k^{\mathrm{in}})$ and a future input sequence $\vu_{k:k+H-1}$, the prediction task is to estimate $\vx_{k+1:k+H}$. The control task is to choose a finite sequence $U=(\vu_0,\ldots,\vu_{N-1})$ that tracks a measurement reference while respecting the input set.
+The history contains $P$ measurements and $P-1$ previously applied inputs; the current input $\vu_k$ follows the observed history and enters the next-state update separately. Given $(\mX_k,\mU_k^{\mathrm{in}})$ and a prescribed sequence $\vu_{k:k+H-1}$, the prediction problem is to produce $H$ future measurement estimates $(\hat\vx_{k+1|k},\ldots,\hat\vx_{k+H|k})$. The predictor must use the observed history to represent the current dynamical condition and then remain consistent under recursive multi-step propagation.
 
-The lifted state is formed from the current measurement and a history encoding:
+For control, the input sequence $U=(\vu_0,\ldots,\vu_{N-1})$ is selected over a horizon $N$ to track measurement references subject to admissible input constraints. The corresponding scheduled prediction model and the frozen-LTV control construction are developed in Sections~\ref{sec:model} and~\ref{sec:control}, respectively.
+
+We use $k$ for physical time and $i\ge0$ for the prediction step relative to time $k$. Thus $i=0$ denotes the initial history and the relative input $\vu_i$ corresponds to the physical-time input $\vu_{k+i}$. The prediction horizon $H$, the training rollout horizon $H_R$, and the control horizon $N$ serve distinct purposes.
+
+The measurement history supplies the lifting map, whereas the past-input history is available to the history context introduced in Section~\ref{sec:model}. This separation allows the lifted state to represent temporal measurements while the scheduled dynamics use the recent input--output context.
+
+The predictor lifts the measurement history while retaining the current measurement as an explicit coordinate:
 \begin{align}
     \vz_k&=g_\theta(\mX_k)=\begin{bmatrix}\vx_k\\ \psi_\theta(\mX_k)\end{bmatrix}\in\R^d,
     \label{eq:state_preserving_lifting}\\
     \vx_k&=C_x\vz_k,\qquad d=n+n_\psi,
     \label{eq:state_readout}
 \end{align}
-where $C_x=[I_n\;0]$. We distinguish $\vz_k^{\mathrm{enc}}=g_\theta(\mX_k)$, which uses measured data, from a recursively propagated $\vz_k^{\mathrm{prop}}$, whose measured coordinates are model outputs.
+where $\psi_\theta:\R^{Pn}\to\R^{n_\psi}$ and $C_x=[I_n\;0]\in\R^{n\times d}$. At an observed physical time, $\vz_k^{\mathrm{enc}}=g_\theta(\mX_k)$ satisfies $C_x\vz_k^{\mathrm{enc}}=\vx_k$. During recursive prediction, the propagated state starts at $\vz_0^{\mathrm{prop}}=\vz_k^{\mathrm{enc}}$ and its readout $C_x\vz_i^{\mathrm{prop}}$ is the predicted measurement at step $i$.
 
-The model and the control analysis use a common-history convention. All compared rollouts start from the same measured window and past-input window and from the same $\vz_0=g_\theta(\mX_k)$. For a predicted index $j<0$, a history slot reads the corresponding measured past sample rather than a fictitious negative-time latent state. After each step, the oldest measurement slot is replaced by $C_x\vz_{i+1}$ and the oldest input slot by $\vu_i$. Fig.~\ref{fig:rollout} illustrates this update.
+All prediction and control comparisons use the same initial measurement and past-input histories and the same encoded initial state. Before the rollout starts, history slots contain recorded measurements; after each step, the oldest measurement and input slots are replaced by $C_x\vz_{i+1}^{\mathrm{prop}}$ and $\vu_i$, respectively. This convention supplies the common initial condition for the prediction and control analyses. Fig.~\ref{fig:rollout} illustrates the update.
 
 \begin{figure}[!t]
 \centering
@@ -180,7 +201,7 @@ Sliding windows $\mX_k$, $\mU_k^{\mathrm{in}}$: measured past samples (known) an
 
 \subsection{Model construction}
 
-The intended architecture is a patch-based temporal Transformer encoder \cite{vaswani2017attention,nie2023time}. We impose the implementation constraint $p\mid P$: the history is partitioned into $P/p$ contiguous patches, each patch is linearly embedded, augmented with positional encoding, processed by a Transformer encoder, and pooled before projection to the hidden lifted coordinates. The current measurement is concatenated to this projection as in \eqref{eq:state_preserving_lifting}. Thus, the theoretical map $g_\theta$ abstracts the architecture while the measurement readout and the recursive propagation interface remain explicit. The context map $C_\phi$ is a separate feed-forward map of the flattened measurement and past-input windows. The bounds below depend on this architecture only through the stated Lipschitz and work-domain conditions.
+The lifting map uses a patch-based temporal Transformer encoder \cite{vaswani2017attention,nie2023time}. Let $p\in\mathbb N_{\ge1}$ be the patch length, with $p\le P$ and $p\mid P$. Partition $\mX_k$ into $N_p=P/p$ contiguous non-overlapping patches and vectorize each patch as $\vq_k^{(j)}\in\R^{pn}$. A shared linear embedding maps $\vq_k^{(j)}$ to a token in $\R^{d_{\mathrm{model}}}$; sinusoidal positional encoding is then added before the Transformer encoder. Mean pooling of the $N_p$ contextualized tokens, followed by a linear projection to $\R^{n_\psi}$, gives $\psi_\theta(\mX_k)$. Concatenating this history feature with $\vx_k$ produces the measurement-preserving lift in \eqref{eq:state_preserving_lifting}. A separate feed-forward map $C_\phi$ processes the flattened measurement and past-input windows.
 
 The history context is
 \begin{align}
@@ -194,7 +215,7 @@ The scheduled predictor is
     \vz_{k+1}=\mA(\vc_k)\vz_k+\mB(\vchi_k)\vu_k.
     \label{eq:scheduled_predictor}
 \end{equation}
-The map $\mA$ is scheduled by history, while $\mB$ is scheduled by the current measured component of the lifted state. This separation is a parameterization choice.
+The map $\mA$ is scheduled by history, while $\mB$ is scheduled by the current measured component of the lifted state.
 
 We use bounded low-rank corrections around nominal matrices,
 \begin{align}
@@ -203,14 +224,24 @@ We use bounded low-rank corrections around nominal matrices,
     \mB(\vchi)&=\mB_0+\mU_B\operatorname{diag}(\gamma_B(\vchi))\mV_B^\top.
     \label{eq:low_rank_schedules}
 \end{align}
-Here $\mA_0\in\R^{d\times d}$, $\mB_0\in\R^{d\times m}$, $\mU_A,\mV_A\in\R^{d\times r_A}$, $\mU_B\in\R^{d\times r_B}$, and $\mV_B\in\R^{m\times r_B}$. The transition coefficients have the form
+Here $r_A,r_B\in\mathbb N_{\ge1}$, $g_A,g_B\ge0$, $\mA_0\in\R^{d\times d}$, $\mB_0\in\R^{d\times m}$, $\mU_A,\mV_A\in\R^{d\times r_A}$, $\mU_B\in\R^{d\times r_B}$, and $\mV_B\in\R^{m\times r_B}$. The vectors $u_{A,j}$, $v_{A,j}$, $u_{B,j}$, and $v_{B,j}$ below denote the corresponding factor columns. The transition coefficients have the form
 \begin{align}
     \gamma_{A,j}(\vc)&=g_A\pi_{A,j}(\vc)\tanh([W_A\vc+b_A]_j),
     \label{eq:A_modulation_coefficients}\\
     \pi_A(\vc)&=\operatorname{softmax}(W_A^\pi\vc+b_A^\pi),
     \label{eq:A_modulation}
 \end{align}
-and analogously for $\gamma_B(\vchi)$, with $g_B$, $W_B$, and $W_B^\pi$. The columns of the four low-rank factors have norm at most one.
+where $W_A,W_A^\pi\in\R^{r_A\times d_c}$ and $b_A,b_A^\pi\in\R^{r_A}$. The input-modulation coefficients are defined analogously by
+\begin{align}
+    \gamma_{B,j}(\vchi)&=g_B\pi_{B,j}(\vchi)\tanh([W_B\vchi+b_B]_j),\\
+    \pi_B(\vchi)&=\operatorname{softmax}(W_B^\pi\vchi+b_B^\pi),
+\end{align}
+where $W_B,W_B^\pi\in\R^{r_B\times n}$ and $b_B,b_B^\pi\in\R^{r_B}$. Throughout this subsection, the column-normalization condition
+\begin{equation}
+ \norm{u_{A,j}}_2,\norm{v_{A,j}}_2,\norm{u_{B,j}}_2,\norm{v_{B,j}}_2\le1
+ \label{eq:factor_norm_assumption}
+\end{equation}
+is imposed on the factor parameterization. Together with the prescribed nonnegative gains, it bounds the correction amplitudes.
 
 \begin{proposition}[Uniform modulation bounds]
 \label{prop:modulation_bound}
@@ -224,8 +255,7 @@ For every $\vc\in\R^{d_c}$ and $\vchi\in\R^n$,
 \end{equation}
 \end{proposition}
 \begin{proof}
-Writing the correction as a sum of rank-one matrices and applying the triangle inequality gives
-$\norm{\mA(\vc)-\mA_0}_2\le\sum_j|\gamma_{A,j}(\vc)|$. Softmax weights are nonnegative and sum to one, while $|\tanh(\cdot)|<1$; hence $|\gamma_{A,j}(\vc)|\le g_A\pi_{A,j}(\vc)$. The result follows. The argument for $\mB$ is identical.
+Writing the first correction as $\sum_{j=1}^{r_A}\gamma_{A,j}u_{A,j}v_{A,j}^{\top}$ and using $\norm{uv^{\top}}_2=\norm u_2\norm v_2$ gives $\norm{\mA(\vc)-\mA_0}_2\le\sum_{j=1}^{r_A}|\gamma_{A,j}(\vc)|$. Since $g_A\ge0$, softmax weights are nonnegative and sum to one, and $|\tanh(\cdot)|<1$, $|\gamma_{A,j}(\vc)|\le g_A\pi_{A,j}(\vc)$, which proves the first bound. The argument for $\mB$ is identical.
 \end{proof}
 
 The schedule maps are also Lipschitz under finite modulation-layer weights. Define
@@ -243,24 +273,57 @@ Then
     \end{aligned}
     \label{eq:schedule_lipschitz}
 \end{equation}
-The factor $1/2$ is the global Euclidean Lipschitz constant of softmax for $r\ge2$; the full constants in \eqref{eq:transition_Lipschitz_constant} and \eqref{eq:Lipschitz_constants} may still be conservative because they combine norm inequalities and triangle inequalities.
+The factor $1/2$ is a global Euclidean Lipschitz constant of softmax.
 
-\subsection{Training and recursive prediction}
+\subsection{Two-Stage Training and Recursive Prediction}
 
-The training objective keeps the measurement and lifted coordinates coupled. For a training transition or rollout, we use the joint form
+Each training segment contains a measured history $(\mX_k,\mU_k^{\mathrm{in}})$, a rollout horizon $H_R$, the future inputs $(\vu_k,\ldots,\vu_{k+H_R-1})$, and the corresponding measurements $(\vx_{k+1},\ldots,\vx_{k+H_R})$. The training horizon $H_R$ is distinct from the prediction-analysis horizon $H$ and the control horizon $N$.
+
+\textit{Stage 0: nominal one-step pretraining.} Let $\mathcal I_1$ be the set of available one-step transitions. The encoder and nominal dynamics are initialized by
+\begin{align}
+ \vz_k^{E}&=g_\theta(\mX_k),\\
+ \hat\vz_{k+1|k}^{P,0}&=\mA_0\vz_k^{E}+\mB_0\vu_k,\\
+ \mathcal L_{\mathrm{init}}
+ &=\frac{1}{|\mathcal I_1|}\sum_{k\in\mathcal I_1}
+ \norm{C_x\hat\vz_{k+1|k}^{P,0}-\vx_{k+1}}_2^2.
+ \label{eq:training_one_step_objects}
+\end{align}
+Stage 0 minimizes $\mathcal L_{\mathrm{init}}$ with respect to $\theta$, $\mA_0$, and $\mB_0$. Because $C_x=[I_n\;0]$, this objective directly supervises the measured coordinates of the one-step prediction.
+
+\textit{Stage 1: scheduled rollout training.} The scheduled maps in \eqref{eq:transition_schedule}--\eqref{eq:low_rank_schedules} are activated and the complete parameterization is jointly refined. For each segment, initialize
 \begin{equation}
-    \mathcal L=\mathcal L_x+w_z\mathcal L_z,
-    \qquad w_z\ge0,
-    \label{eq:joint_training_loss}
+ \vz_{k|k}^{P}=g_\theta(\mX_k),\qquad
+ \hat{\mX}_{k|k}=\mX_k,\qquad
+ \hat{\mU}_{k|k}^{\mathrm{in}}=\mU_k^{\mathrm{in}}.
+ \label{eq:training_rollout_initialization}
 \end{equation}
-where $\mathcal L_x$ measures the measured prediction error and $\mathcal L_z$ measures the corresponding lifted-state error. The two terms serve different purposes: the first controls the observable output used by prediction and control, while the second regularizes the selected lifted coordinates.
+For $i=0,\ldots,H_R-1$, propagate and update the histories by
+\begin{align}
+ \vc_{k+i|k}^{P}&=C_\phi(\hat{\mX}_{k+i|k},
+ \hat{\mU}_{k+i|k}^{\mathrm{in}}),\\
+ \vchi_{k+i|k}^{P}&=C_x\vz_{k+i|k}^{P},\\
+ \vz_{k+i+1|k}^{P}&=\mA(\vc_{k+i|k}^{P})\vz_{k+i|k}^{P}
+  +\mB(\vchi_{k+i|k}^{P})\vu_{k+i},
+  \label{eq:recursive_prediction}\\
+ \hat\vx_{k+i+1|k}&=C_x\vz_{k+i+1|k}^{P}.
+ \label{eq:training_rollout_update}
+\end{align}
+The histories are shifted as $\hat{\mX}_{k+i+1|k}=\operatorname{shift}(\hat{\mX}_{k+i|k},\hat\vx_{k+i+1|k})$ and $\hat{\mU}_{k+i+1|k}^{\mathrm{in}}=\operatorname{shift}(\hat{\mU}_{k+i|k}^{\mathrm{in}},\vu_{k+i})$. Thus the encoder initializes a rollout once; every later context and input matrix is evaluated from the propagated state and shifted predicted history.
 
-At deployment, the model is recursively propagated. Starting from $\vz_0=g_\theta(\mX_k)$, construct the predicted history from the model's own outputs and use
+Let $\operatorname{sg}[\cdot]$ denote stop-gradient and define the encoded target $\vz_{k+i}^{E}=g_\theta(\mX_{k+i})$. Stage 1 minimizes the single joint rollout objective
 \begin{equation}
-    \vz_{i+1}=\mA(\vc_i^{\mathrm{prop}})\vz_i+\mB(C_x\vz_i)\vu_i,
-    \label{eq:recursive_prediction}
+ \begin{aligned}
+  \mathcal L_{\mathrm{joint}}
+  ={}&\frac{1}{|\mathcal I_R|H_R}
+  \sum_{k\in\mathcal I_R}\sum_{i=1}^{H_R}
+  \bigl[\lambda_x\norm{\hat\vx_{k+i|k}-\vx_{k+i}}_2^2\\
+  &\quad+\lambda_z\norm{\vz_{k+i|k}^{P}
+  -\operatorname{sg}[\vz_{k+i}^{E}]}_2^2\bigr],\\
+  &\lambda_x,\lambda_z>0,
+ \end{aligned}
+ \label{eq:joint_training_loss}
 \end{equation}
-where $\vc_i^{\mathrm{prop}}$ is computed from the recursively shifted measurement and input windows. No future measured state is used in this recursion.
+where $\lambda_x$ and $\lambda_z$ are fixed training weights. The first term enforces multi-step measurement prediction, and the second term constrains propagated lifted states against re-encodings of the measured histories. This same propagated recurrence is used at deployment without the supervised targets.
 
 \subsection{Finite-horizon prediction analysis}
 
@@ -270,32 +333,19 @@ Let $\vz_{k+i}^{\mathrm{enc}}$ be the encoder sequence formed from the true meas
     \qquad \ve_0=0.
     \label{eq:prediction_error}
 \end{equation}
-Assume that all relevant encoded and propagated trajectories remain in a common finite work domain, that $C_\phi$ is Lipschitz with constant $L_\phi$, and that the one-step latent residual
+The corresponding one-step latent residual is
 \begin{equation}
     \vr_{k}=\vz_{k+1}^{\mathrm{enc}}-\mA(\vc_k)\vz_k^{\mathrm{enc}}-\mB(\vchi_k)\vu_k
     \label{eq:residual_definition}
 \end{equation}
-obeys $\norm{\vr_k}_2\le\delta$ on the considered domain and horizon. Let
-\begin{align}
-    M_A&=\norm{\mA_0}_2+g_A,
-    \label{eq:transition_norm_bound}\\
-    L&=M_A+L_BM_U+L_AL_\phi\sqrt{P}M_Z,
-    \label{eq:prediction_L}
-\end{align}
-where $M_Z$ and $M_U$ are common state and input bounds.
-
-The assumptions below are local to a fixed finite horizon.
+The following assumptions are local to one fixed finite-horizon comparison.
 \begin{assumption}[A1: common finite work domain]
 \label{ass:a1}
-For the fixed initial history, parameters, and horizon, there exist compact sets $\mathcal Z$, $\mathcal C$, and $\mathcal X$, and a nonempty compact convex input set $\mathcal U$, such that every encoded, propagated, nominal, complete, and frozen trajectory used in the relevant comparison remains in $\mathcal Z$, its scheduling signal remains in $\mathcal C$, and its measured window remains in the common domain of $C_\phi$. Let $M_Z=\sup_{z\in\mathcal Z}\norm{z}_2$ and $M_U=\sup_{u\in\mathcal U}\norm{u}_2$.
+For fixed initial measured histories, parameters, horizon $H$, and future input sequence, there are compact sets $\mathcal Z\subset\R^d$, $\mathcal C\subset\R^{d_c}$, and $\mathcal U\subset\R^m$, and a joint-window domain $\mathcal D_{\rm win}\subset\R^{Pn+(P-1)m}$, such that the truth-encoded and propagated trajectories remain in $\mathcal Z$, their context outputs remain in $\mathcal C$, and their joint windows remain in $\mathcal D_{\rm win}$. Let $M_Z=\sup_{z\in\mathcal Z}\norm{z}_2$ and $M_U=\sup_{u\in\mathcal U}\norm{u}_2$.
 \end{assumption}
-\begin{assumption}[A2: lifting regularity]
+\begin{assumption}[A2: common-window context regularity]
 \label{ass:a2}
-$g_\theta$ is Lipschitz on a named domain $\mathcal D_g$ containing all encoder windows considered in the finite horizon: $\norm{g_\theta(W)-g_\theta(W')}_2\le L_g\norm{W-W'}_2$ for $W,W'\in\mathcal D_g$. A2 is used only if the lifting residual is separated from $\vr_k$; it is not used in Theorem~\ref{thm:prediction_bound}.
-\end{assumption}
-\begin{assumption}[A3: common-window context regularity]
-\label{ass:a3}
-On the common window domain in A1, $C_\phi$ is Lipschitz with one constant $L_\phi$ for every pair of windows:
+On $\mathcal D_{\rm win}$, $C_\phi$ is Lipschitz with one constant $L_\phi$ for every pair of joint windows:
 \begin{equation}
 \begin{aligned}
 &\norm{C_\phi(W,V)-C_\phi(W',V')}_2\\
@@ -303,35 +353,31 @@ On the common window domain in A1, $C_\phi$ is Lipschitz with one constant $L_\p
 \end{aligned}
 \end{equation}
 \end{assumption}
-\begin{assumption}[A4: uniform modulation weights]
-\label{ass:a4}
-When a family of trained models is considered, there are finite constants $M_{W_A}$, $M_{W_A^\pi}$, $M_{W_B}$, and $M_{W_B^\pi}$ such that
-\begin{equation}
-\begin{aligned}
-\norm{W_A}_2&\le M_{W_A},\quad &\norm{W_A^\pi}_2&\le M_{W_A^\pi},\quad\\
-\norm{W_B}_2&\le M_{W_B},\quad &\norm{W_B^\pi}_2&\le M_{W_B^\pi}.
-\end{aligned}
-\end{equation}
-For a fixed trained model, A4 is only the finite-constant condition used in \eqref{eq:transition_Lipschitz_constant} and \eqref{eq:Lipschitz_constants}.
-\end{assumption}
-\begin{assumption}[A5: uniform one-step residual]
-\label{ass:a5}
+\begin{assumption}[A3: uniform one-step residual]
+\label{ass:a3}
 For all encoded transitions $k+i$ with $i=0,\ldots,H-1$ in the common work domain, the residual in \eqref{eq:residual_definition} satisfies $\norm{\vr_{k+i}}_2\le\delta$ for one common $\delta\ge0$.
 \end{assumption}
-Theorem~\ref{thm:prediction_bound} uses A1, A3, and A5 together with the structural bounds; it does not use A2. The freezing bound uses A1 and A3. The conditional cost theorem additionally requires one common feasible set and a uniform cost approximation over that set.
+For this comparison, define
+\begin{align}
+    M_A&=\norm{\mA_0}_2+g_A,
+    \label{eq:transition_norm_bound}\\
+    L&=M_A+L_BM_U+L_AL_\phi\sqrt{P}M_Z.
+    \label{eq:prediction_L}
+\end{align}
+The joint training objective motivates the residual comparison, while Assumption~\ref{ass:a3} supplies the uniform finite-horizon bound required below.
 
 \begin{proposition}[One-step prediction recurrence]
 \label{prop:prediction_recurrence}
-For every $0\le i\le H-1$,
+For every $0\le i\le H-1$, define $E_i=\max_{\max\{0,i-P+1\}\le j\le i}\norm{\ve_j}_2$. Then
 \begin{equation}
 \begin{aligned}
 \norm{\ve_{i+1}}_2\le{}& \delta+(M_A+L_BM_U)\norm{\ve_i}_2\\
  &+L_AL_\phi\sqrt{P}M_Z
-  \max_{i-P+1\le j\le i}\norm{\ve_j}_2,
+  E_i,
 \end{aligned}
 \label{eq:prediction_recurrence}
 \end{equation}
-where negative-index history errors are defined as zero because the initial measured history is shared.
+where $\norm{C_x}_2=1$ under $C_x=[I_n\;0]$.
 \end{proposition}
 
 \begin{proof}
@@ -343,26 +389,35 @@ Subtract the propagated update from the encoder update and add and subtract the 
 &+\left[\mB(\vchi_{k+i}^{\mathrm{enc}})-\mB(\vchi_i^{\mathrm{prop}})\right]\vu_{k+i}.
 \end{aligned}
 \end{equation}
-The first term is bounded by A5. Splitting the second term into state and schedule differences gives $M_A\norm{\ve_i}_2$ plus $L_A M_Z$ times the context difference. The input portions of the two windows are identical, while the measurement portions differ by at most $\sqrt P\max_{i-P+1\le j\le i}\norm{\ve_j}_2$; A3 therefore bounds the context difference by $L_\phi$ times this quantity. Finally, A3 is not needed for the input branch: \eqref{eq:schedule_lipschitz} and $\norm{\vu_{k+i}}_2\le M_U$ give $L_BM_U\norm{\ve_i}_2$. Combining the three bounds proves \eqref{eq:prediction_recurrence}.
+The first term is bounded by Assumption~\ref{ass:a3}. For the transition branch, use
+\begin{align*}
+ &\mA(\vc_{k+i}^{\mathrm{enc}})\vz_{k+i}^{\mathrm{enc}}-
+ \mA(\vc_i^{\mathrm{prop}})\hat\vz_i\\
+ &=\mA(\vc_{k+i}^{\mathrm{enc}})\ve_i+
+ [\mA(\vc_{k+i}^{\mathrm{enc}})-\mA(\vc_i^{\mathrm{prop}})]\hat\vz_i.
+\end{align*}
+The first term is bounded by $M_A\norm{\ve_i}_2$, and the second by $L_A M_Z$ times the context difference. The input portions of the two windows are identical, while each predicted measurement slot differs by $C_x\ve_j$ and each pre-horizon slot is shared. Thus the joint-window difference is at most $\norm{C_x}_2\sqrt P E_i$; under $C_x=[I_n\;0]$, $\norm{C_x}_2=1$, and Assumption~\ref{ass:a2} gives the displayed context term. For the input branch, \eqref{eq:schedule_lipschitz} gives $L_B\norm{C_x\ve_i}_2\norm{\vu_{k+i}}_2\le L_BM_U\norm{\ve_i}_2$. Combining the three bounds proves \eqref{eq:prediction_recurrence}.
 \end{proof}
 
 \begin{theorem}[Finite-horizon open-loop prediction bound]
 \label{thm:prediction_bound}
-Under the conditions above, for every $0\le i\le H$,
+Under Assumptions~\ref{ass:a1}--\ref{ass:a3} and the structural conditions above, define $W_i=\max_{0\le j\le i}\norm{\ve_j}_2$, so that $W_0=0$. Then, for every $0\le i\le H$,
 \begin{align}
-    \norm{\ve_i}_2&\le W_i\le \delta\sum_{t=0}^{i-1}L^{i-1-t},
+    \norm{\ve_i}_2&\le W_i\le \delta\sum_{t=0}^{i-1}L^t,
     \label{eq:prediction_bound}
-    \\
-    W_i&=\max_{0\le j\le i}\norm{\ve_j}_2.
-    \label{eq:prediction_error_maximum}
 \end{align}
 Thus, for $L\ne1$, $\norm{\ve_H}_2\le\delta(L^H-1)/(L-1)$, and for $L=1$, $\norm{\ve_H}_2\le H\delta$.
 \end{theorem}
 \begin{proof}
-The residual, state-propagation, schedule-difference, and measurement-dependent input terms give \eqref{eq:prediction_recurrence}. Since the recent-window maximum is bounded by $W_i$, one obtains $\norm{\ve_{i+1}}_2\le\delta+LW_i$. Let $S_0=0$ and $S_{i+1}=\delta+LS_i$. The sequence $S_i=\delta\sum_{t=0}^{i-1}L^{i-1-t}$ is nondecreasing for $L\ge0$, since $S_{i+1}-S_i=\delta L^i$. Induction in $W_{i+1}=\max(W_i,\norm{\ve_{i+1}}_2)$ yields $W_i\le S_i$.
+The residual, state-propagation, schedule-difference, and measurement-dependent input terms give \eqref{eq:prediction_recurrence}. Since $E_i\le W_i$, one obtains $\norm{\ve_{i+1}}_2\le\delta+LW_i$. Let $S_0=0$ and $S_{i+1}=\delta+LS_i$. The sequence $S_i=\delta\sum_{t=0}^{i-1}L^t$ is nondecreasing for $L\ge0$, since $S_{i+1}-S_i=\delta L^i$. Induction in $W_{i+1}=\max(W_i,\norm{\ve_{i+1}}_2)$ yields $W_i\le S_i$.
 \end{proof}
 
-The bound is open-loop and finite-horizon, and it does not require $L<1$. The residual bound $\delta$ and the work domain must be certified for a concrete system.
+The bound is open-loop and finite-horizon; it does not require $L<1$, although it can grow with the horizon. The corresponding measurement-space error satisfies
+\begin{equation}
+ \norm{\vx_{k+i}-C_x\hat\vz_i}_2
+ =\norm{C_x\ve_i}_2\le\norm{C_x}_2\norm{\ve_i}_2.
+ \label{eq:measurement_prediction_bound}
+\end{equation}
 
 % =========================================================
 \section{Frozen-LTV Model Predictive Control}
@@ -388,7 +443,7 @@ J_{\mathrm{full}}(U)= {}&\sum_{i=1}^{N-1}\norm{C_x\vz_i-\vx_i^{\mathrm{ref}}}_{Q
 \end{equation}
 The tracking cost is expressed in measurement space; no reference is assigned to the hidden lifted coordinates. The complete problem is generally nonlinear and nonconvex because the scheduling variables depend on the decision-dependent trajectory.
 
-Choose a feasible nominal input sequence $\bar U=(\bar\vu_0,\ldots,\bar\vu_{N-1})$ and initialize the nominal rollout with the same state and pre-horizon history, $\bar\vz_0=\vz_0$, $\bar X_0=\mX_k$, and $\bar U^{\mathrm{in}}_0=\mU_k^{\mathrm{in}}$. At each step set $\bar\vchi_i=C_x\bar\vz_i$ and $\bar\vc_i=C_\phi(\bar X_i,\bar U_i^{\mathrm{in}})$, then roll out the complete model once:
+Choose a feasible nominal input sequence $\bar U=(\bar\vu_0,\ldots,\bar\vu_{N-1})$ and initialize the nominal rollout with the same state and pre-horizon history, $\bar\vz_0=\vz_0$, $\bar\mX_0=\mX_k$, and $\bar U^{\mathrm{in}}_0=\mU_k^{\mathrm{in}}$. At each step set $\bar\vchi_i=C_x\bar\vz_i$ and $\bar\vc_i=C_\phi(\bar\mX_i,\bar U_i^{\mathrm{in}})$, then roll out the complete model once:
 \begin{equation}
     \bar\vz_{i+1}=\mA(\bar\vc_i)\bar\vz_i+\mB(\bar\vchi_i)\bar\vu_i.
     \label{eq:nominal_rollout}
@@ -415,7 +470,13 @@ Three trajectories over the horizon: nominal $\bar\vz_i$ (input $\bar U$), compl
 \label{fig:freezing}
 \end{figure}
 
-For the uniform freezing and cost statements below, fix $\bar U\in\mathcal U_{\mathrm{feas}}$ and require A1 and A3 to hold simultaneously for every candidate $U\in\mathcal U_{\mathrm{feas}}$, with the same $\mathcal Z$, $\mathcal C_\phi$ window domain, $M_Z$, $M_U$, and $L_\phi$. This is a hypothesis on the whole feasible input set, not an additional state constraint in the QP.
+\begin{assumption}[A4: uniform control comparison domain]
+\label{ass:a4}
+Fix $\bar U\in\mathcal U_{\mathrm{feas}}$. For every candidate $U\in\mathcal U_{\mathrm{feas}}$, the full, frozen, and nominal trajectories remain in shared compact lifted-state and context-output domains; all joint windows remain in $\mathcal D_{\rm win}$; and the same constants $M_Z$, $M_U$, and $L_\phi$ apply. The input-window domain $\mathcal D_{\rm win}$ and the context-output domain $\mathcal C$ are distinct.
+\end{assumption}
+Assumption~\ref{ass:a4} is a condition on the whole feasible input set, not an additional state constraint in the QP. The nominal-sequence selection rule is an online design choice; the analysis below applies to any feasible $\bar U$ selected before the frozen QP is formed and does not cover iterative re-freezing.
+
+\paragraph{One receding-horizon cycle.} At each real sampling time, update the measured windows, compute $\vz_0=g_\theta(\mX_k)$, select a feasible nominal $\bar U$, roll out the complete model once, freeze $\bar\mA_i,\bar\mB_i$, assemble and solve one convex QP, and apply its first input. At the next sampling time, rebuild the histories and repeat. The fixed-nominal results do not establish convergence or closed-loop guarantees for iterative re-freezing.
 
 \subsection{Prediction matrices and convex quadratic program}
 
@@ -450,25 +511,27 @@ J_{\mathrm{fr}}(U;\bar U)={}&\norm{\bar C_x\mZ-Y^{\mathrm{ref}}}_{\bar Q_x}^2\\
 \end{aligned}
 \label{eq:frozen_cost}
 \end{equation}
+Here $\mF\in\R^{Nd}$, $\mG\in\R^{Nd\times Nm}$, $\bar C_x\in\R^{Nn\times Nd}$, and $\hat D\in\R^{Nm\times Nm}$. The first row of $\hat D$ is $[I_m\;0\;\cdots\;0]$ and row $i\ge1$ has $-I_m$ in block column $i-1$ and $I_m$ in block column $i$; thus $\hat{\mathbf c}=[-\vu_{-1}^{\top},0,\ldots,0]^{\top}\in\R^{Nm}$. Empty matrix products in \eqref{eq:F_G_blocks} are identity matrices. For a polyhedral input set $\mathcal U=\{u:A_u u\le b_u\}$, the stacked constraint is $(I_N\otimes A_u)\mU\le\mathbf 1_N\otimes b_u$.
+
 Substitution of \eqref{eq:frozen_prediction_matrices} gives
 \begin{equation}
-    J_{\mathrm{fr}}(U;\bar U)=\frac12\mU^\top H\mU+2f^\top\mU+\mathrm{const},
+    J_{\mathrm{fr}}(U;\bar U)=\frac12\mU^\top \mathcal H\mU+q^\top\mU+\mathrm{const},
     \label{eq:quadratic_template}
 \end{equation}
 where
 \begin{align}
-H&=2\left(\begin{aligned}
+ \mathcal H&=2\left(\begin{aligned}
  &\mG^\top\bar C_x^\top\bar Q_x\bar C_x\mG\\
  &+\bar R+\hat D^\top\bar S\hat D
 \end{aligned}\right),
 \label{eq:QP_Hessian}\\
-f&=\begin{aligned}
+ q&=2f,\qquad f=\begin{aligned}
  &\mG^\top\bar C_x^\top\bar Q_x(\bar C_x\mF-Y^{\mathrm{ref}})\\
  &-\bar R\mU^{\mathrm{ref}}+\hat D^\top\bar S\hat{\mathbf c}.
 \end{aligned}
 \label{eq:QP_coefficients}
 \end{align}
-Every term in $H$ is positive semidefinite, so the objective is convex. With a box or other polyhedral input set, the frozen problem is a standard convex QP. Strict convexity and uniqueness require an additional positive-definiteness condition, for example $\bar R\succ0$.
+Every term in $\mathcal H$ is positive semidefinite, so $\mathcal H\succeq0$ and the objective is convex. With a box or other polyhedral input set, the frozen problem is a standard convex QP. Strict convexity and uniqueness require an additional positive-definiteness condition, for example $\bar R\succ0$. When $N=1$, the output term contains only the terminal weight $P_x$ and no intermediate $Q_x$ term.
 
 \subsection{Freezing error and conditional suboptimality}
 
@@ -477,13 +540,46 @@ Fix a candidate $U$ and nominal $\bar U$. Let $\vz_i^{\mathrm{full}}$ be the com
     \delta_u&=\max_{0\le i<N}\norm{\vu_i-\bar\vu_i}_2,
     \label{eq:input_deviation}\\
     \Delta_u&=\max_{0\le i<N}\norm{U_i^{\mathrm{in}}-\bar U_i^{\mathrm{in}}}_2.
-    \label{eq:input_window_deviation}
+\label{eq:input_window_deviation}
 \end{align}
+For this control comparison only, define the nondecreasing frozen-error envelope
+\begin{equation}
+ W_i^{\mathrm{fr}}:=\max_{0\le j\le i}\norm{\ve_j}_2.
+ \label{eq:frozen_error_maximum}
+\end{equation}
 Then $\Delta_u\le\sqrt{P-1}\delta_u$ because the past input windows share their initial entries and differ only in shifted future inputs. With $M_B=\norm{\mB_0}_2+g_B$, the nominal drift satisfies
 \begin{equation}
     \norm{\vg_i}_2\le G_i:=M_B\delta_u\sum_{t=0}^{i-1}M_A^{i-1-t}.
     \label{eq:nominal_drift}
 \end{equation}
+
+The three trajectories have a useful exact first-step identity. Because their initial state and history are common, $\bar\mA_0=\mA(\vc_0^{\mathrm{full}})$ and $\bar\mB_0=\mB(\vchi_0^{\mathrm{full}})$ for every candidate $U$. Consequently,
+\begin{equation}
+ \vz_1^{\mathrm{full}}=\vz_1^{\mathrm{fr}},\qquad \ve_0=\ve_1=0,
+ \label{eq:first_step_freezing_exact}
+\end{equation}
+even when $U\ne\bar U$. This exactness is not a closed-loop statement.
+
+For a less conservative candidate-specific bound, define $a_i=\norm{\vu_i-\bar\vu_i}_2$, $D_i=\norm{U_i^{\mathrm{in}}-\bar U_i^{\mathrm{in}}}_2$, and
+\begin{equation}
+ G_0^{\mathrm{st}}=0,\qquad G_{i+1}^{\mathrm{st}}=M_A G_i^{\mathrm{st}}+M_Ba_i,
+ \label{eq:stage_nominal_drift}
+\end{equation}
+so that $\norm{\vg_i}_2\le G_i^{\mathrm{st}}$. Define the history envelope
+\begin{equation}
+ \widehat G_i:=\max_{\max\{0,i-P+1\}\le j\le i}G_j^{\mathrm{st}},
+ \label{eq:stage_history_drift}
+\end{equation}
+where pre-horizon slots have drift zero. Let $E_0=0$ and recursively set
+\begin{equation}
+\begin{aligned}
+ d_i&=L_AL_\phi M_ZD_i
+ +(L_AL_\phi\sqrt P M_Z+L_BM_U)\widehat G_i,\\
+ E_{i+1}&=\max\{E_i,LE_i+d_i\}.
+\end{aligned}
+\label{eq:stage_freezing_bound}
+\end{equation}
+Under Assumptions~\ref{ass:a2} and \ref{ass:a4}, $\norm{\ve_i}_2\le E_i$. In particular, $D_0=G_0^{\mathrm{st}}=\widehat G_0=d_0=E_1=0$, which agrees with \eqref{eq:first_step_freezing_exact}. Neither the pointwise input-window deviations nor the stage drifts need be monotone, so no geometric-sum simplification of \eqref{eq:stage_freezing_bound} is made. A proof is given in Appendix~\ref{app:proofs}.
 
 To make the bound uniform over the complete feasible set, define the fixed-nominal suprema
 \begin{align}
@@ -502,14 +598,12 @@ Compactness of $\mathcal U_{\mathrm{feas}}$ makes these quantities finite, and $
 \end{aligned}
 \label{eq:uniform_freezing_driver}
 \end{align}
-and, for $0\le i\le N$,
+and, for $0\le i\le N$, with the same empty-sum convention,
 \begin{equation}
 \bar K_i:=\bar\delta_{\mathrm{frz}}\sum_{t=0}^{i-1}L^{i-1-t}.
 \label{eq:uniform_freezing_bound}
 \end{equation}
-For every $U\in\mathcal U_{\mathrm{feas}}$, the candidate-specific quantities satisfy $\delta_u\le\bar\delta_u$, $\Delta_u\le\bar\Delta_u$, $G_N\le\bar G_N$, and hence $\norm{\ve_i}_2\le\bar K_i$.
-
-For a common work domain, define
+For the fixed candidate under Assumptions~\ref{ass:a2} and \ref{ass:a4}, define
 \begin{equation}
     \begin{aligned}
     \delta_{\mathrm{frz}}={}&L_AL_\phi M_Z\Delta_u\\
@@ -523,24 +617,24 @@ With $L$ from \eqref{eq:prediction_L}, the freezing error obeys
     \sum_{t=0}^{i-1}L^{i-1-t},\qquad 0\le i\le N.
     \label{eq:freezing_bound}
 \end{equation}
-This is a same-input, finite-horizon open-loop comparison.
+This is a same-input, finite-horizon open-loop comparison. Equivalently, $W_i^{\mathrm{fr}}\le K_i$ because $K_i$ is nondecreasing and bounds every $\norm{\ve_j}_2$ for $j\le i$.
+
+For every $U\in\mathcal U_{\mathrm{feas}}$, the candidate-specific quantities satisfy $\delta_u\le\bar\delta_u$, $\Delta_u\le\bar\Delta_u$, and $G_N\le\bar G_N$. Thus $\delta_{\mathrm{frz}}\le\bar\delta_{\mathrm{frz}}$ and the preceding comparison gives $\norm{\ve_i}_2\le K_i\le\bar K_i$.
+
+The stage-dependent bound \eqref{eq:stage_freezing_bound} is the sharper candidate-specific certificate. The simpler $K_i$ bound above is retained as a uniform, conservative certificate because it uses horizon-wide envelopes.
 
 To express the cost difference uniformly, let $M_Y=\norm{C_x}_2M_Z$, $M_{\mathrm{ref}}=\max_{1\le i\le N}\norm{\vx_i^{\mathrm{ref}}}_2$, and $\bar K_i^x=\norm{C_x}_2\bar K_i$. A uniform sufficient bound is
 \begin{equation}
 \begin{aligned}
 \varepsilon_J={}&2(M_Y+M_{\mathrm{ref}})
- \left[\begin{aligned}
- &\norm{Q_x}_2\sum_{i=1}^{N-1}\bar K_i^x\\
- &+\norm{P_x}_2\bar K_N^x
- \end{aligned}\right]\\
+ \left(\norm{Q_x}_2\sum_{i=1}^{N-1}\bar K_i^x
+ +\norm{P_x}_2\bar K_N^x\right)\\
 &+\norm{Q_x}_2\sum_{i=1}^{N-1}(\bar K_i^x)^2\\
 &+\norm{P_x}_2(\bar K_N^x)^2.
 \end{aligned}
 \label{eq:epsilon_cost}
 \end{equation}
-It follows from the identity for the difference of two squared weighted norms and from the fact that the input and input-increment terms in \eqref{eq:full_cost} and \eqref{eq:frozen_cost} are identical.
-
-More explicitly, let $y_i^{\mathrm{full}}=C_x\vz_i^{\mathrm{full}}$, $y_i^{\mathrm{fr}}=C_x\vz_i^{\mathrm{fr}}$, and $d_i=y_i^{\mathrm{full}}-y_i^{\mathrm{fr}}$. The uniform freezing bound gives $\norm{d_i}_2\le\bar K_i^x$. With $M_Y=\norm{C_x}_2M_Z$ and $M_{\mathrm{ref}}=\max_{1\le i\le N}\norm{\vx_i^{\mathrm{ref}}}_2$, A1 gives $\norm{y_i^{\mathrm{full}}}_2\le M_Y$ and hence $\norm{y_i^{\mathrm{fr}}}_2\le M_Y+\bar K_i^x$. Therefore, for $i<N$,
+It follows from the identity for the difference of two squared weighted norms and from the fact that the input and input-increment terms in \eqref{eq:full_cost} and \eqref{eq:frozen_cost} are identical. More explicitly, let $y_i^{\mathrm{full}}=C_x\vz_i^{\mathrm{full}}$, $y_i^{\mathrm{fr}}=C_x\vz_i^{\mathrm{fr}}$, and $d_i=y_i^{\mathrm{full}}-y_i^{\mathrm{fr}}$. The uniform freezing bound gives $\norm{d_i}_2\le\bar K_i^x$. With $M_Y=\norm{C_x}_2M_Z$ and $M_{\mathrm{ref}}=\max_{1\le i\le N}\norm{\vx_i^{\mathrm{ref}}}_2$, Assumption~\ref{ass:a4} gives $\norm{y_i^{\mathrm{full}}}_2\le M_Y$ and hence $\norm{y_i^{\mathrm{fr}}}_2\le M_Y+\bar K_i^x$. Therefore, for $i<N$,
 \begin{equation}
 \begin{aligned}
 &\left|\norm{y_i^{\mathrm{full}}-\vx_i^{\mathrm{ref}}}_{Q_x}^2-
@@ -548,20 +642,20 @@ More explicitly, let $y_i^{\mathrm{full}}=C_x\vz_i^{\mathrm{full}}$, $y_i^{\math
 &\quad\le\norm{Q_x}_2\bar K_i^x(2M_Y+\bar K_i^x+2M_{\mathrm{ref}}),
 \end{aligned}
 \end{equation}
-and the same identity with $P_x$ applies at $i=N$. Summing these bounds and using the common input terms yields \eqref{eq:epsilon_cost}. Because \eqref{eq:uniform_input_deviation} takes the supremum over the entire feasible set and A1/A3 use the same domain constants there, this calculation proves the uniform candidate bound required by (CA), subject to the stated work-domain assumptions.
+and the same identity with $P_x$ applies at $i=N$. Summing these bounds and using the common input terms yields \eqref{eq:epsilon_cost}. Because \eqref{eq:uniform_input_deviation} takes the supremum over the entire feasible set and Assumptions~\ref{ass:a2} and \ref{ass:a4} use the same domain constants there, this calculation proves the following proposition.
 
-\begin{assumption}[Uniform cost approximation]
-\label{ass:cost_approximation}
-For the fixed nominal sequence, the complete and frozen costs obey
+\begin{proposition}[Uniform objective approximation certificate]
+\label{prop:uniform_cost_certificate}
+Under Assumptions~\ref{ass:a2} and \ref{ass:a4},
 \begin{equation}
-    \sup_{U\in\mathcal U_{\mathrm{feas}}}
-    |J_{\mathrm{full}}(U)-J_{\mathrm{fr}}(U;\bar U)|\le\varepsilon_J.
+ \sup_{U\in\mathcal U_{\mathrm{feas}}}
+ \left|J_{\mathrm{full}}(U)-J_{\mathrm{fr}}(U;\bar U)\right|\le\varepsilon_J.
+ \label{eq:uniform_cost_certificate}
 \end{equation}
-\end{assumption}
-
+\end{proposition}
 \begin{theorem}[Conditional cost suboptimality]
 \label{thm:suboptimality}
-Suppose the complete and frozen problems have the same nonempty feasible input set, and let $U^{\mathrm{fr}}$ and $U^\star$ be global minimizers of the frozen and complete costs, respectively. Under Assumption~\ref{ass:cost_approximation},
+Suppose the complete and frozen problems have the same nonempty feasible input set, and let $U^{\mathrm{fr}}$ and $U^\star$ be global minimizers of the frozen and complete costs, respectively. Under Assumptions~\ref{ass:a2} and \ref{ass:a4},
 \begin{equation}
     0\le J_{\mathrm{full}}(U^{\mathrm{fr}})-J_{\mathrm{full}}(U^\star)
     \le2\varepsilon_J.
@@ -578,7 +672,7 @@ J_{\mathrm{full}}(U^{\mathrm{fr}})
 \end{align*}
 \end{proof}
 
-The theorem applies to global minimizers under Assumption~\ref{ass:cost_approximation}; an approximate QP solution requires an additional solver-error bound.
+The comparison is per sampling instant on a common feasible input set with a fixed nominal sequence. If a solver returns $\widetilde U$ satisfying $J_{\mathrm{fr}}(\widetilde U;\bar U)\le J_{\mathrm{fr}}(U^{\mathrm{fr}};\bar U)+\eta$, the same argument gives $J_{\mathrm{full}}(\widetilde U)-J_{\mathrm{full}}(U^\star)\le2\varepsilon_J+\eta$.
 
 % =========================================================
 \section{Experiments}
@@ -611,7 +705,6 @@ For control, freezing the scheduling matrices along a nominal rollout produces a
 The results are finite-horizon and open-loop; the uniform work-domain and residual conditions require certification for a concrete system.
 
 \appendices
-
 \section{Proof Details}
 \label{app:proofs}
 
@@ -619,19 +712,26 @@ The results are finite-horizon and open-loop; the uniform work-domain and residu
 For completeness, the softmax Jacobian is $J(\pi)=\operatorname{diag}(\pi)-\pi\pi^\top$. It is positive semidefinite and, by the variance bound, satisfies $\norm{J(\pi)}_2\le1/2$. Integrating the Jacobian along the line segment between two logits gives $\norm{\operatorname{softmax}(a)-\operatorname{softmax}(b)}_2\le\frac12\norm{a-b}_2$. Combining this inequality with the $\tanh$ Lipschitz property, $\norm{\cdot}_1\le\sqrt r\norm{\cdot}_2$, and the rank-one factor normalization gives \eqref{eq:schedule_lipschitz}.
 
 \subsection*{Frozen error bound}
-The three trajectories in Section~\ref{sec:control} satisfy
-\begin{equation}
-\begin{aligned}
-\ve_{i+1}={}&\bar\mA_i\ve_i\\
-&+\big(\mA(\vc_i^{\mathrm{full}})-\bar\mA_i\big)\vz_i^{\mathrm{full}}\\
-&+\big(\mB(\vchi_i^{\mathrm{full}})-\bar\mB_i\big)\vu_i.
-\end{aligned}
-\end{equation}
-The history-window difference in the first matrix term is bounded by $L_\phi(\sqrt P(W_i+G_N)+\Delta_u)$. The measurement difference in the second matrix term is bounded by $L_B(W_i+G_N)$. Using the common state and input bounds gives
-\begin{equation}
-    \norm{\ve_{i+1}}_2\le\delta_{\mathrm{frz}}+LW_i.
-\end{equation}
-The same nondecreasing comparison sequence used in the proof of Theorem~\ref{thm:prediction_bound} then gives \eqref{eq:freezing_bound}.
+For a fixed candidate $U$ and nominal $\bar U$, the three trajectories are distinct: $\bar\vz_i$ uses $\bar U$ and recomputed schedules, $\vz_i^{\mathrm{fr}}$ uses $U$ and fixed nominal matrices, and $\vz_i^{\mathrm{full}}$ uses $U$ and recomputed schedules. Let $\mX_i^{\mathrm{full}}$ and $\bar\mX_i$ be their recursively shifted measurement windows; let $U_i^{\mathrm{in}}$ and $\bar U_i^{\mathrm{in}}$ be the associated past-input windows; and define $\vc_i^{\mathrm{full}}=C_\phi(\mX_i^{\mathrm{full}},U_i^{\mathrm{in}})$, $\bar\vc_i=C_\phi(\bar\mX_i,\bar U_i^{\mathrm{in}})$, $\vchi_i^{\mathrm{full}}=C_x\vz_i^{\mathrm{full}}$, and $\bar\vchi_i=C_x\bar\vz_i$. Hence $\bar\mA_i=\mA(\bar\vc_i)$ and $\bar\mB_i=\mB(\bar\vchi_i)$. Their differences satisfy
+\begin{align}
+ \vg_{i+1}&=\bar\mA_i\vg_i+\bar\mB_i(\vu_i-\bar\vu_i),\label{eq:appendix_nominal_drift_recursion}\\
+ \ve_{i+1}&=\bar\mA_i\ve_i
+ +[\mA(\vc_i^{\mathrm{full}})-\bar\mA_i]\vz_i^{\mathrm{full}}
+ +[\mB(\vchi_i^{\mathrm{full}})-\bar\mB_i]\vu_i.
+ \label{eq:appendix_three_trajectory_recursions}
+\end{align}
+Thus $\norm{\vg_i}_2\le G_i$ in \eqref{eq:nominal_drift}. The full and nominal measurement histories differ slotwise by $C_x(\ve_j+\vg_j)$ after the prediction start and are identical before it, so
+\begin{equation*}
+ \norm{\mX_i^{\mathrm{full}}-\bar\mX_i}_2
+ \le\norm{C_x}_2\sqrt P\left(W_i^{\mathrm{fr}}+G_N\right).
+\end{equation*}
+The input-window difference is at most $\Delta_u$. Assumption~\ref{ass:a2} therefore bounds the context difference by $L_\phi[\sqrt P(W_i^{\mathrm{fr}}+G_N)+\Delta_u]$. The current measured-state difference is at most $\norm{C_x}_2(W_i^{\mathrm{fr}}+G_N)$, so the schedule Lipschitz bound gives
+\begin{equation*}
+ \norm{\ve_{i+1}}_2\le\delta_{\mathrm{frz}}+LW_i^{\mathrm{fr}},
+\end{equation*}
+with $\delta_{\mathrm{frz}}$ from \eqref{eq:freezing_driver}; the present manuscript uses $\norm{C_x}_2=1$. The nondecreasing comparison sequence for $W_{i+1}^{\mathrm{fr}}=\max\{W_i^{\mathrm{fr}},\norm{\ve_{i+1}}_2\}$ then proves \eqref{eq:freezing_bound}.
+
+For the stage-dependent refinement, $D_0=G_0^{\mathrm{st}}=\widehat G_0=0$, hence the two full schedules at stage zero equal the nominal schedules and $\ve_1=0$. At stage $i$, the same history argument with $D_i$ and the active-history envelope $\widehat G_i$ gives $\norm{\ve_{i+1}}_2\le LE_i+d_i$. Taking the maximum with $E_i$ proves by induction that $\norm{\ve_i}_2\le E_i$. No monotonicity of $D_i$ or $G_i^{\mathrm{st}}$ is used.
 
 \subsection*{Quadratic program}
 Let $\mG_x=\bar C_x\mG$ and $\mW=\bar C_x\mF-Y^{\mathrm{ref}}$. The output term expands as
@@ -642,7 +742,7 @@ Let $\mG_x=\bar C_x\mG$ and $\mW=\bar C_x\mF-Y^{\mathrm{ref}}$. The output term 
     &\qquad+2(\mG_x^\top\bar Q_x\mW)^\top\mU+\mathrm{const}.
     \end{aligned}
 \end{equation}
-The input and input-increment terms expand analogously. Their sum yields \eqref{eq:QP_Hessian} and \eqref{eq:QP_coefficients}. Positive semidefiniteness follows because each quadratic coefficient has the form $T^\top MT$ with $M\succeq0$.
+The input and input-increment terms expand analogously. Their sum yields \eqref{eq:QP_Hessian} and $q=2f$ in \eqref{eq:QP_coefficients}. Positive semidefiniteness follows because each quadratic coefficient has the form $T^\top MT$ with $M\succeq0$.
 
 
 
