@@ -26,3 +26,6 @@ Thumbs.db
 *.fls
 *.fdb_latexmk
 论文/新版本/Main.pdf
+
+# Local LaTeX build directories
+论文/新版本/build_*/
