@@ -332,14 +332,19 @@ The predictor consists of the lifting encoder $g_\theta$, the context map $C_\ph
 
 For a rollout horizon $H_R$, each training sample comprises the measured histories $(\mX_k,\mU_k^{\mathrm{in}})$, the future input sequence $(\vu_k,\ldots,\vu_{k+H_R-1})$, and the corresponding measured-state targets $(\vx_{k+1},\ldots,\vx_{k+H_R})$, all drawn from the same trajectory.
 
-\textbf{Stage~0 (nominal one-step pretraining).} We initialize the encoder $g_\theta$ and the time-invariant base matrices $(\mA_0,\mB_0)$ by minimizing the one-step measurement prediction error,
+For each available measured window, define the reference lifted state $\vz_t^{\mathrm{enc}}=g_\theta(\mX_t)$. Stage~0 uses $t=k+1$ for $k\in\mathcal I_1$; Stage~1 uses $t=k+i$ for $k\in\mathcal I_R$ and $i=1,\ldots,H_R$, within the same trajectory. At each parameter update, the shared encoder recomputes these references from measured histories, and their values are held fixed during that update. The predictive branch remains trainable.
+
+\textbf{Stage~0 (nominal one-step pretraining).} We initialize the encoder $g_\theta$ and the time-invariant base matrices $(\mA_0,\mB_0)$ using the nominal prediction $\tilde\vz_{k+1}^{0}=\mA_0\vz_k+\mB_0\vu_k$, where $\vz_k=g_\theta(\mX_k)$, by minimizing the joint one-step measurement and lifted-state prediction error,
 \begin{equation}
+    \begin{aligned}
     \mathcal L_{\mathrm{init}}
-    =\sum_{k\in\mathcal I_1}
-    \norm{C_x(\mA_0\vz_k+\mB_0\vu_k)-\vx_{k+1}}_2^2,
+    &=\sum_{k\in\mathcal I_1}\bigl[
+    \norm{C_x\tilde\vz_{k+1}^{0}-\vx_{k+1}}_2^2\\
+    &\qquad+\lambda_0\norm{\tilde\vz_{k+1}^{0}-\vz_{k+1}^{\mathrm{enc}}}_2^2\bigr],
+    \end{aligned}
     \label{eq:training_one_step_objects}
 \end{equation}
-where $\vz_k=g_\theta(\mX_k)$ and $\mathcal I_1$ indexes the available one-step training pairs. This loss jointly initializes $g_\theta$, $\mA_0$, and $\mB_0$ using one-step measured-state targets. Since $C_x=[I_n\;0]$, it directly supervises only the measured-coordinate rows of the one-step prediction; the remaining rows are updated through multi-step training in Stage~1.
+where $\lambda_0>0$ and $\mathcal I_1$ indexes the available one-step training pairs. This loss jointly initializes $g_\theta$, $\mA_0$, and $\mB_0$ by supervising both the measurement and the complete lifted state.
 
 \begin{definition}[Rollout-Aware Scheduled Objective]
 \label{def:rollout_aware}
@@ -364,14 +369,17 @@ The measurement and input histories are shifted by appending $\hat\vx_{k+i+1|k}$
     (\hat{\mU}_{k+i|k}^{\mathrm{in}},\vu_{k+i}).
     \label{eq:rollout_input_shift}
 \end{equation}
-The lifting encoder is thus evaluated only at the start of the rollout, while both scheduling matrices are updated from the model-propagated state and histories. With uniform weights $w_i=1/H_R$, the scheduled objective is
+In the predictive branch, the lifting encoder is evaluated only at the start of the rollout, while both scheduling matrices are updated from the model-propagated state and histories. With uniform weights $w_i=1/H_R$, the scheduled objective is
 \begin{equation}
+    \begin{aligned}
     \mathcal L_R
-    =\sum_{k\in\mathcal I_R}\sum_{i=1}^{H_R}
-    w_i\norm{C_x\vz_{k+i|k}^{P}-\vx_{k+i}}_2^2,
+    &=\sum_{k\in\mathcal I_R}\sum_{i=1}^{H_R}w_i\bigl[
+    \norm{C_x\vz_{k+i|k}^{P}-\vx_{k+i}}_2^2\\
+    &\qquad+\lambda_R\norm{\vz_{k+i|k}^{P}-\vz_{k+i}^{\mathrm{enc}}}_2^2\bigr],
+    \end{aligned}
     \label{eq:joint_training_loss}
 \end{equation}
-where $\mathcal I_R$ indexes valid rollout segments.
+where $\lambda_R>0$ and $\mathcal I_R$ indexes valid rollout segments.
 \end{definition}
 
 \textbf{Stage~1 (scheduled-rollout fine-tuning).} We activate the scheduled transition and input matrices in \eqref{eq:transition_schedule}--\eqref{eq:low_rank_schedules} and jointly optimize the encoder, context map, nominal matrices, low-rank factors, and modulation networks by minimizing \eqref{eq:joint_training_loss}. The encoder initializes each rollout once; subsequent steps propagate the lifted state and update the scheduling variables using predicted histories according to \eqref{eq:training_context_update}--\eqref{eq:rollout_input_shift}. The projection $C_x$ remains fixed. The complete procedure is summarized in Algorithm~\ref{alg:training}.
@@ -381,17 +389,18 @@ where $\mathcal I_R$ indexes valid rollout segments.
 \label{alg:training}
 \begin{algorithmic}[1]
 \STATE \textbf{Input:} Trajectory dataset $\mathcal D$; history length $P$; rollout horizon $H_R$; training epochs $E_0,E_1$.
-\STATE \textbf{Stage 0:} Initialize $(\theta,\mA_0,\mB_0)$ by minimizing \eqref{eq:training_one_step_objects} for $E_0$ epochs.
+\STATE \textbf{Stage 0:} Initialize $(\theta,\mA_0,\mB_0)$ by minimizing \eqref{eq:training_one_step_objects} for $E_0$ epochs, refreshing $\vz_{k+1}^{\mathrm{enc}}=g_\theta(\mX_{k+1})$ from measured histories at each update and holding it fixed during that update.
 \STATE \textbf{Stage 1:} Activate both scheduled matrices \eqref{eq:transition_schedule}--\eqref{eq:low_rank_schedules}.
 \FOR{$\ell=1$ \TO $E_1$}
     \FOR{each mini-batch of length-$H_R$ segments}
+        \STATE Compute references $\vz_{k+i}^{\mathrm{enc}}=g_\theta(\mX_{k+i})$, $i=1,\ldots,H_R$, from measured histories.
         \STATE Set $\vz_{k|k}^{P}=g_\theta(\mX_k)$, $\hat{\mX}_{k|k}=\mX_k$, and $\hat{\mU}_{k|k}^{\mathrm{in}}=\mU_k^{\mathrm{in}}$.
         \FOR{$i=0$ \TO $H_R-1$}
             \STATE Evaluate $\vc_{k+i|k}^{P}=C_\phi(\hat{\mX}_{k+i|k},\hat{\mU}_{k+i|k}^{\mathrm{in}})$.
             \STATE Propagate $\vz_{k+i+1|k}^{P}$ using $\mA(\vc_{k+i|k}^{P})$ and $\mB(C_x\vz_{k+i|k}^{P})$.
             \STATE Read out $\hat\vx_{k+i+1|k}=C_x\vz_{k+i+1|k}^{P}$ and shift both histories.
         \ENDFOR
-        \STATE Update the full predictor by minimizing \eqref{eq:joint_training_loss}.
+        \STATE Update the full predictor by minimizing \eqref{eq:joint_training_loss}, holding the references fixed during this update.
     \ENDFOR
 \ENDFOR
 \STATE \textbf{Return:} Trained encoder, context network, and dynamics parameters.
