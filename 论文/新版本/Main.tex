@@ -138,7 +138,7 @@ Consider the discrete-time nonlinear system
 \vs_{k+1}=f(\vs_k,\vu_k),\qquad \vx_k=h(\vs_k),
 \label{eq:nonlinear_system}
 \end{equation}
-where $\vs_k\in\mathcal S\subseteq\R^{n_s}$ is the physical state and $\vu_k\in\R^m$ is the control input. The available measurement $\vx_k\in\R^n$ is obtained through the measurement map $h:\mathcal S\to\R^n$. The state transition map $f:\mathcal S\times\R^m\to\mathcal S$ governs the evolution of $\vs_k$ under $\vu_k$. We learn the predictor from measured input--output trajectories and use finite observation histories to capture temporal information not resolved by individual measurements.
+where $\vs_k\in\mathcal S\subseteq\R^{n_s}$ is the physical state and $\vu_k\in\R^m$ is the control input. The available measurement $\vx_k\in\R^n$ is obtained through the measurement map $h:\mathcal S\to\R^n$. The state transition map $f:\mathcal S\times\R^m\to\mathcal S$ governs the evolution of $\vs_k$ under $\vu_k$. Only $\vx_k$ is available to the predictor and the controller; we therefore learn the predictor from measured input--output trajectories and use finite observation histories to capture temporal information not resolved by individual measurements.
 
 For a fixed input $\vu$, the controlled Koopman operator acts on an observable $\varphi:\mathcal S\to\R$ as \cite{koopman1931hamiltonian,mezic2005spectral,brunton2022modern}
 \begin{equation}
@@ -196,7 +196,7 @@ For each admissible index $k$, the measurement history $\mX_k$ is defined in~\eq
 v_k = \col(\vu_{k-P_h+1},\ldots,\vu_{k-1}) \in \R^{(P_h-1)m}.
 \label{eq:past_input_history}
 \end{equation}
-The current input $\vu_k$ is applied after the observed history window.
+The current input $\vu_k$ is applied after the observed history window and is therefore not part of $v_k$.
 
 Given the measurement history $\mX_k$, the past-input history $v_k$, and a future control sequence $\vu_{k:k+H_p-1}$, the prediction task is to estimate $\vx_{k+1},\ldots,\vx_{k+H_p}$ over a horizon of $H_p$ steps. The predictor should exploit the observed history to initialize the lifted representation and support recursive multi-step prediction. The learned predictor is then used for receding-horizon reference tracking subject to input constraints $\vu_k\in\mathcal U$, where $\mathcal U=\{u:H_uu\leq h_u\}$ is a nonempty compact convex polytope.
 
@@ -227,17 +227,16 @@ To carry the scheduling history along the predicted trajectory, define the measu
 \begin{equation}
 \begin{aligned}
 a_k&=\col(\vx_{k-P_h+1},\ldots,\vx_{k-1}),\\
-q_k&=\col(\vz_k,a_k,v_k)\in\R^{s_q},\\
-s_q&=d+(P_h-1)(n+m).
+q_k&=\col(\vz_k,a_k,v_k)\in\R^{s_q},
 \end{aligned}
 \label{eq:augmented_state}
 \end{equation}
-For $q=\col(\vz,a,v)$, the scheduling context is
+where the measurement cache $a_k$ collects the $P_h-1$ past measurements of the window $\mX_k$ in~\eqref{eq:measurement_window}, omitting the current $\vx_k$ already carried in $\vz_k$, and $v_k$ is the past-input history~\eqref{eq:past_input_history}. The augmented state $q_k$ stacks the lifted state with both caches and has dimension $s_q=d+(P_h-1)(n+m)$. For $q=\col(\vz,a,v)$, the measurement window is reconstructed as $\mX(q)=\col(a,C_x\vz)\in\R^{P_hn}$, where $C_x\vz$ recovers the current measurement from the lifted state through~\eqref{eq:state_readout}, and the scheduling context is
 \begin{equation}
-\vc(q)=C_\phi\bigl(\col(a,C_x\vz),v\bigr)\in\R^{d_c},
+\vc(q)=C_\phi\bigl(\mX(q),v\bigr)\in\R^{d_c},
 \label{eq:recursive_context}
 \end{equation}
-where $C_\phi:\R^{P_hn+(P_h-1)m}\to\R^{d_c}$ is the context encoder and $C_x\vz$ recovers the current measurement from the lifted state through~\eqref{eq:state_readout}. Thus, the scheduling context depends on the reconstructed measurement history and past inputs, but not on the current decision input. Let $S_x,S_u$ be the cache-shift matrices and $E_x,E_u$ the corresponding append matrices, and let $E_{\rm prev}\in\R^{m\times s_q}$ select the last input slot of $v$.
+where $C_\phi:\R^{P_hn+(P_h-1)m}\to\R^{d_c}$ is the context encoder. At a measured sample, where $\vz_k=G_\theta(\mX_k)$ and the caches are taken from recorded data, $\mX(q_k)=\mX_k$ by~\eqref{eq:state_readout}; along a predicted trajectory, the window is instead reconstructed from the propagated state, so that $\vc$ remains a function of the state that $F$ propagates rather than an external signal. Thus, the scheduling context depends on the reconstructed measurement history and past inputs, but not on the current decision input.
 
 The scheduled transition and input matrices are
 \begin{align}
@@ -258,7 +257,7 @@ where $H\in\{A,B\}$, $j=1,\ldots,r_H$, and $y=\vc$ for $H=A$ or $y=\vx$ for $H=B
 
 \begin{definition}[History-Conditioned Scheduled Koopman Predictor]
 \label{def:history_scheduled_predictor}
-Let $G_\theta$ be the lifting map~\eqref{eq:state_preserving_lifting}, let $\vc(\cdot)$ be the recursive context~\eqref{eq:recursive_context}, and let $\mA(\cdot)$ and $\mB(\cdot)$ be the scheduled matrices~\eqref{eq:scheduled_A}--\eqref{eq:scheduling_function}. The history-conditioned scheduled Koopman predictor initializes the augmented state from the observed histories as $q_k^E=\col(G_\theta(\mX_k),a_k,v_k)$, with the measurement cache $a_k$ from~\eqref{eq:augmented_state} and the past-input history $v_k$ from~\eqref{eq:past_input_history}, and propagates it by $q^+=F(q,\vu)$, where
+Let $G_\theta$ be the lifting map~\eqref{eq:state_preserving_lifting}, let $\vc(\cdot)$ be the recursive context~\eqref{eq:recursive_context}, and let $\mA(\cdot)$ and $\mB(\cdot)$ be the scheduled matrices~\eqref{eq:scheduled_A}--\eqref{eq:scheduling_function}. The history-conditioned scheduled Koopman predictor initializes the augmented state from the observed histories as $q_k^E=\col(G_\theta(\mX_k),a_k,v_k)$, with the measurement cache $a_k$ from~\eqref{eq:augmented_state} and the past-input history $v_k$ from~\eqref{eq:past_input_history}, and propagates it by $q^+=F(q,\vu)$, where $F:\R^{s_q}\times\R^m\to\R^{s_q}$ is given by
 \begin{equation}
 \begin{aligned}
 F(q,\vu)=\col\bigl(&\mA(\vc(q))\vz+\mB(C_x\vz)\vu,\\
@@ -267,7 +266,7 @@ F(q,\vu)=\col\bigl(&\mA(\vc(q))\vz+\mB(C_x\vz)\vu,\\
 \end{aligned}
 \label{eq:recursive_predictor}
 \end{equation}
-The first block propagates the lifted state, while the remaining blocks update the histories used for subsequent scheduling.\envend
+The first block propagates the lifted state, while the remaining blocks update the histories used for subsequent scheduling: $S_x$ and $S_u$ discard the oldest entry of the respective cache, and $E_x$ and $E_u$ append the current measurement $C_x\vz$ and the applied input $\vu$, so that the next context $\vc(q^+)$ is evaluated on the predicted window.\envend
 \end{definition}
 
 If the columns of the low-rank factors have Euclidean norm at most one, the scheduling parameterization yields
@@ -278,7 +277,7 @@ If the columns of the low-rank factors have Euclidean norm at most one, the sche
 \end{aligned}
 \label{eq:modulation_bounds}
 \end{equation}
-These bounds limit the correction magnitudes but do not imply stability. The lifted dynamics are linear for fixed scheduling signals, whereas the recursively scheduled map $F$ is generally nonlinear.
+These bounds limit the correction magnitudes but imply neither stability nor linearity: the lifted dynamics are linear for fixed scheduling signals, whereas the recursively scheduled map $F$ is generally nonlinear.
 
 At each control sample, $q_k^E$ is formed from the measured histories, and subsequent horizon predictions are generated by repeated application of $F$, without re-encoding the predicted histories. Superscripts $E$ and $P$ distinguish encoder-generated and model-propagated lifted states, respectively.
 
@@ -287,7 +286,7 @@ The discrepancy between the next encoded augmented state and its one-step predic
 q_{k+1}^E=F(q_k^E,\vu_k)+w_k.
 \label{eq:reencoding_residual}
 \end{equation}
-Under exact cache bookkeeping and input execution, $w_k=\col(r_k,0,0)$, where $r_k$ accounts for measurement-prediction and encoder--propagation discrepancies. Its decomposition is given in Appendix~\ref{app:construction}. A small empirical prediction loss does not, by itself, establish a uniform bound on $w_k$.
+Under exact cache bookkeeping and input execution, $w_k=\col(r_k,0,0)$, where $r_k$ accounts for measurement-prediction and encoder--propagation discrepancies. Its decomposition is given in Appendix~\ref{app:construction}. We emphasize that a small empirical prediction loss does not, by itself, establish a uniform bound on $w_k$; such a bound enters the closed-loop analysis as a separate assumption in Section~\ref{sec:control}.
 
 \subsection{Model Learning and Contractive Design}
 \label{sec:training}
@@ -315,20 +314,20 @@ The scheduled-rollout stage activates both schedules. From each observed initial
 \end{equation}
 with $\omega_i=1/H_R$ and $\alpha_R>0$. Samples and target windows come from the same recorded trajectory. The encoder initializes each predictive rollout once; the context then follows predicted measurement histories and prescribed inputs. The encoder, context, and allowable dynamics parameters are trained jointly, with $C_x$ fixed.
 
-Repeated prediction makes the sensitivity of both the state update and its history schedule relevant to control. A small empirical rollout loss does not bound that sensitivity uniformly. We therefore restrict the dynamics through a stable skeleton and explicit modulation budgets, rather than treating the control assumptions as consequences of fitting. Choose a Schur $\mA_0$ and define
+Repeated prediction makes the sensitivity of both the state update and its history schedule relevant to control. A small empirical rollout loss, however, does not bound that sensitivity uniformly. We therefore restrict the dynamics through a stable skeleton and explicit modulation budgets, rather than treating the control assumptions as consequences of fitting. Choose a Schur $\mA_0$ and define
 \begin{equation}
 M_0=\begin{bmatrix}\mA_0&0&0\\E_xC_x&S_x&0\\0&0&S_u\end{bmatrix},\qquad
 M_0^T\Pi M_0-\Pi=-I.
 \label{eq:lyapunov_skeleton}
 \end{equation}
-The cache shifts are nilpotent, so $M_0$ is Schur and $\Pi\succ0$ exists. Schur stability of $\mA_0$ is a design restriction; $\Pi$ is the analysis norm for that fixed skeleton. One can train $\mA_0=TKT^{-1}$ with $T$ invertible and $\norm{K}_2<1$, or keep it fixed during fine-tuning. Any change of the skeleton requires a new $\Pi$ and new gain budgets before deployment.
+The cache shifts are nilpotent, so $M_0$ is Schur and $\Pi\succ0$ exists. Schur stability of $\mA_0$ is a design restriction; $\Pi$ is the analysis norm for that fixed skeleton. To enforce it, one can parameterize $\mA_0=TKT^{-1}$ with $T$ invertible and $\norm{K}_2<1$ during training, or keep $\mA_0$ fixed during fine-tuning. Any subsequent change of the skeleton requires a new $\Pi$ and new gain budgets before deployment.
 
 On the ball $\mathcal Q=\{q:\norm{q}_\Pi\le M\}$, let $L_c$ bound the Euclidean derivative of $q\mapsto\vc(q)$. For each head define
 \begin{equation}
 \kappa_H=\norm{W_H}_2+\tfrac12\sqrt{r_H}\norm{W_H^\pi}_2,\qquad L_H=g_H\kappa_H.
 \label{eq:Lipschitz_constants}
 \end{equation}
-Factor and head-norm constraints give explicit amplitude and derivative bounds, with sufficient MLP and attention estimates in Appendix~\ref{app:construction}. The resulting construction restricts the \emph{scheduled dynamics}; it does not establish a uniform encoder residual for every Transformer. That residual, which includes the encoding-graph defect, remains a separate assumption on the chosen lift and measured system. Training must preserve the structural bounds, or its final fixed parameters must be checked against them. Deployment is deterministic, with dropout disabled and normalization fixed.
+Factor and head-norm constraints give explicit amplitude and derivative bounds, with sufficient MLP and attention estimates in Appendix~\ref{app:construction}. The resulting construction restricts the \emph{scheduled dynamics}; it does not establish a uniform encoder residual for every Transformer. That residual, which includes the encoding-graph defect, remains a separate assumption on the chosen lift and measured system. In practice, training must either preserve the structural bounds or have its final parameters checked against them, and deployment is deterministic, with dropout disabled and normalization fixed.
 
 \begin{proposition}[Constructible contractive model class]
 \label{prop:contractive_class}
@@ -348,7 +347,7 @@ Both modulation gains can be nonzero. Nonconstant heads and effective factor dir
 Schur stability gives the common Lyapunov norm. The full derivative perturbation includes the direct correction, the derivative of the history schedule acting on $\vz$, and the derivative of $\mB(C_x\vz)\vu$. Their bounds give $\norm{D_qF-M_0}_\Pi\le\nu_{\rm bd}$; the frozen bound omits the schedule derivatives. Fixing the ball first makes these perturbation bounds linear in the common gain scale. The strict choice \eqref{eq:gain_choice} leaves positive contraction and radius margins. Applying the radius inequalities to a currently admissible point proves next-step membership, rather than assuming future trajectories remain in the ball. The detailed bounds and a nonconstant, encoding-consistent periodic example are given in Appendix~\ref{app:construction}.
 \end{proof}
 
-The proposition constructs a nonempty constrained model class; it does not ensure that an arbitrary training result belongs to it. Compatibility of these structural bounds with a small uniform residual remains an independent condition on the model and measured system. On the same domain, contraction also gives the finite-horizon open-loop estimate $\norm{q_{k+i}^E-q_{k+i|k}^P}_\Pi\le\bar w\sum_{j=0}^{i-1}\lambda^j$ for a common initial history and identical prescribed inputs.
+The proposition constructs a nonempty constrained model class; it does not ensure that an arbitrary training result belongs to it. Likewise, compatibility of these structural bounds with a small uniform residual remains an independent condition on the model and measured system. On the same domain, contraction also gives the finite-horizon open-loop estimate $\norm{q_{k+i}^E-q_{k+i|k}^P}_\Pi\le\bar w\sum_{j=0}^{i-1}\lambda^j$ for a common initial history and identical prescribed inputs.
 
 \section{Frozen-LTV Model Predictive Control}
 \label{sec:control}
@@ -373,7 +372,7 @@ D_{i|k}=\col(\bar\mB_{i|k},0,E_u).
 \end{equation}
 The coefficients come from the nominal trajectory, not the decision trajectory. Therefore $p_{i|k}$ is affine in the stacked decision $U$, even though the complete scheduled trajectory generally is not. The lower branch of Fig.~\ref{fig:overview} shows this separation between generating the coefficients and optimizing the candidate inputs.
 
-For fixed absolute-time references, use
+For the fixed absolute-time reference, we use the stage cost
 \begin{equation}
 \begin{split}
 \ell_t(q,u)={}&\norm{q-q_t^r}_\Pi^2+\norm{u-\vu_t^r}_R^2\\
@@ -381,7 +380,7 @@ For fixed absolute-time references, use
 \end{split}
 \label{eq:stage_cost}
 \end{equation}
-where $R,S\succeq0$. Penalizing the complete augmented error provides the positive-definite state term needed by the value analysis. The relative increment penalizes departures from the reference's own input change: applying the reference tail leaves only the previous-input cache error, including for a time-varying reference.
+where $R,S\succeq0$, and $E_{\rm prev}\in\R^{m\times s_q}$ extracts the previous input $\vu_{t-1}$ stored in the last slot of the input cache $v$, so that $u-E_{\rm prev}q$ is the input increment. Penalizing the complete augmented error provides the positive-definite state term needed by the value analysis. The relative increment penalizes departures from the reference's own input change: applying the reference tail leaves only the previous-input cache error, including for a time-varying reference.
 
 With terminal weight $\beta\Pi$, solve the single problem
 \begin{equation}
@@ -394,7 +393,7 @@ J_k^{\rm fr}&=\sum_{i=0}^{N-1}\ell_{k+i}(p_{i|k},\vu_{i|k})
 \end{equation}
 Choose $\beta$ by \eqref{eq:terminal_weight} below, using the common contraction rate. Only the input polytope is a hard constraint; there is no state constraint, terminal set, or online terminal optimization.
 
-The frozen objective is a sum of positive-semidefinite quadratic terms in affine functions of $U$, and the constraints are $(I_N\otimes H_u)U\le\mathbf1_N\otimes h_u$. A minimizer exists by continuity and compactness. Its Hessian is in fact positive definite: the first nonzero input variation enters the next input-cache slot, which is penalized by a complete-state stage weight or the terminal weight. This is specific to the augmented cost and holds even when $R,S$ are singular. The condensed expression and proof are in Appendix~\ref{app:estimates}.
+The frozen objective is a sum of positive-semidefinite quadratic terms in affine functions of $U$, and the constraints are $(I_N\otimes H_u)U\le\mathbf1_N\otimes h_u$. A minimizer therefore exists by continuity and compactness. Its Hessian is in fact positive definite: the first nonzero input variation enters the next input-cache slot, which is penalized by a complete-state stage weight or the terminal weight. This is specific to the augmented cost and holds even when $R,S$ are singular. The condensed expression and proof are in Appendix~\ref{app:estimates}.
 
 Let $\widehat U_k$ be the returned feasible sequence. Apply and shift that same sequence:
 \begin{align}
@@ -421,7 +420,7 @@ For an exact solve $\widehat U_k=U_k^*$; a feasible numerical solve is covered b
 
 \subsection{Closed-Loop Stability Analysis}
 \label{subsec:closed_loop}
-The main difficulty is that the next sample changes both the measured initialization and the coefficients of the QP. A decrease proved for an unchanged frozen model would therefore miss the implemented controller. We compare the optimal values of the \emph{successive re-frozen problems}, using the nominal shift in \eqref{eq:nominal_shift} to construct the next feasible candidate. The value $W_k$ depends on $q_k^E$, $\bar U_k$, and absolute reference time, rather than on the state alone.
+The main difficulty is that the next sample changes both the measured initialization and the coefficients of the QP. A decrease proved for an unchanged frozen model would therefore miss the implemented controller. Instead, we compare the optimal values of the \emph{successive re-frozen problems}, using the nominal shift in \eqref{eq:nominal_shift} to construct the next feasible candidate. The value $W_k$ depends on $q_k^E$, $\bar U_k$, and absolute reference time, rather than on the state alone.
 
 \begin{assumption}[Common model and residual domain]
 \label{ass:domain}
@@ -479,7 +478,7 @@ Under Assumptions~\ref{ass:domain}--\ref{ass:reference}, use \eqref{eq:terminal_
 \le\delta_k\le\bar\delta,
 \label{eq:solver_gap}
 \end{equation}
-with $\delta_k=0$ for an exact solve. All actual and predicted augmented states remain in $\mathcal Q$, and input feasibility is recursive. With the constants defined above, $e_k=q_k^E-q_k^r$, and $\rho=1-1/\mathsf A\in[0,1)$,
+with $\delta_k=0$ for an exact solve. Then all actual and predicted augmented states remain in $\mathcal Q$, and input feasibility is recursive. With the constants defined above, $e_k=q_k^E-q_k^r$, and $\rho=1-1/\mathsf A\in[0,1)$,
 \begin{equation}
 \begin{split}
 \norm{e_k}_\Pi^2&\le W_k\le\Xi_k,\\
@@ -639,7 +638,7 @@ Any choice
 \frac{\Delta}{2(k_*M+k_b)}\right\}
 \label{eq:gain_choice}
 \end{equation}
-works, omitting zero-denominator terms. Indeed, $\lambda\le\lambda_0+tk_F$, $\lambda_{\rm fr}\le\lambda_0+tk_{\rm fr}$ and $b_u\le b_0^{\rm drv}+tk_b$. The contraction increment uses less than half the original rate margin, while $t(k_*M+k_b)<\Delta/2$ leaves a strict radius margin. The ball is chosen before the gains. A residual bound available only on a smaller set cannot justify enlarging this ball. For arbitrary complete and frozen points in it, subtracting the top blocks gives the uniform mismatch bound $a_z(2g_AM_z+2g_BM_u)$ used in the analysis.
+works, omitting zero-denominator terms. Indeed, $\lambda\le\lambda_0+tk_F$, $\lambda_{\rm fr}\le\lambda_0+tk_{\rm fr}$ and $b_u\le b_0^{\rm drv}+tk_b$. The contraction increment uses less than half the original rate margin, while $t(k_*M+k_b)<\Delta/2$ leaves a strict radius margin. The ball is chosen before the gains; a residual bound available only on a smaller set therefore cannot justify enlarging it. For arbitrary complete and frozen points in it, subtracting the top blocks gives the uniform mismatch bound $a_z(2g_AM_z+2g_BM_u)$ used in the analysis.
 
 A nontrivial member of the mathematical class takes $n=m=1$, $P_h=2$, $\vz=(x,\psi)$, $\psi(X)=\alpha_{\rm d} x_{\rm past}$, and $\alpha_{\rm d}\ne0$. Set $c=a+v$ and
 \begin{equation}
