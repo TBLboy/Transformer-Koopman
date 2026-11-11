@@ -2,8 +2,9 @@
 % Compile with pdfLaTeX (twice for cross-references); IEEEtran supplies the text fonts.
 % Compatibility layer for the actual Tectonic/XeTeX build only.
 % pdfLaTeX ignores every conditional definition below.
+% Define the conditional outside the XeTeX-only branch so TeX can skip it safely.
+\newif\ifTKTermes
 \ifdefined\XeTeXversion
-  \newif\ifTKTermes
   \TKTermestrue
   \IfFileExists{texgyretermes-regular.otf}{}{\TKTermesfalse}
   \IfFileExists{texgyretermes-italic.otf}{}{\TKTermesfalse}
@@ -51,6 +52,8 @@
 \fi
 
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
 \usepackage{xcolor}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -72,6 +75,8 @@
 \newcommand{\vp}{\mathbf{p}}
 \newcommand{\vb}{\mathbf{b}}
 \newcommand{\vx}{\mathbf{x}}
+\newcommand{\vy}{\mathbf{y}}
+\newcommand{\vr}{\mathbf{r}}
 \newcommand{\vu}{\mathbf{u}}
 \newcommand{\vs}{\mathbf{s}}
 \newcommand{\vz}{\mathbf{z}}
@@ -88,17 +93,19 @@
 \newcommand{\col}{\operatorname{col}}
 
 \begin{document}
-\title{Transformer--Koopman: History-Conditioned Scheduled Prediction and Frozen-LTV Model Predictive Control}
+\title{Transformer--Koopman: History-Conditioned Scheduled Prediction and Stability-Guarded Frozen-LTV MPC}
 \author{Bolin Tao}
 \markboth{IEEE Journal Draft}{Tao: Transformer--Koopman}
 \maketitle
 
+{\color{blue}
 \begin{abstract}
-Finite measurement histories can distinguish dynamical conditions that a single observation cannot, but history-dependent prediction generally couples future dynamics to the candidate control inputs. This paper combines a measurement-preserving temporal Transformer lift with low-rank transition scheduling driven by recursively updated history. A nonredundant augmented state carries the lifted coordinates and the measurement and input caches. One nonlinear nominal rollout then supplies a frozen linear time-varying model for a single convex quadratic program at each sample. A reference-relative objective and a shift of the returned sequence with a reference tail connect successive frozen problems. We give explicit common-contraction conditions for the scheduled dynamics using a Schur skeleton and modulation-derivative budgets; the measurement re-encoding residual remains an independent condition on the chosen lift and system. Under these contraction, residual, and reference conditions, a direct analysis of the implemented frozen optimal values yields practical exponential tracking. The bound separates freezing, re-encoding, reference defect, and certified feasible QP suboptimality, without requiring a second online nonlinear rollout or terminal optimization.
+History-conditioned predictors can exploit information absent from instantaneous measurements, but their evolving scheduling coefficients generally depend on candidate inputs and destroy the convexity of nonlinear model predictive control (MPC). We develop a measurement-preserving temporal Transformer lift, recursively maintained measurement and input caches, and low-rank scheduled Koopman dynamics. One complete-model nominal rollout is used at each sample to freeze the coefficient sequence and formulate a strictly convex linear time-varying MPC quadratic program. For an output-reference-only interface, an internal nominal steady-input selector and a feasible first-input linear guard establish recursive feasibility and practical exponential tracking of the \emph{actual re-encoded closed loop} under explicit common-contraction, reference-feasibility, and residual assumptions. Exact exponential convergence holds for constant references corresponding to complete-model equilibria with zero re-encoding residual. Separately, a finite-horizon bound quantifies the optimization loss due to freezing relative to the complete learned predictor under the \emph{same} guard. An analytically certified nonzero-scheduling example demonstrates that the sufficient conditions are nonempty; the guarantees are conditional and do not automatically certify independently trained Transformer weights.
 \end{abstract}
 \begin{IEEEkeywords}
-Koopman modeling, temporal Transformer, history-conditioned prediction, low-rank scheduling, convex model predictive control, practical exponential tracking.
+Koopman modeling, history-conditioned dynamics, temporal Transformer, linear time-varying MPC, quadratic programming, output tracking, contraction analysis.
 \end{IEEEkeywords}
+}
 
 \section{Introduction}
 \label{sec:introduction}
@@ -110,25 +117,58 @@ Learning the observables, however, cannot recover information that is absent fro
 
 History can also condition the evolution model itself. While a fixed transition matrix offers a simple prediction structure, allowing its coefficients to depend on recent data provides additional modeling flexibility. Koopa employs context-dependent operators for nonstationary forecasting \cite{liu2023koopa}, while MamKO generates matrices from historical data for modeling and predictive control \cite{li2025mamko}. These studies motivate distinguishing history-dependent initialization from history-conditioned state propagation. In receding-horizon prediction, however, the scheduling history must evolve with the predicted trajectory. The resulting coefficients depend on predicted measurements and candidate inputs, so conditional linearity at a fixed context does not preserve convexity of the full MPC problem.
 
-To retain a quadratic program (QP), the coefficient sequence can be computed along a nominal rollout and held fixed while optimizing the candidate inputs. Quasi-linear parameter-varying MPC similarly exploits fixed scheduling sequences to form tractable subproblems, including iterative QP schemes \cite{cisneros2016qlmpc,cisneros2020qlpv}. Here we consider the specific policy of one nominal rollout and one frozen QP per sample, rather than iterating to update the schedules. The resulting approximation must be analyzed as part of the control law: at the next sample, new measurements change the lifted initialization and a new nominal rollout changes the prediction matrices. A decrease derived for one unchanged frozen model therefore does not establish a decrease across the problems actually solved. Likewise, results for real-time iteration concern a particular optimization update and cannot be transferred solely because both methods use a quadratic subproblem \cite{diehl2005realtime,gros2020rti}. The question is how the history-dependent model, the returned input sequence, and the next nominal rollout can be coupled to support a cross-sample tracking argument.
+\begingroup\color{blue}
+To retain a quadratic program (QP), the coefficient sequence can be computed along a nominal rollout and held fixed while optimizing the candidate inputs. Quasi-linear parameter-varying MPC similarly exploits fixed scheduling sequences to form tractable subproblems, including iterative QP schemes \cite{cisneros2016qlmpc,cisneros2020qlpv}. Here, by contrast, one complete-model nominal rollout and one frozen QP are performed \emph{per sampling instant}, with no iterative re-freezing. The resulting optimizer cannot be analyzed by silently treating its predicted trajectories as trajectories of the full learned model. Nor does the decrease of an objective defined by one frozen coefficient sequence imply a decrease of the distinct objective formed at the next sample; real-time iteration results also require their own algorithm-specific hypotheses \cite{diehl2005realtime,gros2020rti}.
 
-This paper develops a history-conditioned Transformer--Koopman predictor and a single-freeze MPC scheme. A temporal Transformer initializes the lifted state from measured history, while recursively updated measurement and input histories schedule low-rank transition corrections and measurement-dependent input modulation. At each sample, one nominal rollout determines the frozen linear time-varying prediction model used in a convex QP. The controller combines augmented-state tracking, reference-relative input increments, and a shifted input sequence with a reference tail. Under explicit common-contraction, re-encoding residual, and reference conditions, we establish practical exponential tracking by directly comparing the optimal values of consecutive frozen problems.
+A separate difficulty arises at the reference interface. Standard tracking formulations may assume a dynamically admissible lifted reference state and a compatible reference input sequence. These quantities are generally not available when an operator specifies only a measured-output setpoint or output trajectory. Even a nominally reachable output reference need not define an equilibrium of a history-scheduled model. The analysis must distinguish the internal reference-selection error, time variation of the requested output, re-encoding residuals, and the approximation introduced by freezing. In particular, a bound following only from compact state and input sets is not a meaningful tracking guarantee.
 
-The main contributions are as follows:
+This paper develops a recursive history-conditioned Transformer--Koopman predictor and a \emph{stability-guarded}, single-freeze MPC controller. The predictor combines a measurement-preserving temporal lift with carried measurement and input histories, while low-rank schedules modulate the transition and input channel. For control, a right inverse of the nominal DC output map constructs a feasible steady-input candidate directly from the supplied output reference. A linear first-input guard limits the deviation from that candidate in proportion to the measured augmented-state tracking error. Consequently, closed-loop contraction can be proved using the \emph{implemented} input, without requiring a Lyapunov decrease between successive frozen optimization problems. The finite-horizon cost of freezing is analyzed independently, over the same guard-constrained feasible set.
+
+The contributions are summarized as follows:
 \begin{enumerate}
-\item \emph{A recursive history-conditioned predictor:} we combine a measurement-preserving Transformer lift with low-rank scheduling in a nonredundant augmented state, specifying how history initializes the features and conditions their subsequent evolution.
-\item \emph{A single-freeze control law:} we couple one nominal rollout and one convex QP through a complete augmented tracking cost, reference-relative input increments, and a shift of the returned sequence with a reference tail.
-\item \emph{Conditional closed-loop tracking analysis:} we construct sufficient common-contraction budgets and establish practical exponential tracking for the specified controller by comparing its successive frozen optimal values. The bound accounts separately for freezing, re-encoding, reference defects, and certified feasible QP suboptimality.
+\item \emph{Recursive history-conditioned Koopman prediction:} A measurement-preserving Transformer lift, nonredundant history caches, and low-rank scheduled dynamics explicitly distinguish history-based initialization from history-conditioned recursive evolution.
+\item \emph{A certifiable scheduled model class:} A Schur nominal skeleton and computable perturbation, input-gain, and radius budgets provide sufficient common-contraction and invariance conditions compatible with nonzero scheduling. Prediction residuals remain an explicit, separately verified interface with the physical system.
+\item \emph{An output-reference-only, single-freeze controller:} A nominal DC steady-input selector, one nonlinear nominal rollout, a strictly convex frozen-LTV QP, and an always-feasible first-input guard require neither external lifted reference trajectories nor external reference inputs.
+\item \emph{Two distinct guarantees:} The actual re-encoded closed loop enjoys conditional practical exponential output tracking, with zero-error exponential convergence at exact complete-model equilibria under zero residual. An independent bound quantifies the finite-horizon optimization gap between frozen and complete learned-model predictions \emph{under the same guard}; it does not assert plant-level optimality or improvement over nominal steady-input control.
 \end{enumerate}
 
-Section~\ref{sec:prelim} formulates the prediction and control tasks. Section~\ref{sec:model} develops the model, learning objectives, and contractive design. Section~\ref{sec:control} presents the controller and its closed-loop analysis. Section~\ref{sec:experiments} reserves the numerical-results component, and Section~\ref{sec:conclusion} concludes. Fig.~\ref{fig:overview} summarizes the method.
+Section~\ref{sec:prelim} defines the prediction and control setting. Section~\ref{sec:model} presents the model, learning objectives, and contraction construction. Section~\ref{sec:control} specifies the guarded frozen-LTV controller and proves its two guarantees. Section~\ref{sec:experiments} currently gives an analytical nonzero-scheduling certificate rather than a trained-network experiment. Section~\ref{sec:conclusion} discusses the scope and limitations. Fig.~\ref{fig:overview} illustrates the information and optimization flow.
 
 \begin{figure*}[!t]
 \centering
-\fbox{\rule{0pt}{80mm}\rule{0.95\textwidth}{0pt}}
-\caption{Placeholder for the method overview; final figure to be supplied.}
+\begin{tikzpicture}[
+    font=\footnotesize, >=Stealth,
+    block/.style={draw=blue!55!black, line width=.55pt, rounded corners=2pt,
+      minimum height=1.12cm, text width=4.55cm, align=center, inner sep=5pt},
+    soft/.style={block,fill=blue!4},
+    ctrl/.style={block,fill=blue!10,draw=blue!75!black},
+    flow/.style={->,line width=.7pt,draw=blue!65!black},
+    note/.style={font=\scriptsize,fill=white,inner sep=1pt}
+]
+\node[soft] (enc) at (2.65,0) {\textbf{Measured histories and Transformer lift}\\$\mathcal X_k,\,v_k\ \longmapsto\ q_k^E$};
+\node[soft] (roll) at (8.55,0) {\textbf{One complete-model rollout}\\$\bar q_{i+1|k}=F(\bar q_{i|k},\bar u_{i|k})$};
+\node[soft] (freeze) at (14.45,0) {\textbf{Frozen LTV coefficients}\\$\{M_{i|k},D_{i|k}\}_{i=0}^{N-1}$};
+\node[soft] (ref) at (2.65,-2.05) {\textbf{Output reference and DC selector}\\$\mathbf r_{k:k+N},\ u_k^b=H_b\mathbf r_k,\ q_k^b=T_b\mathbf r_k$};
+\node[ctrl] (qp) at (8.55,-2.05) {\textbf{One strictly convex guarded QP}\\$J_k^{\rm fr}$, $U\in\mathcal U^N$, $\|u_{0|k}-u_k^b\|_\infty\le\kappa E_k$};
+\node[soft] (act) at (14.45,-2.05) {\textbf{Apply, observe, and re-encode}\\$u_k=\widehat u_{0|k}$,\quad $q_{k+1}^E=F(q_k^E,u_k)+w_k$};
+\draw[flow] (enc.east) -- (roll.west);
+\draw[flow] (roll.east) -- (freeze.west);
+\draw[flow] (ref.east) -- (qp.west);
+\draw[flow] (freeze.south) |- ($(qp.north)+(0,0.21)$) -- (qp.north);
+\draw[flow] (enc.south) -- (ref.north) node[note,pos=.5,right] {$q_k^E$};
+\draw[flow] (qp.east) -- (act.west);
+\draw[flow] (act.south) -- ++(0,-.40) node[note,below] {re-encode and shift nominal at $k+1$};
+\node[draw=blue!35!black,rounded corners=2pt,fill=blue!2,align=center,
+  font=\footnotesize,text width=16.35cm,inner sep=5pt] at (8.55,-4.15)
+  {\textbf{Separated conditional guarantees:}\quad
+  $E_{k+1}\le \rho_g E_k+d_g$ for the \emph{actual} closed loop; \quad
+  $J_k^F(\widehat U_k)-\min_{U\in\mathcal F_k}J_k^F(U)\le 2\varepsilon_N+\delta_k$};
+\end{tikzpicture}
+\caption{Stability-guarded Transformer--Koopman MPC architecture. The output reference determines an internal nominal steady pair; the scheduling coefficients are frozen only after one complete-model nominal rollout. The upper and lower bounds concern, respectively, the implemented closed loop and guarded finite-horizon optimization of the learned model.}
 \label{fig:overview}
 \end{figure*}
+
+\endgroup
 
 \section{Preliminaries and Problem Formulation}
 \label{sec:prelim}
@@ -350,239 +390,331 @@ Schur stability gives the common Lyapunov norm. The full derivative perturbation
 For identical prescribed inputs, combining~\eqref{eq:reencoding_residual} with same-input contraction bounds each next prediction error by $\lambda$ times the current error plus $\bar w$. Iterating from zero initial prediction error yields the stated bound.
 \end{proof}
 
-\section{Frozen-LTV Model Predictive Control}
+% Section IV is a revised controller and proof. Blue = revised manuscript content.
+\begingroup\color{blue}
+\section{Stability-Guarded Frozen-LTV Model Predictive Control}
 \label{sec:control}
-\subsection{Frozen-LTV MPC Formulation}
+\subsection{Output-Reference-Based Single-Freeze QP}
 \label{subsec:frozen_mpc}
-{\color{blue}The history-conditioned predictor developed in Section~\ref{sec:model} supplies the state-transition model for receding-horizon control. Since its scheduling matrices depend on the evolving predicted state, optimizing the complete recursion would lead to a nonlinear finite-horizon problem. We instead freeze the scheduling coefficients along one nominal rollout at each sampling instant, obtaining a quadratic program with fixed prediction matrices.}
+The controller receives only an output reference $\vr_k\in\R^{p_y}$, rather than an augmented reference state or a reference input trajectory. Let $\vy_k=Cq_k^E$, where
+$C=C_yC_xE_z^T\in\R^{p_y\times s_q}$ extracts the controlled output and $E_z^Tq=\vz$. A preview $\vr_k,\ldots,\vr_{k+N}$ is used in the finite-horizon cost. We take $P_h\ge2$ so that the existing input-history cache contains the immediately preceding applied input; $E_{\rm prev}q\in\R^m$ extracts this entry.
 
-{\color{blue}At sample $k$, construct $q_k^E$ by~\eqref{eq:encoded_initialization} and use a feasible nominal input sequence $\bar U_k=\col(\bar\vu_{0|k},\ldots,\bar\vu_{N-1|k})\in\mathcal U^N$. This sequence determines the frozen coefficients but is not a decision variable of the current QP. The initial sequence $\bar U_0$ is chosen from $\mathcal U^N$. At each subsequent sampling instant, the nominal sequence is formed by shifting the input sequence returned by the previous MPC solve and appending the reference input. The complete-model rollout is}
+The nominal augmented skeleton in~\eqref{eq:lyapunov_skeleton} has input matrix
+\begin{equation}
+D_0=\col(\mB_0,0,E_u),\qquad F_0(q,\vu)=M_0q+D_0\vu.
+\label{eq:nominal_input_matrix}
+\end{equation}
+Since $M_0$ is Schur, $I-M_0$ is nonsingular. Define its DC output gain and a fixed right inverse by
+\begin{equation}
+\begin{aligned}
+G_0&=C(I-M_0)^{-1}D_0,\\
+H_b&=G_0^T(G_0G_0^T)^{-1},\qquad G_0H_b=I_{p_y},
+\end{aligned}
+\label{eq:reference_selector}
+\end{equation}
+provided $\operatorname{rank}(G_0)=p_y$. From the supplied output reference, the controller internally constructs
+\begin{equation}
+\vu_k^b=H_b\vr_k,\quad q_k^b=T_b\vr_k,\quad
+T_b=(I-M_0)^{-1}D_0H_b.
+\label{eq:reference_equilibrium}
+\end{equation}
+Thus $Cq_k^b=\vr_k$, $F_0(q_k^b,\vu_k^b)=q_k^b$, and $E_{\rm prev}q_k^b=\vu_k^b$. The pair $(q_k^b,\vu_k^b)$ is an \emph{algebraic nominal steady pair}, not an assumed trajectory of the complete scheduled predictor. In particular, for a moving reference it need not satisfy $q_{k+1}^b=F(q_k^b,\vu_k^b)$. The admissible output reference class is specified below.
+
+At time $k$, initialize $q_k^E$ by~\eqref{eq:encoded_initialization}, and choose a nominal sequence $\bar U_k=\col(\bar\vu_{0|k},\ldots,\bar\vu_{N-1|k})\in\mathcal U^N$. Perform \emph{one} complete-model nominal rollout,
 \begin{equation}
 \bar q_{0|k}=q_k^E,\qquad
-\bar q_{i+1|k}=F(\bar q_{i|k},\bar\vu_{i|k}),\quad 0\le i<N,
+\bar q_{i+1|k}=F(\bar q_{i|k},\bar\vu_{i|k}),\quad 0\le i<N.
 \label{eq:nominal_rollout}
 \end{equation}
-{\color{blue}Let $E_z=\col(I_d,0,0)\in\R^{s_q\times d}$, so that $E_z^Tq=\vz$. Along the nominal trajectory, evaluate $\bar\mA_{i|k}=\mA(\vc(\bar q_{i|k}))$ and $\bar\mB_{i|k}=\mB(C_xE_z^T\bar q_{i|k})$. Holding these matrices fixed for all candidate inputs gives the linear time-varying prediction model}
+Freeze the scheduled matrices $\bar\mA_{i|k}=\mA(\vc(\bar q_{i|k}))$ and $\bar\mB_{i|k}=\mB(C_xE_z^T\bar q_{i|k})$. Each candidate input sequence then generates the affine prediction
 \begin{align}
 p_{0|k}&=q_k^E,\qquad
 p_{i+1|k}=M_{i|k}p_{i|k}+D_{i|k}\vu_{i|k},
-\label{eq:frozen_model}\\
-\intertext{where}
-M_{i|k}&=
-\begin{bmatrix}
-\bar\mA_{i|k} & 0 & 0\\
-E_xC_x & S_x & 0\\
-0 & 0 & S_u
-\end{bmatrix},
-\qquad
+\label{eq:frozen_model}\\[-2pt]
+M_{i|k}&=\begin{bmatrix}
+\bar\mA_{i|k}&0&0\\E_xC_x&S_x&0\\0&0&S_u
+\end{bmatrix},\quad
 D_{i|k}=\col(\bar\mB_{i|k},0,E_u).\nonumber
 \end{align}
+For the nominal candidate, $p_{i|k}(\bar U_k)=\bar q_{i|k}$ for all $i$. This is coefficient freezing, not a Jacobian linearization of the complete recursion. In particular, its first step is exact for any candidate first input:
+\begin{equation}
+p_{1|k}=F(q_k^E,\vu_{0|k}).
+\label{eq:exact_first_step}
+\end{equation}
 
-{\color{blue}For fixed coefficients, the predicted states depend affinely on $U=\col(\vu_{0|k},\ldots,\vu_{N-1|k})\in\R^{Nm}$. In particular, $p_{i|k}(\bar U_k)=\bar q_{i|k}$ for $i=0,\ldots,N$: the frozen model exactly reproduces its nominal trajectory. This is coefficient freezing, not a Jacobian linearization of $F$; predictions for other input sequences need not coincide with the complete recursion.}
-
-{\color{blue}Let $\{(q_t^r,\vu_t^r)\}_{t\ge0}$ be a prescribed absolute-time reference in augmented coordinates, with $\vu_{-1}^r$ given. The matrix $E_{\rm prev}\in\R^{m\times s_q}$ extracts the previous input from the cache in $q$, so $u-E_{\rm prev}q$ is the input increment. Using the Lyapunov weight $\Pi$ for augmented-state tracking and $R,S\succeq0$ for input and increment penalties, with $\norm{e}_R^2=e^\top Re$ and $\norm{e}_S^2=e^\top Se$, define}
+For $Q_y\succ0$, $Q_f\succeq0$, $S\succ0$, $\beta\ge0$, and an optional anchoring weight $\omega>0$, define
 \begin{equation}
 \begin{split}
-\ell_t(q,u)={}&\norm{q-q_t^r}_\Pi^2+\norm{u-\vu_t^r}_R^2\\
-&+\norm{(u-E_{\rm prev}q)-(\vu_t^r-\vu_{t-1}^r)}_S^2,
+J_k^{\rm fr}(U;\bar U_k)={}&\sum_{i=0}^{N-1}\bigl(
+\norm{Cp_{i|k}-\vr_{k+i}}_{Q_y}^2\\[-2pt]
+&\qquad+\norm{\vu_{i|k}-E_{\rm prev}p_{i|k}}_S^2\bigr)\\
+&+\beta\norm{Cp_{N|k}-\vr_{k+N}}_{Q_f}^2\\
+&+\omega\norm{\vu_{0|k}-\vu_k^b}_2^2,
 \end{split}
 \label{eq:stage_cost}
 \end{equation}
-{\color{blue}With terminal weight $\beta\Pi$ ($\beta>0$), the frozen-LTV MPC problem is}
-
+where $\norm{v}_W^2=v^TWv$. To ensure stability \emph{independently} of the optimality of the returned input, set $E_k=\norm{q_k^E-q_k^b}_\Pi$ and impose the first-input guard
+\begin{equation}
+-\kappa E_k\mathbf1_m\le\vu_{0|k}-\vu_k^b
+\le\kappa E_k\mathbf1_m,
+\label{eq:stability_guard}
+\end{equation}
+with design constant $\kappa\ge0$. At the current sample $E_k$ and $\vu_k^b$ are known, so these inequalities are \emph{linear} in the decision variables. The frozen MPC problem is
 \begin{equation}
 \begin{aligned}
-\min_{U}\quad
-&\sum_{i=0}^{N-1}\ell_{k+i}(p_{i|k},\vu_{i|k})
- +\beta\norm{p_{N|k}-q_{k+N}^r}_\Pi^2\\
-\text{s.t.}\quad
-&p_{0|k}=q_k^E,\\
+\min_{U}\quad &J_k^{\rm fr}(U;\bar U_k)\\
+\text{s.t.}\quad &p_{0|k}=q_k^E,\\
 &p_{i+1|k}=M_{i|k}p_{i|k}+D_{i|k}\vu_{i|k},\\
-&\vu_{i|k}\in\mathcal U,\quad i=0,\ldots,N-1.
+&\vu_{i|k}\in\mathcal U,\quad 0\le i<N,\\
+&\text{guard }\eqref{eq:stability_guard}.
 \end{aligned}
 \label{eq:quadratic_template}
 \end{equation}
+Eliminating the affine state recursions leaves a single strictly convex QP in $U$. Its \emph{current-sample} feasible set is
+\begin{equation}
+\mathcal F_k=\{U\in\mathcal U^N:
+\norm{\vu_{0|k}-\vu_k^b}_\infty\le\kappa E_k\}.
+\label{eq:guarded_feasible_set}
+\end{equation}
+The analysis ball $\mathcal Q$ is not imposed as an online state constraint. The optional anchoring term encourages the feasible input toward $\vu_k^b$ but is \emph{not} the source of the closed-loop stability condition; the guard is.
 
-{\color{blue}The predicted states are determined by $U$ through these recursion constraints, so eliminating them gives the condensed QP in $U$ alone, with objective $J_k^{\rm fr}(U;\bar U_k)$; the second argument identifies the nominal sequence used to freeze the matrices. Let $W_k$ and $U_k^\star$ denote its optimal value and minimizer, so that $W_k=J_k^{\rm fr}(U_k^\star;\bar U_k)$. In condensed form the only remaining constraints are $(I_N\otimes H_u)U\le\mathbf1_N\otimes h_u$, where $\otimes$ denotes the Kronecker product. The set $\mathcal Q$ used in the analysis is not an MPC state constraint.}
-
-{\color{blue}The condensed Hessian is positive definite even if $R$ or $S$ is singular: each nonzero input variation enters the augmented input cache and is penalized by $\Pi\succ0$ at a subsequent stage or by $\beta\Pi$ at the terminal step. Thus~\eqref{eq:quadratic_template} is a strictly convex QP over the nonempty compact set $\mathcal U^N$ (Appendix~\ref{app:estimates}).}
-
-{\color{blue}Let $\widehat U_k\in\mathcal U^N$ be the feasible sequence returned by the QP solver, not necessarily the exact minimizer. The receding-horizon control law and nominal-sequence update are}
+For a primal-feasible QP return $\widehat U_k\in\mathcal F_k$, implement only its first input and update the nominal \emph{freezing} sequence by
 \begin{align}
 \vu_k&=\widehat\vu_{0|k},\label{eq:apply_first}\\
-\bar U_{k+1}&=(\widehat\vu_{1|k},\ldots,
-\widehat\vu_{N-1|k},\vu_{k+N}^r).
+\bar U_{k+1}&=\col(\widehat\vu_{1|k},\ldots,
+\widehat\vu_{N-1|k},\widehat\vu_{N-1|k}).
 \label{eq:nominal_shift}
 \end{align}
-{\color{blue}Algorithm~\ref{alg:mpc} summarizes the single-rollout, single-QP implementation.}
+For $N=1$, set $\bar U_{k+1}=\widehat U_k$. The shifted nominal is only required to belong to $\mathcal U^N$; it need \emph{not} satisfy the \emph{next} sample's new guard. Next-sample QP feasibility follows separately from the steady-input selector, as established below.
 
 \begin{algorithm}[!t]
-\caption{Single-Freeze Transformer--Koopman MPC}
+\caption{Output-Reference Stability-Guarded Single-Freeze MPC}
 \label{alg:mpc}
 \begin{algorithmic}[1]
-\STATE {\color{blue}\textbf{Given:} deployed predictor, $\Pi$, $\mathcal U$, $N$, $\beta$, and reference.}
-\STATE \textbf{Initialize:} {a feasible $\bar U_0\in\mathcal U^N$.}
+\STATE \textbf{Given:} $F,\Pi,\mathcal U,N,Q_y,Q_f,S,\beta,\omega,\kappa,H_b,T_b$.
+\STATE \textbf{Initialize:} any $\bar U_0\in\mathcal U^N$.
 \FOR{$k=0,1,\ldots$}
-\STATE {\color{blue}Acquire $\vx_k$; update $\mX_k,v_k$ and form $q_k^E$ by~\eqref{eq:encoded_initialization}.}
-\STATE {Set $\bar q_{0|k}=q_k^E$.}
+\STATE Measure and re-encode $q_k^E$; acquire the output-reference preview $\vr_{k:k+N}$.
+\STATE Set $\vu_k^b=H_b\vr_k$, $q_k^b=T_b\vr_k$, and $E_k=\norm{q_k^E-q_k^b}_\Pi$.
 \FOR{$i=0,\ldots,N-1$}
-\STATE {\color{blue}Evaluate $\bar\mA_{i|k},\bar\mB_{i|k}$ at $\bar q_{i|k}$; form $M_{i|k},D_{i|k}$.}
-\STATE {Propagate $\bar q_{i+1|k}=F(\bar q_{i|k},\bar\vu_{i|k})$.}
+\STATE Evaluate $M_{i|k},D_{i|k}$ at $\bar q_{i|k}$ and propagate $\bar q_{i+1|k}$ with $F$.
 \ENDFOR
-\STATE {\color{blue}Solve QP~\eqref{eq:quadratic_template} for a feasible $\widehat U_k$.}
-\STATE {\color{blue}Apply $\vu_k=\widehat\vu_{0|k}$; update $\bar U_{k+1}$ by~\eqref{eq:nominal_shift}.}
+\STATE Solve the single QP~\eqref{eq:quadratic_template} over $\mathcal F_k$ and obtain a \emph{primal-feasible} $\widehat U_k$.
+\STATE Apply $\vu_k=\widehat\vu_{0|k}$ and update $\bar U_{k+1}$ by~\eqref{eq:nominal_shift}.
 \ENDFOR
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Closed-Loop Stability Analysis}
+\subsection{Recursive Feasibility and Closed-Loop Tracking}
 \label{subsec:closed_loop}
-{\color{blue}Although each frozen MPC problem is convex, its prediction matrices change at the next sampling instant. Closed-loop analysis must therefore compare the optimal values of successive QPs using the feasible shift~\eqref{eq:nominal_shift}, while accounting for re-encoding, freezing, and reference mismatch. This comparison requires uniform bounds over all coefficient pairs generated in the analysis domain.}
-
-\begin{assumption}[Common model and residual domain]
+The contraction certificate of Proposition~\ref{prop:contractive_class} applies to the complete model and frozen families. For clarity, the deployed-model conditions needed below are made explicit.
+\begin{assumption}[Common contraction and invariant domain]
 \label{ass:domain}
-Fix the deployed model, $\Pi\succ0$, $M>0$, and $\mathcal Q=\{q:\norm{q}_\Pi\le M\}$, with $q_0^E\in\mathcal Q$. Let
-\begin{equation}
-\mathcal S_{\mathcal Q}=\{(\mA(\vc(\bar q)),\mB(C_xE_z^T\bar q)):
-\bar q\in\mathcal Q\}.
-\label{eq:frozen_family}
-\end{equation}
-For the pair generated at $\bar q\in\mathcal Q$, let $F^{\rm fr}(q,u)=Mq+Du$, with $M,D$ formed as in~\eqref{eq:frozen_model} from $\mA(\vc(\bar q))$ and $\mB(C_xE_z^T\bar q)$. For every $q,q'\in\mathcal Q$, $u\in\mathcal U$, and every such frozen map,
+Let $\mathcal Q=\{q:\norm{q}_\Pi\le M\}$ contain $q_0^E$. The input set $\mathcal U$ is a nonempty compact convex polytope. For all $q,q',\bar q\in\mathcal Q$ and $\vu\in\mathcal U$, the full predictor and every coefficient-frozen map $F_{\bar q}^{\rm fr}$ satisfy
 \begin{align}
-\norm{F(q,u)-F(q',u)}_\Pi&\le\lambda\norm{q-q'}_\Pi,\nonumber\\
-\norm{F^{\rm fr}(q,u)-F^{\rm fr}(q',u)}_\Pi&\le\lambda_{\rm fr}\norm{q-q'}_\Pi,\label{eq:common_contraction}\\
-\norm{F(0,u)}_\Pi,\ \norm{F^{\rm fr}(0,u)}_\Pi&\le b_u,\nonumber\\
-\norm{F(q,u)-F^{\rm fr}(q,u)}_\Pi&\le\bar\eta,\nonumber
+\norm{F(q,\vu)-F(q',\vu)}_\Pi&\le\lambda\norm{q-q'}_\Pi,\nonumber\\
+\norm{F_{\bar q}^{\rm fr}(q,\vu)-F_{\bar q}^{\rm fr}(q',\vu)}_\Pi&\le\lambda_{\rm fr}\norm{q-q'}_\Pi,\nonumber\\
+\norm{F(0,\vu)}_\Pi,\ \norm{F_{\bar q}^{\rm fr}(0,\vu)}_\Pi&\le b_u,\nonumber\\
+\norm{F(q,\vu)-F_{\bar q}^{\rm fr}(q,\vu)}_\Pi&\le\bar\eta,
+\label{eq:common_contraction}
 \end{align}
-where $0\le\lambda,\lambda_{\rm fr}<1$. For every admissible measured transition whose current encoded state lies in $\mathcal Q$, the residual in \eqref{eq:reencoding_residual} satisfies $\norm{w_k}_\Pi\le\bar w$. Moreover,
+where $\lambda,\lambda_{\rm fr}<1$. The actual re-encoding residual obeys $\norm{w_k}_\Pi\le\bar w$, and
 \begin{equation}
 \lambda M+b_u+\bar w\le M,\qquad
 \lambda_{\rm fr}M+b_u\le M.
 \label{eq:domain_radius}
 \end{equation}
-All constants are uniform in time, nominal sequences, and candidate inputs.\envend
+These bounds are uniform over admissible states, inputs, and frozen schedules.
 \end{assumption}
 
-{Proposition~\ref{prop:contractive_class} gives sufficient structural choices for these constants, and Appendix~\ref{app:construction} supplies the amplitude bounds that yield a uniform $\bar\eta$. The re-encoding residual in~\eqref{eq:reencoding_residual} is not implied by the construction and remains a separate condition on the deployed lift and measured system.}
-
-\begin{assumption}[Reference consistency]
+\begin{assumption}[DC-feasible output references]
 \label{ass:reference}
-{The prescribed reference satisfies the following conditions for every required time $t\ge0$, with a uniform bound $\bar d_{\rm ref}\ge0$:}
+The nominal DC gain in~\eqref{eq:reference_selector} has full row rank. The supplied reference $\vr_k$ lies in
 \begin{equation}
-\begin{split}
-q_t^r\in\mathcal Q,\quad \vu_t^r\in\mathcal U,\quad
-E_{\rm prev}q_t^r=\vu_{t-1}^r,\\
-\norm{F(q_t^r,\vu_t^r)-q_{t+1}^r}_\Pi\le\bar d_{\rm ref}.
-\end{split}
-\label{eq:reference_defect}
+\mathcal R_{\rm adm}=\{r\in\R^{p_y}:H_br\in\mathcal U,
+\ \norm{T_br}_\Pi\le M\}
+\label{eq:reference_admissibility}
 \end{equation}
-\envend
+for all $k$, with $\sup_k\norm{\vr_k}_2\le\bar r$. It has bounded variation $\sup_k\norm{\vr_{k+1}-\vr_k}_2\le\bar\nu_r$. Define the equilibrium defect and the nominal steady-pair variation by
+\begin{equation}
+\begin{aligned}
+\bar d_b&=\sup_k\norm{F(q_k^b,\vu_k^b)-q_k^b}_\Pi,\\
+\bar\nu_b&=\sup_k\norm{q_{k+1}^b-q_k^b}_\Pi.
+\end{aligned}
+\label{eq:reference_budgets}
+\end{equation}
+These constants are bounded on the admissible class; in particular
+$\bar\nu_b\le\norm{\Pi^{1/2}T_b}_2\bar\nu_r$.
 \end{assumption}
 
-{\color{blue}At the reference input $u=\vu_t^r$, cache consistency gives $\ell_t(q,\vu_t^r)\le c_S\norm{q-q_t^r}_\Pi^2$, where $H_S=S^{1/2}E_{\rm prev}\Pi^{-1/2}$ and $c_S=1+\norm{H_S}_2^2$. Choose $\vartheta>0$ such that $(1+\vartheta)\lambda^2<1$ and}
+Let $D(q)=\col(\mB(C_xE_z^Tq),0,E_u)$, so $F(q,u)-F(q,v)=D(q)(u-v)$. Define the finite input gain and output readout gain
 \begin{equation}
-\beta\ge\frac{c_S}{1-(1+\vartheta)\lambda^2}.
-\label{eq:terminal_weight}
+L_u=\sup_{q\in\mathcal Q}\norm{\Pi^{1/2}D(q)}_2,\qquad
+c_y=\norm{C\Pi^{-1/2}}_2.
+\label{eq:input_output_gains}
 \end{equation}
-{\color{blue}This ensures the terminal decrease inequality~\eqref{eq:tail_decrease} up to the reference-defect budget. Set $e_k=q_k^E-q_k^r$; the uniform constants $\varepsilon,\mathsf A,\mathsf B$ used below are specified in Appendices~\ref{app:estimates} and~\ref{app:comparison}.}
 
-\begin{theorem}[Practical exponential tracking of single-freeze MPC]
+\begin{theorem}[Recursive feasibility and practical exponential output tracking]
 \label{thm:tracking}
-Under Assumptions~\ref{ass:domain}--\ref{ass:reference}, use \eqref{eq:terminal_weight} and execute Algorithm~\ref{alg:mpc} with exact input application. Suppose the returned sequence is primal feasible and satisfies
+Under Assumptions~\ref{ass:domain}--\ref{ass:reference}, execute Algorithm~\ref{alg:mpc} with exact input application and a \emph{primal-feasible} returned sequence at each sample. Choose $\kappa\ge0$ so that
 \begin{equation}
-0\le J_k^{\rm fr}(\widehat U_k;\bar U_k)-W_k
-\le\delta_k\le\bar\delta,
-\label{eq:solver_gap}
+\rho_g:=\lambda+L_u\sqrt m\,\kappa<1.
+\label{eq:guard_condition}
 \end{equation}
-where $W_k$ is the optimal value in~\eqref{eq:quadratic_template}, and $\delta_k=0$ for an exact solve. Then all actual and predicted augmented states remain in $\mathcal Q$, and input feasibility is recursive. For $\rho=1-1/\mathsf A\in[0,1)$,
+Then the QP is recursively feasible, and all realized and model-predicted states remain in $\mathcal Q$. Set $d_g=\bar d_b+\bar\nu_b+\bar w$. For every $k\ge0$, the \emph{actual re-encoded closed loop} satisfies
 \begin{equation}
 \begin{split}
-\norm{e_k}_\Pi^2&\le W_k\le\Xi_k,\\
-\Xi_k&=\mathsf A\rho^k\norm{e_0}_\Pi^2+\mathsf B\\
-&+\sum_{t=0}^{k-1}\rho^{k-1-t}(\varepsilon+\delta_t).
+E_k&\le\rho_g^k E_0+
+\frac{1-\rho_g^k}{1-\rho_g}\,d_g,\\
+\norm{\vy_k-\vr_k}_2&\le c_y\left(\rho_g^k E_0+
+\frac{1-\rho_g^k}{1-\rho_g}\,d_g\right).
 \end{split}
-\label{eq:squared_tracking_bound}
-\end{equation}
-In particular,
-\begin{equation}
-\norm{e_k}_\Pi\le\sqrt{\mathsf A}\rho^{k/2}\norm{e_0}_\Pi
-+\sqrt{\mathsf B+\mathsf A(\varepsilon+\bar\delta)},
 \label{eq:practical_tracking}
 \end{equation}
-and $\limsup_{k\to\infty}\norm{e_k}_\Pi\le
-\sqrt{\mathsf B+\mathsf A(\varepsilon+\bar\delta)}$.
-If $\bar w=\bar\eta=\bar d_{\rm ref}=\bar\delta=0$, the tracking error converges exponentially to zero.
+If the reference is constant and $(q^b,\vu^b)$ is an exact complete-model equilibrium, $F(q^b,\vu^b)=q^b$, and $w_k=0$, the actual output error converges to zero exponentially, including for nonconstant scheduling laws. No QP optimal-value descent or certified objective gap is required for this tracking conclusion.
 \end{theorem}
 \begin{proof}
-For a current point in $\mathcal Q$, the complete next-state norm is at most $\lambda M+b_u$, and the frozen bound is $\lambda_{\rm fr}M+b_u$. Equation~\eqref{eq:domain_radius} first keeps the nominal rollout in $\mathcal Q$, so its coefficient pairs belong to $\mathcal S_{\mathcal Q}$. Induction then keeps every complete and frozen candidate in the domain. Adding the residual bound $\bar w$ keeps the next actual initialization in $\mathcal Q$. The returned sequence is feasible for the constraint set of~\eqref{eq:quadratic_template}, and its shift remains feasible because the reference tail belongs to $\mathcal U$.
+By Assumption~\ref{ass:reference}, $\vu_k^b\in\mathcal U$. Thus the candidate with $\vu_{0|k}=\vu_k^b$ and all later components equal to $\vu_k^b$ satisfies both the input constraints and guard~\eqref{eq:stability_guard}, irrespective of the nominal sequence; the current QP is nonempty. The shifted nominal in~\eqref{eq:nominal_shift} lies in $\mathcal U^N$, hence the next complete-model nominal rollout is well defined. Assumption~\ref{ass:domain}, applied first to nominal rollouts and frozen predictions and then to the actual transition with $w_k$, proves domain invariance inductively. In particular, it does not presume that the shifted nominal satisfies the next QP's guard.
 
-For every candidate first input, the complete and frozen updates coincide because both use coefficients evaluated at $q_k^E$. Along the nominal input sequence, induction gives equality of the complete and frozen trajectories at every prediction step.
-
-For the returned sequence at sample $k$, write $p_i=p_{i|k}$ and $\widehat\vu_i=\widehat\vu_{i|k}$, and set $U^+=\bar U_{k+1}$ as in~\eqref{eq:nominal_shift}. First-step equality and~\eqref{eq:reencoding_residual} give $q_{k+1}^E=p_1+w_k$. Let $\widetilde q_j$ denote the complete trajectory from $q_{k+1}^E$ along $U^+$. Its initial distance from $p_1$ is at most $d_0=\bar w$, and the intermediate bounds satisfy $d_{j+1}=\lambda d_j+\bar\eta$ for $0\le j<N-1$. With $d_j$ specified by~\eqref{eq:shift_error},
-\begin{equation}
-\begin{split}
-\norm{\widetilde q_j-p_{j+1}}_\Pi&\le d_j,\qquad 0\le j<N,\\
-\norm{\widetilde q_N-F(p_N,\vu_{k+N}^r)}_\Pi&\le\lambda d_{N-1}.
-\end{split}
-\label{eq:shift_comparison}
-\end{equation}
-At the reference tail, both comparison points are advanced by the same complete map $F$ under $\vu_{k+N}^r$, giving the factor $\lambda$ in the second line.
-
-The reference input also bounds the tail cost: its input-error term vanishes, and its relative-increment cost is at most $(c_S-1)\norm{q-q_t^r}_\Pi^2$. Contraction, Young's inequality, and~\eqref{eq:terminal_weight} therefore give
-\begin{equation}
-\begin{split}
-\ell_t(q,\vu_t^r)+\beta\norm{F(q,\vu_t^r)-q_{t+1}^r}_\Pi^2
--\beta\norm{q-q_t^r}_\Pi^2\le\tau_{\rm ref},
-\end{split}
-\label{eq:tail_decrease}
-\end{equation}
-where $\tau_{\rm ref}$ is defined in Appendix~\ref{app:estimates}. Since $U^+$ is the next nominal sequence, its frozen candidate trajectory equals $\widetilde q$. At matched absolute times and inputs, the continuity bounds~\eqref{eq:cost_continuity} convert the trajectory differences into the budget $\varepsilon$ in~\eqref{eq:epsilon_closed_loop}. Applying~\eqref{eq:tail_decrease} at the old endpoint $p_N$ yields
+The implemented guard and the input-affine structure give
 \begin{align}
-W_{k+1}&\le J_{k+1}^{\rm fr}(U^+;U^+)\nonumber\\
-&\le J_k^{\rm fr}(\widehat U_k;\bar U_k)
--\ell_k(q_k^E,\widehat\vu_{0|k})+\varepsilon\nonumber\\
-&\le W_k-\norm{e_k}_\Pi^2+\varepsilon+\delta_k.
-\label{eq:value_descent}
+\norm{\vu_k-\vu_k^b}_2&\le\sqrt m\,\kappa E_k,\nonumber\\
+\norm{F(q_k^E,\vu_k)-F(q_k^E,\vu_k^b)}_\Pi
+&\le L_u\sqrt m\,\kappa E_k.
 \end{align}
-This comparison uses the next sample's prescribed nominal rollout and the exact optimal values of the successive frozen QPs.
-
-The initial stage cost gives $W_k\ge\norm{e_k}_\Pi^2$. For an upper bound, evaluate the QP objective at the feasible reference input sequence $(\vu_k^r,\ldots,\vu_{k+N-1}^r)$. Contraction and the frozen-model discrepancy~\eqref{eq:frozen_discrepancy} bound its state error by $\lambda^i\norm{e_k}_\Pi+b_i$, with $b_i$ defined in Appendix~\ref{app:comparison}. The input-error terms vanish. After the first step, the previous-input slot matches the reference, so only the initial relative-increment term remains; it is at most $\norm{H_S}_2^2\norm{e_k}_\Pi^2$. Squaring and summing the state and terminal estimates gives
+Using~\eqref{eq:reencoding_residual}, insert $F(q_k^E,\vu_k^b)$, $F(q_k^b,\vu_k^b)$, and $q_k^b$ between $q_{k+1}^E$ and $q_{k+1}^b$. Same-input contraction yields
 \begin{equation}
-\norm{e_k}_\Pi^2\le W_k\le\mathsf A\norm{e_k}_\Pi^2+\mathsf B.
-\label{eq:value_comparison}
+\begin{split}
+E_{k+1}&\le(\lambda+L_u\sqrt m\,\kappa)E_k\\
+&\quad+\norm{F(q_k^b,\vu_k^b)-q_k^b}_\Pi\\
+&\quad+\norm{q_{k+1}^b-q_k^b}_\Pi+\norm{w_k}_\Pi\\
+&\le\rho_gE_k+d_g.
+\end{split}
+\label{eq:tracking_recursion}
 \end{equation}
-Substituting~\eqref{eq:value_comparison} into~\eqref{eq:value_descent} gives $W_{k+1}\le\rho W_k+\mathsf B/\mathsf A+\varepsilon+\delta_k$. Expanding this recursion and using $W_0\le\mathsf A\norm{e_0}_\Pi^2+\mathsf B$ yields $W_k\le\Xi_k$. The lower comparison then proves~\eqref{eq:squared_tracking_bound}. Bounding the geometric sum by $\mathsf A$ and taking square roots gives~\eqref{eq:practical_tracking} and its limiting radius. When all four error budgets vanish, $\mathsf B=\varepsilon=\bar\delta=0$, which gives exponential convergence to zero.
+The scalar geometric recursion and $Cq_k^b=\vr_k$ give~\eqref{eq:practical_tracking}. If $d_g=0$, the bound converges geometrically to zero. 
 \end{proof}
 
-{Since $\vx_k=C_mq_k^E$ with $C_m=C_xE_z^T$, the augmented-state bound projects to measured coordinates; if $R\succ0$, it also bounds the applied input error.}
+\begin{remark}[Guarantee and scope]
+\label{rem:tracking_scope}
+The result establishes a \emph{closed-loop} practical tracking property, not merely bounded predictions; the only externally supplied reference is the output sequence $\vr$ (and its $N$-step preview). It does not guarantee tracking of arbitrary unreachable or rapidly varying outputs. The guard is sufficient and may constrain the freedom of the predictive optimizer; this theorem does not assert that MPC outperforms direct use of $\vu_k^b$. Full-schedule equilibrium consistency is needed for the ideal zero-radius statement: the nominal identity $F_0(q^b,\vu^b)=q^b$ alone does not imply $F(q^b,\vu^b)=q^b$. The prescribed $\omega>0$ is a \emph{performance tuning parameter}: because the proof relies only on primal feasibility of the first-input guard, changing $\omega$ alone does not improve the certified convergence rate $\rho_g$.
+\end{remark}
 
-\begin{corollary}[Measured and input tracking]
-\label{cor:projections}
-{Under the conditions of Theorem~\ref{thm:tracking}, the measurement error satisfies}
+\begin{remark}[Deployment-level certificate]
+\label{rem:deployment}
+The controller requires more than Schur stability of $M_0$. A deployed model must additionally verify the complete-model contraction bound $\lambda$, the invariant-domain and residual margins in~\eqref{eq:domain_radius}, the scheduled input gain $L_u$, the DC rank and feasible reference class in~\eqref{eq:reference_admissibility}, and $\rho_g<1$. The certified asymptotic output bound $c_y d_g/(1-\rho_g)$ is informative only when it improves on the a priori bound $c_yM+\bar r$. Appendix~\ref{app:estimates} gives conservative budgets for the scheduled input gain and equilibrium defect. These checks are not automatic consequences of training loss minimization.
+\end{remark}
+
+\subsection{Cost of Freezing the Learned Predictor}
+\label{subsec:freeze_analysis}
+The stability guard concerns the applied first input. An independent estimate quantifies the optimization price of freezing, \emph{under the same guard}. For any fixed $U\in\mathcal F_k$, define the complete learned-model trajectory
 \begin{equation}
-\norm{\vx_k-C_mq_k^r}_2\le\norm{C_m\Pi^{-1/2}}_2\norm{e_k}_\Pi.
-\label{eq:measurement_tracking}
+f_{0|k}=q_k^E,\qquad f_{i+1|k}=F(f_{i|k},\vu_{i|k}),
+\label{eq:full_candidate}
 \end{equation}
-If $R\succ0$, then
+and let $J_k^F(U)$ denote exactly the cost in~\eqref{eq:stage_cost} evaluated at $f_{i|k}$ instead of $p_{i|k}$. This is an analytical benchmark; the online algorithm does not optimize $J_k^F$.
+
+Set $\mathsf D_0=\mathsf D_1=0$ and, for $2\le i\le N$,
 \begin{equation}
-\norm{\widehat\vu_{0|k}-\vu_k^r}_2^2\le
-\frac{\Xi_k+\delta_k}{\lambda_{\min}(R)}.
-\label{eq:input_tracking}
+\mathsf D_i=\bar\eta\sum_{j=0}^{i-2}\lambda^j.
+\label{eq:frozen_discrepancy}
 \end{equation}
-\end{corollary}
+For the output and terminal weights define
+\begin{equation}
+\begin{aligned}
+a_y&=\norm{Q_y^{1/2}C\Pi^{-1/2}}_2,\\
+a_f&=\norm{Q_f^{1/2}C\Pi^{-1/2}}_2,\\
+h_y&=a_yM+\norm{Q_y^{1/2}}_2\bar r,\\
+h_f&=a_fM+\norm{Q_f^{1/2}}_2\bar r,\\
+\varepsilon_N&=2h_ya_y\sum_{i=2}^{N-1}\mathsf D_i
++2\beta h_fa_f\mathsf D_N.
+\end{aligned}
+\label{eq:freeze_cost_budget}
+\end{equation}
+As usual, empty sums equal zero.
+
+\begin{theorem}[Guard-consistent single-freeze optimization gap]
+\label{thm:frozen_gap}
+Under Assumptions~\ref{ass:domain}--\ref{ass:reference}, for every $U\in\mathcal F_k$,
+\begin{equation}
+\left|J_k^F(U)-J_k^{\rm fr}(U;\bar U_k)\right|
+\le\varepsilon_N.
+\label{eq:objective_discrepancy}
+\end{equation}
+If $\widehat U_k\in\mathcal F_k$ is primal feasible and the frozen-QP suboptimality obeys
+\begin{equation}
+0\le J_k^{\rm fr}(\widehat U_k;\bar U_k)
+-\min_{U\in\mathcal F_k}J_k^{\rm fr}(U;\bar U_k)
+\le\delta_k,
+\label{eq:solver_gap}
+\end{equation}
+then
+\begin{equation}
+0\le J_k^F(\widehat U_k)-\min_{U\in\mathcal F_k}J_k^F(U)
+\le2\varepsilon_N+\delta_k.
+\label{eq:frozen_gap}
+\end{equation}
+The guarantee concerns the \emph{learned complete predictor}, not plant-level optimality.
+\end{theorem}
 \begin{proof}
-Since $\vx_k=C_mq_k^E$, the induced norm gives~\eqref{eq:measurement_tracking}. For $R\succ0$, the squared input error times $\lambda_{\min}(R)$ is at most the returned cost. By~\eqref{eq:solver_gap} and~\eqref{eq:squared_tracking_bound}, $J_k^{\rm fr}(\widehat U_k;\bar U_k)\le W_k+\delta_k\le\Xi_k+\delta_k$. Division by $\lambda_{\min}(R)$ gives~\eqref{eq:input_tracking}.
+At the initialization, the full and frozen coefficient pairs coincide, giving $f_{1|k}=p_{1|k}$. For later steps, inserting $F(p_{i|k},\vu_{i|k})$ and invoking contraction and the uniform frozen-map discrepancy gives $\norm{f_{i+1|k}-p_{i+1|k}}_\Pi\le\lambda\norm{f_{i|k}-p_{i|k}}_\Pi+\bar\eta$. Therefore $\norm{f_{i|k}-p_{i|k}}_\Pi\le\mathsf D_i$. The input-history caches of both predictions are exactly identical under a common input sequence, so every input-increment penalty is the same; the first-input anchor also cancels. For outputs in $\mathcal Q$, the weighted stage and terminal output residuals are bounded by $h_y$ and $h_f$. The difference-of-squares inequality gives~\eqref{eq:objective_discrepancy}. Applying this bound to the returned feasible candidate, then~\eqref{eq:solver_gap}, and then to a complete-model global minimizer \emph{over the same compact set} $\mathcal F_k$ yields~\eqref{eq:frozen_gap}.
 \end{proof}
 
-\section{Numerical Results}
+\begin{remark}[The stability--performance comparison]
+The restriction $\mathcal F_k\subseteq\mathcal U^N$ matters. Relative to the \emph{unguarded} complete-model optimum, the bound becomes $2\varepsilon_N+\delta_k+\mathcal L_k$, where
+\begin{equation}
+\mathcal L_k=\min_{U\in\mathcal F_k}J_k^F(U)
+-\min_{U\in\mathcal U^N}J_k^F(U)\ge0.
+\label{eq:guard_price}
+\end{equation}
+Neither common contraction nor coefficient freezing implies that $\mathcal L_k$ is small. This separates the price of freezing from that of imposing a stabilizing guard.
+\end{remark}
+\endgroup
+
+\begingroup\color{blue}
+\section{Analytical Certification and Numerical Illustration}
 \label{sec:experiments}
-Numerical results are not included in this manuscript version. This section retains their place in the complete paper; no empirical accuracy, comparison, hardware-validation, or timing claim is made. The modeling and closed-loop statements above are analytical and conditional on the stated assumptions.
+Before evaluating a trained Transformer, we illustrate that the closed-loop assumptions are satisfiable by a genuinely \emph{nonzero} history-scheduled member of the proposed structural model class. This is an analytical model-class certificate, \emph{not} an empirical identification benchmark or a claim that arbitrary trained Transformer weights satisfy the conditions. The model, global norm calculations, and physical-history consistency checks are provided in Appendix~\ref{app:certificate}.
+
+Take $n=2$, $d=3$, $m=p_y=1$, $P_h=2$, $N=3$, $\mathcal U=[-0.6,0.6]$, the constant output setpoint $\vr_k=0.1$, and the strictly positive scheduling gains $g_A=0.03$ and $g_B=0.004$. For $Q_y=Q_f=S=1$, $\beta=1$, $\omega=100$, and $\kappa=0.08$, the fixed nominal DC selector yields $\vu^b=0.455\in\mathcal U$. Both scheduling branches are nonconstant away from the reference point, yet the selected setpoint is an \emph{exact} equilibrium of the complete nonlinear model. The analytic feature and cache updates agree with re-encoding, so $w_k=0$.
+
+\begin{table}[!t]
+\caption{Analytical certificate for a nonzero history-scheduled instance}
+\label{tab:certificate}
+\centering\footnotesize
+\begin{tabular}{lr}
+\hline
+Quantity & Certified value\\\hline
+Complete-model contraction bound $\lambda$ & $0.8504613$\\
+Frozen-model contraction bound $\lambda_{\rm fr}$ & $0.8041038$\\
+Complete-model invariant-ball margin & $+0.1392144$\\
+Frozen-model invariant-ball margin & $+0.4173589$\\
+Full input Lipschitz bound $L_u$ & $1.2633639$\\
+First-input guard parameter $\kappa$ & $0.08$\\
+Guaranteed closed-loop rate $\rho_g$ & $0.9515304<1$\\
+Equilibrium defect $\bar d_b$; residual $\bar w$ & $0$; $0$\\
+Asymptotic output-error radius & $0$\\\hline
+\end{tabular}
+\end{table}
+
+The rate in Table~\ref{tab:certificate} includes the \emph{scheduled input-matrix correction} in $L_u$; using only the nominal $D_0$ would underestimate the certified rate. The initial state is consistent with a physical measurement and input history. The simulated closed loop performs one nominal rollout and one guarded QP per sample. Figure~\ref{fig:guarded_certificate} reports the absolute output error and the analytical envelope $c_y\rho_g^kE_0$. The output at samples 10 and 20 is approximately $0.0999516$ and $0.0999999983$, respectively, for the target $0.1$.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{nonzero_schedule_guarded_tracking.png}
+\caption{Structural nonzero-scheduling example: realized output error and conservative analytical envelope for the stability-guarded single-freeze QP. The plot does not represent a trained Transformer experiment.}
+\label{fig:guarded_certificate}
+\end{figure}
+
+A complete empirical evaluation must still test trained Transformer predictors on held-out multi-step rollouts and compare tracking, input smoothness, guard activation, and wall-clock QP time against feedforward, unguarded frozen MPC, and nonlinear model-based baselines. No empirical predictive-accuracy or computation-time advantage is asserted at this manuscript stage.
+\endgroup
 
 \section{Conclusion}
 \label{sec:conclusion}
-This paper developed a history-conditioned scheduled Koopman predictor with a measurement-preserving temporal Transformer lift and bounded low-rank transition and input modulation. Nonredundant measurement and input caches define the recursively propagated augmented state. A Schur skeleton and explicit schedule-derivative budgets provide a constructible common-contraction model class without removing nonconstant history dependence.
+{\color{blue}This paper has developed a history-conditioned Transformer--Koopman prediction model with a measurement-preserving lift, recursively updated measurement and input histories, and low-rank transition and input scheduling. A Schur nominal skeleton, together with explicit derivative, residual, and invariant-domain budgets, supplies a constructible class of contractive nonzero-scheduling predictors. The encoder-to-plant consistency requirement remains an independently verifiable assumption rather than an automatic consequence of the model architecture.
 
-For control, one nominal rollout and one frozen convex QP are coupled by a reference-relative augmented tracking objective and a shift of the returned sequence with a reference tail. A direct comparison of successive frozen optimal values establishes practical exponential tracking under uniform contraction, re-encoding residual, reference-defect, and feasible objective-gap conditions. The resulting radius separates these error contributions and projects directly to measured coordinates. The guarantee is for the specified single-freeze controller and model class; it is not an unconditional claim about an arbitrary learned predictor or hidden physical state.
+For reference tracking, a nominal DC selector transforms prescribed outputs into an internal steady-input candidate. Each sampling instant then requires one complete-model nominal rollout and one strictly convex coefficient-frozen QP. The feasible first-input guard, together with common contraction, guarantees recursive feasibility and practical exponential tracking of the actual re-encoded closed loop. Exponential convergence to zero follows for admissible constant references that are exact equilibria of the complete scheduled model when the re-encoding residual vanishes. In a separate result, the finite-horizon optimization loss caused by freezing is bounded relative to the full learned predictor over the same guard-constrained feasible set.
+
+The conclusions have defined limits: output references must belong to a DC-feasible class, quantitative guarantees depend on model-specific contraction and residual certificates, and the stabilizing guard can reduce predictive-control flexibility. The analytical nonzero-scheduling example demonstrates feasibility of the assumptions, not identification accuracy or optimality for an independently trained Transformer. Learned-model evaluation and empirical controller comparisons are therefore required before asserting predictive or computational superiority.}
 
 \appendices
 \section{Contractive Predictor Construction}
@@ -672,108 +804,129 @@ r&=\col\bigl(\nu,\kappa+
 \end{equation}
 With exact caches, $w=\col(r,0,0)$. Uniform bounds $\bar\nu,\bar\kappa$ and a feature Lipschitz constant $L_\psi$ on all these windows give the sufficient budget $\bar w=a_z\sqrt{\bar\nu^2+(\bar\kappa+L_\psi\bar\nu)^2}$. The two terms measure physical measurement-prediction error and encoding-graph defect, respectively; neither is supplied by the gain construction alone.
 
-\section{Technical Estimates for Frozen MPC}
+% Appendices B and C. Original Appendix A is preserved byte-for-byte.
+\begingroup\color{blue}
+\section{Feasibility and Quadratic-Program Structure}
 \label{app:estimates}
-For the condensed QP, stack $P=\col(p_{0|k},\ldots,p_{N|k})=P_0+\mathcal T U$. Let $K_pP=\col(E_{\rm prev}p_{0|k},\ldots,E_{\rm prev}p_{N-1|k})$, $\mathcal D_\Delta=I-K_p\mathcal T$, $Q_d=\operatorname{diag}(\Pi,\ldots,\Pi,\beta\Pi)$, $R_d=I_N\otimes R$, and $S_d=I_N\otimes S$. The Hessian of \eqref{eq:quadratic_template} is
+For the frozen recursion, stack $P=\col(p_{0|k},\ldots,p_{N|k})=P_0+\mathcal T U$. Let $\mathcal K P=\col(E_{\rm prev}p_{0|k},\ldots,E_{\rm prev}p_{N-1|k})$ and $\mathcal D_\Delta=I-\mathcal K\mathcal T$. The input-cache shift identity makes the increment vector
 \begin{equation}
-\mathcal H=2(\mathcal T^TQ_d\mathcal T+R_d+
-\mathcal D_\Delta^TS_d\mathcal D_\Delta)\succeq0.
+\Delta U=\col(\Delta\vu_{0|k},\ldots,\Delta\vu_{N-1|k})
+=\mathcal D_\Delta U-d_k,
+\label{eq:increment_operator}
+\end{equation}
+where $\Delta\vu_{0|k}=\vu_{0|k}-\vu_{k-1}$ and
+$\Delta\vu_{i|k}=\vu_{i|k}-\vu_{i-1|k}$ for $i\ge1$.
+The vector $d_k$ affects only the first block, and $\mathcal D_\Delta$ is block lower bidiagonal with identity diagonal blocks. It is therefore nonsingular. The condensed Hessian is
+\begin{equation}
+\begin{split}
+\mathcal H_k=2\bigl[&\mathcal T^T\mathcal C^T\mathcal Q_d
+\mathcal C\mathcal T
++\mathcal D_\Delta^T(I_N\otimes S)\mathcal D_\Delta\\
+&+\omega E_0^TE_0\bigr]\succ0,
+\end{split}
 \label{eq:QP_Hessian}
 \end{equation}
-Domain invariance follows from \eqref{eq:domain_radius} in the order established in the proof of Theorem~\ref{thm:tracking}: nominal rollout, frozen candidates, and then the next actual initialization. No estimate presupposes future membership.
+where $\mathcal C=I_{N+1}\otimes C$, $\mathcal Q_d=\operatorname{diag}(Q_y,\ldots,Q_y,\beta Q_f)$, and $E_0=[I_m,0,\ldots,0]$ selects the first input. Strict positivity follows from $S\succ0$ and invertibility of $\mathcal D_\Delta$, regardless of output controllability. The first-input guard adds only two sets of $m$ affine inequalities to the original input polytope, so the program remains a strictly convex QP with a unique minimizer.
 
-For the strict convexity claim, let $\Delta U\ne0$ and let $j$ be its first nonzero block. Frozen causality gives $\Delta p_i=0$ for $i\le j$, while the last input-cache block of $\Delta p_{j+1}$ is $\Delta u_j\ne0$. If $j+1<N$, its state quadratic is weighted by $\Pi\succ0$; if $j+1=N$, it is weighted by $\beta\Pi\succ0$. Every other quadratic term is nonnegative. Thus the second variation is strictly positive. This argument neither assumes controllability of the lifted measurement block nor requires $R\succ0$.
+The candidate $U_k^b=\mathbf1_N\otimes\vu_k^b$ lies in $\mathcal F_k$ at every sample under Assumption~\ref{ass:reference}. The recurrence of the actual and frozen states stays within $\mathcal Q$ because the bound at the next complete-model state is at most $\lambda M+b_u$ and at the next frozen state at most $\lambda_{\rm fr}M+b_u$; the actual re-encoding addition increases the former by no more than $\bar w$. All nominal inputs from the shift remain in $\mathcal U$. Hence induction proves the domain and recursive QP feasibility statements without a shifted-value-function comparison or a hidden next-step guard constraint.
 
-Let $f_i$ and $p_i$ be full and frozen predictions for the same arbitrary candidate sequence. Both start at the point used for the first nominal coefficient evaluation, giving $f_0=p_0$ and $f_1=p_1$. Thereafter,
-\begin{equation*}
-\norm{f_{i+1}-p_{i+1}}_\Pi\le
-\lambda\norm{f_i-p_i}_\Pi+\bar\eta,
-\end{equation*}
-by inserting $F(p_i,u_i)$. Hence
+For completeness, the input Lipschitz gain in~\eqref{eq:input_output_gains} has the simple computable upper bound
 \begin{equation}
-\begin{split}
-\norm{f_i-p_i}_\Pi&\le D_i,\qquad D_0=D_1=0,\\
-D_i&=\bar\eta\sum_{s=0}^{i-2}\lambda^s,\qquad i\ge2.
-\end{split}
-\label{eq:frozen_discrepancy}
+L_u\le\norm{\Pi^{1/2}D_0}_2+g_B\norm{\Pi^{1/2}E_z}_2
+\label{eq:input_gain_budget}
 \end{equation}
-For the nominal input sequence, induction gives identical full and frozen state sequences. The shifted comparison \eqref{eq:shift_comparison} uses the recurrence for $j<N-1$ and two complete updates at the reference tail, giving $\lambda d_{N-1}$.
-
-Throughout the analysis, empty sums are zero and $\lambda^0=1$. The uniform shift bounds are
+when the low-rank input schedule satisfies $\norm{\mB(x)-\mB_0}_2\le g_B$. Likewise the equilibrium defect can be conservatively certified by the scheduled correction budget
 \begin{equation}
-d_j=\lambda^j\bar w+\bar\eta\sum_{s=0}^{j-1}\lambda^s,\qquad 0\le j<N.
-\label{eq:shift_error}
+\bar d_b\le \norm{\Pi^{1/2}E_z}_2
+\bigl(g_A\norm{E_z^T\Pi^{-1/2}}_2M+g_B\bar u\bigr),
+\label{eq:equilibrium_defect_budget}
 \end{equation}
-With $\tau_{\rm ref}=\beta(1+1/\vartheta)\bar d_{\rm ref}^2$ and $L_\ell,L_f$ from \eqref{eq:cost_continuity}, the cost budget is
-\begin{equation}
-\varepsilon=\tau_{\rm ref}+L_\ell\sum_{j=0}^{N-1}d_j+L_f\lambda d_{N-1}.
-\label{eq:epsilon_closed_loop}
-\end{equation}
-These constants are uniform. For $N=1$, there are no intermediate shift steps, and~\eqref{eq:epsilon_closed_loop} reduces to $\varepsilon=\tau_{\rm ref}+(L_\ell+\lambda L_f)\bar w$.
+where $\bar u=\max_{u\in\mathcal U}\norm{u}_2$. The actual value of $\bar d_b$ evaluated on the selected equilibrium class may be substantially smaller.
 
-To derive \eqref{eq:tail_decrease}, put $e=q-q_t^r$. At $u=\vu_t^r$, the $R$ term is zero and the weighted relative increment is $-S^{1/2}E_{\rm prev}e$, so $\ell_t\le c_S\norm{e}_\Pi^2$. By contraction and Young's inequality,
-\begin{equation*}
-\norm{F(q,\vu_t^r)-q_{t+1}^r}_\Pi^2
-\le(1+\vartheta)\lambda^2\norm{e}_\Pi^2
-+(1+1/\vartheta)\bar d_{\rm ref}^2.
-\end{equation*}
-The coefficient of $\norm{e}_\Pi^2$ after adding the stage cost and subtracting the old terminal cost is $c_S-\beta[1-(1+\vartheta)\lambda^2]\le0$. For an exact model reference, $\bar d_{\rm ref}=0$, direct contraction uses $\lambda^2$ without Young's inequality. The tail bound~\eqref{eq:tail_decrease} then holds with $\tau_{\rm ref}=0$ under the sharper condition $\beta\ge c_S/(1-\lambda^2)$.
-
-The explicit uniform cost bounds used in \eqref{eq:epsilon_closed_loop} are
-\begin{equation}
-\begin{split}
-D_u^S&=\sup_{u,v\in\mathcal U}\norm{S^{1/2}(u-v)}_2,\quad
-T_\Delta=D_u^S+2M\norm{H_S}_2,\\
-L_\ell&=4M+2T_\Delta\norm{H_S}_2,\qquad L_f=4\beta M.
-\end{split}
-\label{eq:cost_continuity}
-\end{equation}
-For their derivation, errors relative to $q_t^r\in\mathcal Q$ have norm at most $2M$. Their squared-norm difference is at most $4M\norm{q-q'}_\Pi$. The weighted increment vector is
-\begin{equation*}
-S^{1/2}(u-\vu_t^r)-H_S\Pi^{1/2}(q-q_t^r),
-\end{equation*}
-whose norm is at most $T_\Delta$ and whose difference at a common input is at most $\norm{H_S}_2\norm{q-q'}_\Pi$. Thus its squared-norm difference is at most $2T_\Delta\norm{H_S}_2\norm{q-q'}_\Pi$. The $R$ term cancels, and the terminal estimate multiplies the state estimate by $\beta$, proving \eqref{eq:cost_continuity}.
-
-\section{Value Comparison and Feasible Solver Error}
+\section{Complete-versus-Frozen Prediction Estimates}
 \label{app:comparison}
-For $D_i$ in \eqref{eq:frozen_discrepancy}, define the reference/frozen error accumulation and the comparison constants by
+For a fixed candidate $U$, let $f_i,p_i$ be its full and frozen trajectories. Both have identical initial conditions and the same first-step coefficient evaluation. By Assumption~\ref{ass:domain}, both remain inside $\mathcal Q$. For $i\ge1$,
 \begin{equation}
 \begin{split}
-b_i&=\bar d_{\rm ref}\sum_{s=0}^{i-1}\lambda^s+D_i,\qquad 0\le i\le N,\\
-\mathsf A&=2\left(\sum_{i=0}^{N-1}\lambda^{2i}+\beta\lambda^{2N}\right)
-+\norm{H_S}_2^2,\\
-\mathsf B&=2\left(\sum_{i=0}^{N-1}b_i^2+\beta b_N^2\right).
+\norm{f_{i+1}-p_{i+1}}_\Pi
+&\le\norm{F(f_i,\vu_i)-F(p_i,\vu_i)}_\Pi\\
+&\quad+\norm{F(p_i,\vu_i)-F_{\bar q_i}^{\rm fr}(p_i,\vu_i)}_\Pi\\
+&\le\lambda\norm{f_i-p_i}_\Pi+\bar\eta.
 \end{split}
-\label{eq:value_constants}
+\label{eq:full_frozen_recursion}
 \end{equation}
-The constants are uniform over all allowed nominal sequences; $\mathsf A\ge2$ gives $\rho=1-1/\mathsf A\in[0,1)$.
+Because $f_0=p_0$ and $f_1=p_1$, the resulting bound is exactly $\mathsf D_i$ from~\eqref{eq:frozen_discrepancy}. The uniform discrepancy may be conservatively bounded using the modulation amplitudes. In the original low-rank class, for $q,\bar q\in\mathcal Q$,
+\begin{equation}
+\bar\eta\le2\norm{\Pi^{1/2}E_z}_2\bigl(
+ g_A\norm{E_z^T\Pi^{-1/2}}_2M+g_B\bar u\bigr).
+\label{eq:freeze_amplitude_budget}
+\end{equation}
+The factor two allows both coefficient evaluations to vary over their full admissible ranges; a tighter schedule-specific bound may be substituted.
 
-Consider the full trajectory for the reference input candidate from an arbitrary current state. Its reference error $r_i$ satisfies $r_{i+1}\le\lambda r_i+\bar d_{\rm ref}$, hence $r_i\le\lambda^i\norm{e_k}_\Pi+\bar d_{\rm ref}\sum_{s=0}^{i-1}\lambda^s$. Adding the full/frozen discrepancy $D_i$ gives the bound $\lambda^i\norm{e_k}_\Pi+b_i$. The reference candidate has zero input-error cost. For $i\ge1$ its predicted previous-input slot is exactly $\vu_{k+i-1}^r$, so the relative-increment cost is also zero; only the initial term, at most $\norm{H_S}_2^2\norm{e_k}_\Pi^2$, remains. Applying $(a+b)^2\le2a^2+2b^2$ to every state and terminal error yields \eqref{eq:value_comparison} with exactly \eqref{eq:value_constants}.
+To verify the output-cost budget, note that for any $q\in\mathcal Q$ and $\norm{\vr}\le\bar r$,
+\begin{equation}
+\norm{Cq-\vr}_{Q_y}\le h_y,\qquad
+\norm{Cq-\vr}_{Q_f}\le h_f.
+\end{equation}
+For two states $q,q'\in\mathcal Q$ at the same absolute time, the difference of squared output costs satisfies
+\begin{equation}
+\begin{split}
+\big|\norm{Cq-\vr}_{Q_y}^2-\norm{Cq'-\vr}_{Q_y}^2\big|
+&\le2h_ya_y\norm{q-q'}_\Pi,
+\end{split}
+\label{eq:output_cost_continuity}
+\end{equation}
+with the analogous terminal bound $2h_fa_f\norm{q-q'}_\Pi$. Crucially, the previous-input cache propagates as the same applied candidate input in both trajectories; therefore the entire vector of increments $\vu_i-E_{\rm prev}q_i$ is identical, even if the lifted state and measurement cache differ. The anchor depends only on $\vu_0$ and $\vu_k^b$ and cancels as well. Summing only the remaining output-cost differences yields~\eqref{eq:freeze_cost_budget}; the two applications of this uniform comparison establish Theorem~\ref{thm:frozen_gap}.
 
-To expose the cost cancellation in \eqref{eq:value_descent}, write $g=F(p_N,\vu_{k+N}^r)$. The matched stages and the new terminal term satisfy
-\begin{align*}
-J_{k+1}^{\rm fr}(U^+;U^+)&\le\sum_{i=1}^{N-1}\ell_{k+i}(p_i,\widehat\vu_i)\\
-&+\ell_{k+N}(p_N,\vu_{k+N}^r)\\
-&+\beta\norm{g-q_{k+N+1}^r}_\Pi^2\\
-&+L_\ell\sum_{j=0}^{N-1}d_j+L_f\lambda d_{N-1}\\
-&\le J_k^{\rm fr}(\widehat U_k;\bar U_k)
--\ell_k(p_0,\widehat\vu_0)+\varepsilon.
-\end{align*}
-The sum is empty for $N=1$. General cache perturbations are already covered by the state continuity estimates; no equality of all caches is used.
+A solver need not be exactly optimal for the tracking theorem, but a numerical study quoting the optimization gap~\eqref{eq:frozen_gap} should certify the returned primal feasible sequence and an objective gap $\delta_k$, e.g., via a primal-dual lower bound for the same constrained QP. A violation of the first-input guard, even by a solver tolerance, is outside the exact statement of Theorem~\ref{thm:tracking} unless its effect is explicitly added to the error budget.
+\endgroup
 
-The comparison bound is for the exact value $W_k$ of each nominal-dependent QP, even when its delivered sequence is suboptimal. Combining the gap \eqref{eq:solver_gap} with the preceding inequality adds $\delta_k$, not $\delta_k+\delta_{k+1}$. Expanding the resulting scalar recursion gives
-\begin{equation*}
-W_k\le\rho^kW_0+\mathsf B(1-\rho^k)
-+\sum_{t=0}^{k-1}\rho^{k-1-t}(\varepsilon+\delta_t).
-\end{equation*}
-Using $W_0\le\mathsf A\norm{e_0}_\Pi^2+\mathsf B$ gives $W_k\le\Xi_k$ with $\Xi_k$ defined in \eqref{eq:squared_tracking_bound}; the lower comparison then bounds the state error. In particular, the limiting input radius from \eqref{eq:input_tracking} is at most $\sqrt{[\mathsf B+\mathsf A(\varepsilon+\bar\delta)+\bar\delta]/\lambda_{\min}(R)}$ when $R\succ0$. A singular $R$ cannot supply this Euclidean input bound by division, although the state theorem and strict convexity remain valid.
+\begingroup\color{blue}
+\section{Nonzero-Scheduling Certification Example}
+\label{app:certificate}
+Let $q=\col(x_1,x_2,\psi,a_1,a_2,v)\in\R^6$ with history feature $\psi=0.15a_1$, measurement cache $a=(x_{1,k-1},x_{2,k-1})$, and previous-input cache $v=\vu_{k-1}$. Take $C=e_1^T$, $E_{\rm prev}=e_6^T$, and
+\begin{equation}
+\mA_0=\begin{bmatrix}.35&.20&0\\0&.30&0\\ .15&0&0\end{bmatrix},
+\qquad \mB_0=\begin{bmatrix}0\\ .50\\0\end{bmatrix}.
+\label{eq:example_A0B0}
+\end{equation}
+The augmented nominal matrices are $M_0$ from~\eqref{eq:lyapunov_skeleton}, with $E_xC_x$ implementing the measurement shift, and $D_0=(0,.5,0,0,0,1)^T$. Here $C=e_1^T$ is the scalar measured output. The nominal DC gain equals $G_0=0.2197802198$, so for the reference $\vr=0.1$, the output-only selector gives $H_b=4.55$ and $\vu^b=0.455$.
 
-A feasible output and a dual-feasible lower value $L_k\le W_k$ from the same QP give the valid gap bound $J_k^{\rm fr}(\widehat U_k)-L_k$; obtaining such a certificate does not require a second QP. More explicitly, for $J(U)=\tfrac12U^T\mathcal HU+g^TU+c$, constraints $G_UU\le h$, a certified $\mathcal H\succeq\mu I\succ0$, and $y\ge0$, let $r_{\rm stat}=\mathcal H\widehat U+g+G_U^Ty$. Strong convexity of the Lagrangian gives
-\begin{equation*}
-J(\widehat U)-W\le\frac{\norm{r_{\rm stat}}_2^2}{2\mu}
-+y^T(h-G_U\widehat U).
-\end{equation*}
-Feasibility, $\mu$, and residual calculations must be valid under the numerical error model used. The theorem does not assert that a particular iteration limit or solver automatically meets these conditions, and an unanalysed infeasible fallback or input modification is outside the specified control law.
+With a \emph{fixed model parameter} $x_\star=0.1$, set
+\begin{equation}
+\begin{split}
+c(q)&=0.15(a_1-x_1)+0.03(v-4.55x_1),\\
+F(q,u)&=M_0q+D_0u+g_A\tanh(c(q))x_1e_1\\
+&\qquad+g_B\tanh(x_1-x_\star)ue_2,
+\end{split}
+\label{eq:nonzero_analytic_predictor}
+\end{equation}
+where $g_A=.03$ and $g_B=.004$. These are rank-one corrections to both $\mA$ and $\mB$, with nonconstant schedules driven by the current measurement, the past measurement, and the past input. A rank-one softmax head equals one. The bias $x_\star$ is fixed as a model parameter, not updated from the reference at runtime. The feature update $\psi^+=.15x_1$, the measurement cache update $a^+=(x_1,x_2)$, and the input cache update $v^+=u$ reproduce the encoder on every consistent transition, hence the actual re-encoding residual is identically zero.
+
+Let $\Pi$ solve $M_0^T\Pi M_0-\Pi=-I_6$, choose $M=6$, and define
+\begin{equation}
+\begin{gathered}
+\lambda_0=\norm{M_0}_\Pi,\quad
+c_y=\norm{e_1^T\Pi^{-1/2}}_2,\\
+a_j=\norm{\Pi^{1/2}e_j}_2\ (j=1,2),\quad
+L_c=\norm{C_c\Pi^{-1/2}}_2,\\
+C_c=(-.2865,0,0,.15,0,.03).
+\end{gathered}
+\end{equation}
+Since $\tanh$ is globally $1$-Lipschitz, $|x_1|\le c_y M$, and the input interval is bounded by $\bar u=.6$, state-difference estimates valid \emph{throughout} the $\Pi$-ball give
+\begin{equation}
+\begin{aligned}
+\lambda&=\lambda_0+g_Aa_1c_y(1+ML_c)
++g_Ba_2\bar u c_y,\\
+\lambda_{\rm fr}&=\lambda_0+g_Aa_1c_y,\\
+L_u&\le\norm{\Pi^{1/2}D_0}_2+g_Ba_2.
+\end{aligned}
+\label{eq:analytic_scheduled_rates}
+\end{equation}
+In particular, the last term in the $L_u$ estimate is required for the complete scheduled \emph{input} matrix. Taking $b_u=\bar u(\norm{\Pi^{1/2}D_0}_2+g_Ba_2)$ yields strictly positive common-domain margins as tabulated in Table~\ref{tab:certificate}. The numerical constants are evaluations of these global analytic inequalities, not maxima sampled along the trajectory.
+
+At the selected nominal equilibrium, $x_1=x_\star$ and $c(q^b)=0$, so both scheduled corrections vanish \emph{at that point} and $F(q^b,\vu^b)=q^b$. They remain genuinely nonzero on transients. Thus with $\bar d_b=\bar\nu_b=\bar w=0$, $\kappa=.08$, and~\eqref{eq:analytic_scheduled_rates}, one obtains $\rho_g\le0.9515304<1$. Theorem~\ref{thm:tracking} consequently proves \emph{exact exponential output tracking} for this nonlinear analytical example. This calculation demonstrates nonemptiness of the sufficient-condition class; it does not certify the weights of a separately trained Transformer.
+\endgroup
 
 \begin{thebibliography}{99}
 \bibitem{ljung1999system}
