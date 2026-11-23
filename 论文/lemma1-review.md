@@ -510,3 +510,43 @@
 4. 先检验 cost controllability 的有限样本不等式，再检验 closed-loop domain 的子水平集保持性。
 5. 最后计算 `\lambda_N` 和 `d_N`，检查理论 tracking certificate 是否满足
    `\lambda_N>0` 和 `d_N\le\lambda_NR`。
+
+## 处理记录（2026-11-23，对应提交 0a47bf8..457f791）
+
+行号以审查时的 `main.tex`（基线 `1911f66`）为准，修改后行号已变化。
+
+| 条目 | 处理 | 说明 |
+|---|---|---|
+| 1, 5 | 已改 | 引理不再重复范数等式，改为引用模型部分的 `eq:gain_bound`；`eq:exact_correction_norm` 已删除，其后公式编号整体减 1 |
+| 2 | 已改 | 证明先用 `U` 的正交列得到 `\|Uy\|=\|y\|`，再用 `\|V^\top\|_2=1` |
+| 3 | 已改 | 写出两条分支的 Lipschitz 估计，`\tfrac12\|W_\chi^\pi\|_2` 的来源可查 |
+| 4 | 已改 | 写出 `\max_j|\Delta\gamma_j|\le\|\Delta\gamma\|_2` |
+| 6, 13, 22, 32 | 未改 | 常数保守性，按报告结论仅记录 |
+| 7 | 已改 | 定理陈述加入共享初始状态与输入历史 |
+| 8 | 已改 | 负索引解释为采样时刻 `k` 之前的历史条目 |
+| 9 | 已改 | 四项逐项估计，`b` 的来源可查 |
+| 10 | 已改 | 引理后说明 `M_P` 的有限时域取法由引理给出 |
+| 11, 27, 34 | 未改 | 原文限定已足够 |
+| 12 | 已改 | 误差包络改为 `\mathcal E_i`，共 20 处 |
+| 14, 15 | 已改 | 三个堆叠向量的拆分与平方范数逐块估计 |
+| 16 | 已改 | 引理陈述指明冻结矩阵由名义 rollout 按 `eq:nominal_matrices` 生成 |
+| 17, 21 | 已改 | 证明中点明两条轨迹留在 `\mathcal Q`；引理后说明输入可行性不保证历史留在 `\mathcal H` |
+| 18, 19 | 已改 | 首步误差为零指向 `eq:past_input_history`；改为 later prediction steps |
+| 20 | 已改 | 总误差式写出三角不等式 |
+| 23 | 已改 | 定义 `J_k^E` 后指向 `eq:corrected_value_function` |
+| 24 | 已改 | 引理陈述加入有界参考与 Assumption 1 覆盖的初始条件 |
+| 25 | 已改 | 说明 `M_F` 只约束冻结 lifted state |
+| 26 | 已改 | 陈述中写明非空、紧、凸；证明写出变分不等式 |
+| 28 | 已改 | 常数须在假设所列全部状态与时刻上一致成立 |
+| 29 | 已改 | 说明后继域条件是假设，子水平集不变性由定理给出 |
+| 30 | 已改 | 定理后区分 `\lambda_N>0` 与 `d_N\le\lambda_NR` 的作用 |
+| 31 | 已改 | 小节标题改为 Practical Closed-Loop Output Tracking Analysis；标签 `sec:closed_loop_stability` 未动 |
+| 33 | 未改 | 原文已有 under the stated hypotheses |
+
+报告之外的三处补充：
+
+- `\|J\|_\infty` 写明为诱导无穷范数（最大绝对行和），并说明对称矩阵的谱范数等于谱半径。
+- 归纳中使用的包络单调性 `\mathcal E_{i+1}-\mathcal E_i=\varepsilon\rho^i\ge0` 已写出。
+- 4C 开头补了三步路线：目标扰动、value function 的松弛下降、输出误差界。
+
+验证：修改前后均用 Tectonic 0.15.0 编译通过，无错误、无未定义引用、无 Overfull；页数由 10 变为 11。
