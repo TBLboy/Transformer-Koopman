@@ -156,10 +156,8 @@ representation of the system in the selected observable coordinates, without req
 To identify the finite-dimensional Koopman approximation from data,
 we collect a set of measured input--output trajectories given by
 \begin{equation}
-\begin{aligned}
-\mathcal D &= \{\tau^{(j)}\}_{j=1}^{N_{\rm tr}},\\
-\tau^{(j)} &= \{(\vx_t^{(j)},\vu_t^{(j)})\}_{t=0}^{T_j},
-\end{aligned}
+\mathcal D=\{\tau^{(j)}\}_{j=1}^{N_{\rm tr}},\qquad
+\tau^{(j)}=\{(\vx_t^{(j)},\vu_t^{(j)})\}_{t=0}^{T_j},
 \label{eq:training_data}
 \end{equation}
 where $N_{\rm tr}$ denotes the number of trajectories and $T_j$
@@ -246,15 +244,13 @@ context-dependent transition and input matrices.
 Let $P_h\geq2$ denote the history length. At time $k$, the
 measurement history and the corresponding past-input history
 are defined as
-\begin{equation}
-\mX_k=\col(\vx_{k-P_h+1},\ldots,\vx_k)\in\R^{P_hn},
-\label{eq:measurement_window}
-\end{equation}
-\begin{equation}
-v_k=\col(\vu_{k-P_h+1},\ldots,\vu_{k-1})
+\begin{align}
+\mX_k&=\col(\vx_{k-P_h+1},\ldots,\vx_k)\in\R^{P_hn},
+\label{eq:measurement_window}\\
+v_k&=\col(\vu_{k-P_h+1},\ldots,\vu_{k-1})
 \in\R^{(P_h-1)m},
 \label{eq:past_input_history}
-\end{equation}
+\end{align}
 where $\col(\cdot)$ denotes vertical stacking.
 
 Based on the measurement history, we redefine the lifted state
@@ -452,22 +448,22 @@ the predictor is initialized as
 \end{equation}
 Starting from $\vz_k=\vz_k^E$, the scheduling context and
 lifted dynamics are given by
-\begin{equation}
-\vc_k=C(\widehat{\mX}_k,v_k),
-\label{eq:context_at_step}
-\end{equation}
-\begin{equation}
-\vz_{k+1}=\mA(\vc_k)\vz_k+\mB(\vc_k)\vu_k.
+\begin{align}
+\vc_k&=C(\widehat{\mX}_k,v_k),
+\label{eq:context_at_step}\\
+\vz_{k+1}&=\mA(\vc_k)\vz_k+\mB(\vc_k)\vu_k.
 \label{eq:lifted_recursive_dynamics}
-\end{equation}
+\end{align}
 The measurement and input histories are recursively updated as
 \begin{equation}
+\left\{
 \begin{aligned}
 \widehat{\mX}_{k+1}
 &=S_X\widehat{\mX}_k+E_XC_x\vz_{k+1},\\
 v_{k+1}
 &=S_uv_k+E_u\vu_k,
 \end{aligned}
+\right.
 \label{eq:history_window_update}
 \end{equation}
 where $S_X\in\R^{P_hn\times P_hn}$ and
@@ -686,17 +682,15 @@ L_\chi&=g_\chi\Big(\tfrac12\norm{\mW_\chi^\pi}_2+\norm{\mW_\chi}_2\Big).
 \end{equation}
 Then the norm identity~\eqref{eq:gain_bound} holds, and for all
 $\vc,\vc'\in\R^{d_c}$,
-\begin{equation}
+\begin{gather}
 \norm{\mA(\vc)}_2\le a,\qquad\norm{\mB(\vc)}_2\le b_B,
-\label{eq:uniform_matrix_bound}
-\end{equation}
-\begin{equation}
+\label{eq:uniform_matrix_bound}\\
 \begin{aligned}
 \norm{\mA(\vc)-\mA(\vc')}_2&\le L_A\norm{\vc-\vc'}_2,\\
 \norm{\mB(\vc)-\mB(\vc')}_2&\le L_B\norm{\vc-\vc'}_2.
 \end{aligned}
 \label{eq:scheduled_lipschitz}
-\end{equation}
+\end{gather}
 \end{lemma}
 
 \begin{proof}
@@ -712,7 +706,7 @@ $\mathbf y\in\R^{r_\chi}$, so that
 &=\norm{\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
 =\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2\\
 &\le\max_j\gamma_j^2\,\norm{\mV^\top\mathbf w}_2^2
-\le\max_j\gamma_j^2\,\norm{\mathbf w}_2^2 ,
+\le\max_j\gamma_j^2\,\norm{\mathbf w}_2^2,
 \end{aligned}
 \end{equation*}
 where the last step uses $\norm{\mV^\top}_2=1$, which follows from the
@@ -777,7 +771,7 @@ $\Delta\gamma=\gamma(\vc)-\gamma(\vc')$ gives
 \norm{\mU\operatorname{diag}(\Delta\gamma)\mV^\top}_2
 =\max_j|\Delta\gamma_j|
 \le\norm{\Delta\gamma}_2
-\le L_\chi\norm{\vc-\vc'}_2 ,
+\le L_\chi\norm{\vc-\vc'}_2,
 \end{equation*}
 which is~\eqref{eq:scheduled_lipschitz}.
 \end{proof}
@@ -791,10 +785,8 @@ $M_P=\max_{0\le i\le N}(a^iM_z+b_BM_u\sum_{j=0}^{i-1}a^j)$ in
 Assumption~\ref{asm:bounds}, with the empty sum equal to zero.
 To quantify the recursive prediction error, define
 \begin{equation}
-\begin{aligned}
-b&=L_{Cx}(L_AM_z+L_BM_u),\\
-\rho&=a+b\sqrt{P_h}.
-\end{aligned}
+b=L_{Cx}(L_AM_z+L_BM_u),\qquad
+\rho=a+b\sqrt{P_h}.
 \label{eq:rho_definition}
 \end{equation}
 
@@ -862,10 +854,10 @@ $\norm{\vz_i^E}_2\le M_z$ and $\norm{\vu_i}_2\le M_u$ from
 Assumption~\ref{asm:bounds} to give
 \begin{equation*}
 \begin{aligned}
-&\norm{\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E}_2
-\le L_AM_z\norm{\vc_i^E-\vc_i^P}_2,\\
-&\norm{\big[\mB(\vc_i^E)-\mB(\vc_i^P)\big]\vu_i}_2
-\le L_BM_u\norm{\vc_i^E-\vc_i^P}_2 .
+\norm{\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E}_2
+&\le L_AM_z\norm{\vc_i^E-\vc_i^P}_2,\\
+\norm{\big[\mB(\vc_i^E)-\mB(\vc_i^P)\big]\vu_i}_2
+&\le L_BM_u\norm{\vc_i^E-\vc_i^P}_2.
 \end{aligned}
 \end{equation*}
 Inserting the context estimate shows that their sum is at most
@@ -964,6 +956,7 @@ which determines the corresponding scheduled matrices,
 The nominal lifted state and history windows are then
 recursively propagated according to
 \begin{equation}
+\left\{
 \begin{aligned}
 \bar\vz_{i+1|k}
 &=\bar\mA_{i|k}\bar\vz_{i|k}
@@ -973,6 +966,7 @@ recursively propagated according to
 \bar v_{i+1|k}
 &=S_u\bar v_{i|k}+E_u\bar\vu_{i|k}.
 \end{aligned}
+\right.
 \label{eq:nominal_rollout}
 \end{equation}
 In this way, the scheduling matrices are evaluated along
@@ -985,11 +979,8 @@ $\{\bar\mA_{i|k},\bar\mB_{i|k}\}_{i=0}^{N-1}$
 and construct a linear time-varying (LTV) prediction model
 in the lifted coordinates,
 \begin{equation}
-\begin{aligned}
-\vz_{0|k}&=G_\theta(\mX_k),\\
-\vz_{i+1|k}
-&=\bar\mA_{i|k}\vz_{i|k}+\bar\mB_{i|k}\vu_{i|k},
-\end{aligned}
+\vz_{0|k}=G_\theta(\mX_k),\qquad
+\vz_{i+1|k}=\bar\mA_{i|k}\vz_{i|k}+\bar\mB_{i|k}\vu_{i|k},
 \label{eq:frozen_model}
 \end{equation}
 for $i=0,\ldots,N-1$. Unlike the nominal inputs used to
@@ -1338,10 +1329,8 @@ of the closed-loop analysis; see~\eqref{eq:corrected_value_function}.
 
 By compactness of the input set, define the uniform bounds
 \begin{equation}
-\begin{aligned}
-\bar\delta_N&=\sqrt{N}\operatorname{diam}(\mathcal U),\\
-\eta_i^{\max}&=\mathcal E_i+D_i\bar\delta_N,
-\end{aligned}
+\bar\delta_N=\sqrt{N}\operatorname{diam}(\mathcal U),\qquad
+\eta_i^{\max}=\mathcal E_i+D_i\bar\delta_N,
 \label{eq:uniform_prediction_mismatch}
 \end{equation}
 where $\operatorname{diam}(\mathcal U)=\max_{\vu,\vu'\in\mathcal U}
@@ -1378,15 +1367,13 @@ For every feasible $U$,
 \label{eq:cost_perturbation_sum}
 \end{equation}
 Furthermore,
-\begin{equation}
+\begin{gather}
 0\le J_k^E(U_k^{F,*})-J_k^E(U_k^{E,*})\le2\bar\Delta_N,
-\label{eq:ideal_suboptimality}
-\end{equation}
-\begin{equation}
+\label{eq:ideal_suboptimality}\\
 \norm{U_k^{E,*}-U_k^{F,*}}_2\le2\sqrt{\bar\Delta_N/\mu},
 \qquad \mu=2\lambda_{\min}(R_u),
 \label{eq:optimal_input_perturbation}
-\end{equation}
+\end{gather}
 where $\lambda_{\max}$ and $\lambda_{\min}$ denote the largest and
 smallest eigenvalues of the symmetric weighting matrices. In
 particular, the first input blocks satisfy
