@@ -78,7 +78,8 @@
 \newcommand{\mW}{\mathbf{W}}
 \newcommand{\mX}{\mathbf{X}}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+% Fixed-height norm; pass a size such as \big as the optional argument.
+\newcommand{\norm}[2][]{\mathopen{#1\lVert}#2\mathclose{#1\rVert}}
 \newcommand{\col}{\operatorname{col}}
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
@@ -424,8 +425,8 @@ across the rank-one components, while the hyperbolic tangent
 determines their signed amplitudes. Under the imposed orthonormality constraints, the resulting
 correction satisfies
 \begin{equation}
-\left\|\mU_\chi\operatorname{diag}(\gamma_\chi(\vc))
-\mV_\chi^\top\right\|_2
+\norm{\mU_\chi\operatorname{diag}(\gamma_\chi(\vc))
+\mV_\chi^\top}_2
 =\max_j|\gamma_{\chi,j}(\vc)|\leq g_\chi.
 \label{eq:gain_bound}
 \end{equation}
@@ -854,9 +855,9 @@ $\norm{\vz_i^E}_2\le M_z$ and $\norm{\vu_i}_2\le M_u$ from
 Assumption~\ref{asm:bounds} to give
 \begin{equation*}
 \begin{aligned}
-\norm{\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E}_2
+\norm[\big]{\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E}_2
 &\le L_AM_z\norm{\vc_i^E-\vc_i^P}_2,\\
-\norm{\big[\mB(\vc_i^E)-\mB(\vc_i^P)\big]\vu_i}_2
+\norm[\big]{\big[\mB(\vc_i^E)-\mB(\vc_i^P)\big]\vu_i}_2
 &\le L_BM_u\norm{\vc_i^E-\vc_i^P}_2.
 \end{aligned}
 \end{equation*}
