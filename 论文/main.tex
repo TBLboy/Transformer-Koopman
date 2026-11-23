@@ -708,10 +708,12 @@ Then, for all $\vc,\vc'\in\R^{d_c}$,
 \end{lemma}
 
 \begin{proof}
-For a fixed branch, suppress the subscript $\chi$ and let $\mV_j$ be
-the $j$th column of $\mV$. For any compatible vector $\mathbf w$, the
-orthonormal columns of $\mU$ imply $\norm{\mU\mathbf y}_2=\norm{\mathbf y}_2$
-for every $\mathbf y\in\R^{r_\chi}$, so that
+The argument proceeds from the correction term to the full matrices and
+then to the context dependence. Fix one branch and suppress the
+subscript $\chi$; let $\mV_j$ denote the $j$th column of $\mV$. For any
+compatible vector $\mathbf w$, the orthonormal columns of $\mU$ imply
+$\norm{\mU\mathbf y}_2=\norm{\mathbf y}_2$ for every
+$\mathbf y\in\R^{r_\chi}$, so that
 \begin{equation*}
 \begin{aligned}
 &\norm{\mU\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
@@ -723,14 +725,17 @@ for every $\mathbf y\in\R^{r_\chi}$, so that
 \end{equation*}
 where the last step uses $\norm{\mV\mV^\top}_2\le1$, which follows
 from the orthonormality of the columns of $\mV$.
-Equality is attained by choosing $\mathbf w=\mV_j$ for an index
-maximizing $|\gamma_j|$. Since each softmax entry belongs to $[0,1]$
-and $|\tanh(\cdot)|\le1$,~\eqref{eq:exact_correction_norm} follows.
-The triangle inequality applied
-to~\eqref{eq:scheduled_A}--\eqref{eq:scheduled_B} then
-gives~\eqref{eq:uniform_matrix_bound}.
+Equality is attained by $\mathbf w=\mV_j$ at an index maximizing
+$|\gamma_j|$. Since every softmax entry lies in $[0,1]$ and
+$|\tanh(\cdot)|\le1$, each coefficient obeys
+$|\gamma_j(\vc)|\le g_\chi$, which proves
+\eqref{eq:exact_correction_norm}. Applying the triangle inequality
+to~\eqref{eq:scheduled_A}--\eqref{eq:scheduled_B}, with this identity
+used for both correction terms, then
+yields~\eqref{eq:uniform_matrix_bound}.
 
-For $\vp=\operatorname{softmax}(\boldsymbol\zeta)$ with
+It remains to quantify the context dependence. For
+$\vp=\operatorname{softmax}(\boldsymbol\zeta)$ with
 $\boldsymbol\zeta\in\R^{r_\chi}$, the Jacobian is
 $\mathbf J=\operatorname{diag}(\vp)-\vp\vp^\top$, which is symmetric
 and positive semidefinite. Its spectral norm therefore equals the
@@ -754,11 +759,10 @@ multiplication, gives
 &\le L_\chi\norm{\vc-\vc'}_2.
 \end{aligned}
 \end{equation*}
-The two deviations are estimated separately. The arguments of the two
-branches are affine in the context, so
-\eqref{eq:softmax_jacobian_bound} applied to
-$\mW_\chi^\pi\vc+\vb_\chi^\pi$ and the unit Lipschitz constant of
-$\tanh$ applied to $\mW_\chi\vc+\vb_\chi$ give
+The two branches are handled separately. Since both arguments are
+affine in the context, \eqref{eq:softmax_jacobian_bound} applied to
+$\mW_\chi^\pi\vc+\vb_\chi^\pi$, together with the unit Lipschitz
+constant of $\tanh$ applied to $\mW_\chi\vc+\vb_\chi$, gives
 \begin{equation*}
 \begin{aligned}
 \norm{\vp(\vc)-\vp(\vc')}_2
@@ -781,12 +785,14 @@ $\Delta\gamma=\gamma(\vc)-\gamma(\vc')$ then gives
 which is~\eqref{eq:scheduled_lipschitz}.
 \end{proof}
 
-Lemma~\ref{lem:scheduling_regularity} characterizes how the correction
-gains regulate both the magnitude and the context sensitivity of the
-scheduled dynamics. These bounds do not imply Schur stability. A finite-horizon choice of
-$M_P$ in Assumption~\ref{asm:bounds} is provided by
-$\max_{0\le i\le N}(a^iM_z+b_BM_u\sum_{j=0}^{i-1}a^j)$, with the
-empty sum equal to zero. To quantify the recursive prediction error, define
+Lemma~\ref{lem:scheduling_regularity} shows that the correction gains
+govern both the magnitude and the context sensitivity of the scheduled
+dynamics. The statement concerns norms only and does not imply Schur
+stability of the lifted dynamics. It does, however, supply a
+finite-horizon bound on the propagated state, namely the choice
+$M_P=\max_{0\le i\le N}(a^iM_z+b_BM_u\sum_{j=0}^{i-1}a^j)$ in
+Assumption~\ref{asm:bounds}, with the empty sum equal to zero.
+To quantify the recursive prediction error, define
 \begin{equation}
 \begin{aligned}
 b&=L_{Cx}(L_AM_z+L_BM_u),\\
