@@ -809,16 +809,16 @@ histories as specified above, and $i=0,\ldots,N$,
 \begin{aligned}
 \norm{\vx_{i|k}^E-\vx_{i|k}^P}_2
 &\le\norm{\vz_{i|k}^E-\vz_{i|k}^P}_2\\
-&\le E_i,\\
-E_i&=\varepsilon\sum_{j=0}^{i-1}\rho^j,
+&\le \mathcal E_i,\\
+\mathcal E_i&=\varepsilon\sum_{j=0}^{i-1}\rho^j,
 \end{aligned}
 \label{eq:prediction_error_bound}
 \end{equation}
 where $\vx_{i|k}^E=C_x\vz_{i|k}^E$,
-$\vx_{i|k}^P=C_x\vz_{i|k}^P$, and the empty sum gives $E_0=0$.
+$\vx_{i|k}^P=C_x\vz_{i|k}^P$, and the empty sum gives $\mathcal E_0=0$.
 Equivalently,
 \begin{equation}
-E_i=\begin{cases}
+\mathcal E_i=\begin{cases}
 \varepsilon(1-\rho^i)/(1-\rho),&\rho\ne1,\\
 i\varepsilon,&\rho=1.
 \end{cases}
@@ -888,13 +888,13 @@ with~\eqref{eq:history_error_bound}, this yields
 \end{equation}
 
 The inequality couples the current error with the whole history
-window. To close it, define the envelope $E_i$ by $E_i=0$ for $i\le0$
-and $E_{i+1}=\rho E_i+\varepsilon$ for $i\ge0$. The envelope is
-nondecreasing, because $E_{i+1}-E_i=\varepsilon\rho^i\ge0$. The shared
-initialization gives $\ve_0=0$. Suppose that $\norm{\ve_j}_2\le E_j$
-for all $j\le i$. Every window entry is then bounded by $E_i$, and
-substituting $E_{i-j}\le E_i$ into~\eqref{eq:error_inequality} yields
-$\norm{\ve_{i+1}}_2\le(a+b\sqrt{P_h})E_i+\varepsilon=E_{i+1}$.
+window. To close it, define the envelope $\mathcal E_i$ by $\mathcal E_i=0$ for $i\le0$
+and $\mathcal E_{i+1}=\rho \mathcal E_i+\varepsilon$ for $i\ge0$. The envelope is
+nondecreasing, because $\mathcal E_{i+1}-\mathcal E_i=\varepsilon\rho^i\ge0$. The shared
+initialization gives $\ve_0=0$. Suppose that $\norm{\ve_j}_2\le \mathcal E_j$
+for all $j\le i$. Every window entry is then bounded by $\mathcal E_i$, and
+substituting $\mathcal E_{i-j}\le \mathcal E_i$ into~\eqref{eq:error_inequality} yields
+$\norm{\ve_{i+1}}_2\le(a+b\sqrt{P_h})\mathcal E_i+\varepsilon=\mathcal E_{i+1}$.
 The lifted error bound follows by induction, and solving the scalar
 recurrence gives~\eqref{eq:prediction_error_explicit}. Finally,
 $\norm{C_x\ve_i}_2\le\norm{\ve_i}_2$ transfers the bound to the
@@ -906,7 +906,7 @@ residual from its amplification through the nominal dynamics,
 context-dependent matrices, and history updates. No contraction is
 required over a finite horizon. If $\rho<1$ and the domain and residual
 assumptions hold over arbitrarily long rollouts, the bound further
-reduces to $E_i\le\varepsilon/(1-\rho)$ uniformly in $i$. The bound is
+reduces to $\mathcal E_i\le\varepsilon/(1-\rho)$ uniformly in $i$. The bound is
 a conditional prediction guarantee and does not itself enforce the
 operating-domain assumptions.
 
@@ -1291,11 +1291,11 @@ Lemma~\ref{lem:freezing_error} give
 &\le\norm{\vz_{i|k}^E-\vz_{i|k}^F}_2\\
 &\le\norm{\vz_{i|k}^E-\vz_{i|k}^P}_2
 +\norm{\vz_{i|k}^P-\vz_{i|k}^F}_2\\
-&\le\eta_{i,k}(U_k):=E_i+D_i\delta_k,
+&\le\eta_{i,k}(U_k):=\mathcal E_i+D_i\delta_k,
 \end{aligned}
 \label{eq:total_error}
 \end{equation}
-where $\vx_{i|k}^F=C_x\vz_{i|k}^F$. The term $E_i$ accounts for the
+where $\vx_{i|k}^F=C_x\vz_{i|k}^F$. The term $\mathcal E_i$ accounts for the
 closure residual of the recursive predictor, and $D_i\delta_k$ for the
 scheduling freezing.
 
@@ -1304,7 +1304,15 @@ scheduling freezing.
 
 We next relate the prediction mismatch to the MPC objective and
 establish sufficient conditions for practical tracking of the physical
-system. To distinguish physical trajectories from the learned
+system. The argument has three steps. The prediction mismatch
+in~\eqref{eq:total_error} is first converted into a uniform
+perturbation of the MPC objective, which bounds the suboptimality of
+the frozen optimal sequence on the physical system. A
+cost-controllability condition on the physical system then turns this
+suboptimality into a relaxed decrease of a finite-horizon value
+function. Finally, the decrease yields finite-time and ultimate bounds
+on the output tracking error. To distinguish physical trajectories
+from the learned
 predictor, introduce the true augmented state
 $\xi_k=\col(\vs_k,\mX_k,v_k)$ and its transition map
 \begin{equation}
@@ -1347,7 +1355,7 @@ By compactness of the input set, define the uniform bounds
 \begin{equation}
 \begin{aligned}
 \bar\delta_N&=\sqrt{N}\operatorname{diam}(\mathcal U),\\
-\eta_i^{\max}&=E_i+D_i\bar\delta_N,
+\eta_i^{\max}&=\mathcal E_i+D_i\bar\delta_N,
 \end{aligned}
 \label{eq:uniform_prediction_mismatch}
 \end{equation}
