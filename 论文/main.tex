@@ -828,7 +828,10 @@ i\varepsilon,&\rho=1.
 \end{theorem}
 
 \begin{proof}
-Let $\ve_i=\vz_{i|k}^E-\vz_{i|k}^P$. Subtracting the propagated
+The proof derives a recursion for the lifted error, bounds the
+context mismatch through the measurement-history window, and closes
+the resulting inequality with a scalar envelope. Let
+$\ve_i=\vz_{i|k}^E-\vz_{i|k}^P$. Subtracting the propagated
 dynamics from~\eqref{eq:encoded_residual_identity} gives
 \begin{equation}
 \begin{aligned}
@@ -838,14 +841,17 @@ dynamics from~\eqref{eq:encoded_residual_identity} gives
 \end{aligned}
 \label{eq:error_recursion}
 \end{equation}
-Since the input histories coincide,
+The first term propagates the existing error, the two bracketed terms
+arise from the context mismatch, and $\vr_i$ is the closure residual.
+The context mismatch is driven by the measurement histories alone:
+since the input histories coincide,
 Assumption~\ref{asm:context_lipschitz} yields
 $\norm{\vc_i^E-\vc_i^P}_2\le L_{Cx}\norm{\mX_i^E-\mX_i^P}_2$.
-The initial measurement histories also coincide, so window entries
+The initial measurement histories coincide as well, so window entries
 with index $i-j<0$ refer to samples taken before $k$ and are identical
-along both trajectories; they contribute no error. Writing $\ve_j=0$
-for $j<0$ records this convention, and the coordinate selection matrix
-$C_x$, with $\norm{C_x}_2=1$, gives
+along both trajectories. Adopting the convention $\ve_j=0$ for $j<0$
+and using the coordinate selection matrix $C_x$, with
+$\norm{C_x}_2=1$, we obtain
 \begin{equation}
 \begin{aligned}
 \norm{\mX_i^E-\mX_i^P}_2^2
@@ -854,13 +860,14 @@ $C_x$, with $\norm{C_x}_2=1$, gives
 \end{aligned}
 \label{eq:history_error_bound}
 \end{equation}
-Lemma~\ref{lem:scheduling_regularity} bounds the terms
-of~\eqref{eq:error_recursion} separately. The propagated term obeys
-$\norm{\mA(\vc_i^P)\ve_i}_2\le a\norm{\ve_i}_2$, and the residual
-obeys $\norm{\vr_i}_2\le\varepsilon$ by
-Assumption~\ref{asm:residual}. The two context-dependent terms use the
-Lipschitz bounds of the scheduled matrices together with
-$\norm{\vz_i^E}_2\le M_z$ and $\norm{\vu_i}_2\le M_u$, so that
+We now bound the four terms of~\eqref{eq:error_recursion} in turn.
+By Lemma~\ref{lem:scheduling_regularity}, the propagated term satisfies
+$\norm{\mA(\vc_i^P)\ve_i}_2\le a\norm{\ve_i}_2$, while
+Assumption~\ref{asm:residual} gives $\norm{\vr_i}_2\le\varepsilon$.
+For the two context-dependent terms, the Lipschitz bounds
+\eqref{eq:scheduled_lipschitz} combine with
+$\norm{\vz_i^E}_2\le M_z$ and $\norm{\vu_i}_2\le M_u$ from
+Assumption~\ref{asm:bounds} to give
 \begin{equation*}
 \begin{aligned}
 &\norm{\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E}_2
@@ -869,9 +876,10 @@ $\norm{\vz_i^E}_2\le M_z$ and $\norm{\vu_i}_2\le M_u$, so that
 \le L_BM_u\norm{\vc_i^E-\vc_i^P}_2 .
 \end{aligned}
 \end{equation*}
-Their sum is bounded by $b\norm{\mX_i^E-\mX_i^P}_2$, with $b$ as in
-\eqref{eq:rho_definition}, once the context estimate is inserted.
-Combining these estimates with~\eqref{eq:history_error_bound} yields
+Inserting the context estimate shows that their sum is at most
+$b\norm{\mX_i^E-\mX_i^P}_2$, with $b$ defined
+in~\eqref{eq:rho_definition}. Together
+with~\eqref{eq:history_error_bound}, this yields
 \begin{equation}
 \begin{aligned}
 \norm{\ve_{i+1}}_2\le{}&a\norm{\ve_i}_2+\varepsilon\\
@@ -880,15 +888,18 @@ Combining these estimates with~\eqref{eq:history_error_bound} yields
 \label{eq:error_inequality}
 \end{equation}
 
-Define the envelope $E_i$ by $E_i=0$ for $i\le0$ and
-$E_{i+1}=\rho E_i+\varepsilon$ for $i\ge0$. It is nondecreasing,
-because $E_{i+1}-E_i=\varepsilon\rho^i\ge0$. The initialization gives
-$\ve_0=0$. Suppose $\norm{\ve_j}_2\le E_j$ for $j\le i$. Substituting
-$E_{i-j}\le E_i$ in~\eqref{eq:error_inequality} yields
+The inequality couples the current error with the whole history
+window. To close it, define the envelope $E_i$ by $E_i=0$ for $i\le0$
+and $E_{i+1}=\rho E_i+\varepsilon$ for $i\ge0$. The envelope is
+nondecreasing, because $E_{i+1}-E_i=\varepsilon\rho^i\ge0$. The shared
+initialization gives $\ve_0=0$. Suppose that $\norm{\ve_j}_2\le E_j$
+for all $j\le i$. Every window entry is then bounded by $E_i$, and
+substituting $E_{i-j}\le E_i$ into~\eqref{eq:error_inequality} yields
 $\norm{\ve_{i+1}}_2\le(a+b\sqrt{P_h})E_i+\varepsilon=E_{i+1}$.
-Induction and the solution of the scalar recurrence give the lifted
-error bound. The measurement error bound follows from
-$\norm{C_x\ve_i}_2\le\norm{\ve_i}_2$.
+The lifted error bound follows by induction, and solving the scalar
+recurrence gives~\eqref{eq:prediction_error_explicit}. Finally,
+$\norm{C_x\ve_i}_2\le\norm{\ve_i}_2$ transfers the bound to the
+measurement error.
 \end{proof}
 
 Theorem~\ref{thm:prediction_error} separates the one-step closure
