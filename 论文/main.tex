@@ -1300,7 +1300,7 @@ where $\vx_{i|k}^F=C_x\vz_{i|k}^F$. The term $E_i$ accounts for the
 closure residual of the recursive predictor, and $D_i\delta_k$ for the
 scheduling freezing.
 
-\subsection{Closed-Loop Stability Analysis}
+\subsection{Practical Closed-Loop Output Tracking Analysis}
 \label{sec:closed_loop_stability}
 
 We next relate the prediction mismatch to the MPC objective and
@@ -1340,7 +1340,9 @@ The ideal and frozen objectives use the same cost and constraints,
 but different prediction models. Let $J_k^F(U)$ denote the objective
 in~\eqref{eq:quadratic_template} for a fixed feasible $\bar U_k$, with
 the dependence on the available histories suppressed. The ideal
-problem is a theoretical benchmark and is not solved online.
+problem is a theoretical benchmark and is not solved online. Its
+minimum, augmented by the current output cost, is the value function
+of the closed-loop analysis; see~\eqref{eq:corrected_value_function}.
 
 By compactness of the input set, define the uniform bounds
 \begin{equation}
@@ -1359,13 +1361,19 @@ $\norm{\vz_{i|k}^F(U)}_2\le M_F$, where
 M_F=\max_{0\le i\le N}\left(a^iM_z+b_BM_u\sum_{j=0}^{i-1}a^j\right).
 \label{eq:frozen_state_bound}
 \end{equation}
+This bound concerns the frozen lifted state only and is used to bound
+the frozen output in the cost. It does not place the corresponding
+histories in $\mathcal H$.
 
 \begin{lemma}[Objective and optimal-input perturbation]
 \label{lem:objective_policy_perturbation}
 Suppose Assumptions~\ref{asm:domain}--\ref{asm:context_lipschitz}
-hold and the physical transition and measurement maps $f$ and $h$
-are continuous. Let $U_k^{E,*}$ be any minimizer of $J_k^E$ and
-$U_k^{F,*}$ the unique minimizer of $J_k^F$ on $\mathcal U^N$.
+hold, the physical transition and measurement maps $f$ and $h$
+are continuous, and the reference is bounded by $M_r$. Consider any
+initial condition and sampling instant covered by
+Assumption~\ref{asm:domain}. Let $U_k^{E,*}$ be any minimizer of
+$J_k^E$ and $U_k^{F,*}$ the unique minimizer of $J_k^F$ on the
+nonempty, compact, and convex set $\mathcal U^N$.
 Define
 \begin{equation}
 \begin{aligned}
@@ -1433,9 +1441,11 @@ With fixed matrices, the frozen prediction is affine in $U$ and the
 input penalty contributes $2(I_N\otimes R_u)$ to the Hessian, where
 $I_N$ is the $N$-dimensional identity and $\otimes$ is the Kronecker
 product. Thus $J_k^F$ is
-$\mu$-strongly convex. Its constrained minimizer satisfies the
-first-order variational inequality on the convex set $\mathcal U^N$,
-which gives
+$\mu$-strongly convex. Because $\mathcal U^N$ is convex, its
+constrained minimizer satisfies the first-order variational inequality
+$\nabla J_k^F(U_k^{F,*})^\top(U-U_k^{F,*})\ge0$ for all
+$U\in\mathcal U^N$, rather than a vanishing gradient. Combined with
+strong convexity, this inequality gives
 \begin{equation}
 \begin{aligned}
 &\frac{\mu}{2}\norm{U_k^{E,*}-U_k^{F,*}}_2^2\\
@@ -1453,7 +1463,7 @@ input block cannot increase the Euclidean norm, giving
 Lemma~\ref{lem:objective_policy_perturbation} connects the prediction
 error with both the suboptimality of the realized input sequence on
 the physical system and the deviation from an ideal optimal sequence.
-We use the suboptimality bound directly in the stability analysis,
+We use the suboptimality bound directly in the closed-loop analysis,
 which avoids requiring Lipschitz continuity of the ideal optimal
 control law or of a Lyapunov function composed with the plant.
 
@@ -1523,8 +1533,11 @@ then summation gives~\eqref{eq:cost_controllability} with any
 $B_{\rm cc}\ge C_0/(1-\sigma)$, $B_{\rm cc}>1$, and
 $d_{\rm cc}=(N+1)\bar\ell$. This is a sufficient comparison condition,
 not a property asserted for every partially observed plant. In a
-specific application, the constants must be verified on the domain
-and for the chosen dynamic reference.
+specific application, the constants must hold uniformly over all
+initial states, times, and intermediate states named in
+Assumption~\ref{asm:cost_controllability} for the chosen dynamic
+reference; a finite collection of closed-loop trajectories does not
+by itself establish them.
 
 \begin{assumption}[Closed-loop domain]
 \label{asm:closed_loop_domain}
@@ -1539,8 +1552,10 @@ $\xi\in\Omega_{R,k}$, $\vu\in\mathcal U$, and $k\ge0$.
 
 The successor-domain condition is a local sufficient hypothesis
 ensuring that the estimates can be applied along the physical closed
-loop. It is distinct from feasibility of the QP, which follows from
-the input-only constraints.
+loop. It is assumed rather than derived from the controller, and it is
+distinct from feasibility of the QP, which follows from the input-only
+constraints. Given this condition, the theorem below establishes
+forward invariance of the sublevel sets $\Omega_{R,k}$.
 
 \begin{theorem}[Practical closed-loop output tracking]
 \label{thm:practical_stability}
@@ -1676,7 +1691,13 @@ sampling instants. Iterating the scalar decrease inequality and using
 \eqref{eq:conditional_ultimate_bound}.
 \end{proof}
 
-The sufficient horizon condition $\lambda_N>0$ is equivalent to
+The two conditions of Theorem~\ref{thm:practical_stability} play
+different roles. The condition $\lambda_N>0$ makes
+\eqref{eq:robust_lyapunov_decrease} a contraction of the value function
+up to the offset $d_N$, whereas $d_N\le\lambda_NR$ keeps
+$W_{k+1}(\xi_{k+1})\le R$ and hence the successor state inside the
+certified sublevel set. The horizon condition $\lambda_N>0$ is
+equivalent to
 $B_{\rm cc}(B_{\rm cc}-1)\vartheta^{N-1}<1$. For a fixed finite
 cost-controllability constant it holds for sufficiently large $N$.
 However, enlarging $N$ can also enlarge $\bar\Delta_N$ and
