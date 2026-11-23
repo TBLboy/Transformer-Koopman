@@ -1,0 +1,598 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[UTF8]{ctex}      % 中文支持
+\usepackage{geometry}       % 页面设置
+\usepackage{graphicx}       % 图片支持
+\usepackage{float}          % 浮动体控制
+\usepackage{listings}       % 代码块支持
+\usepackage{xcolor}         % 颜色支持
+\usepackage{hyperref}       % 超链接
+\usepackage{array}          % 表格增强
+\usepackage{booktabs}       % 三线表
+\usepackage{amsmath}        % 数学公式
+\usepackage{enumitem}       % 列表定制
+\usepackage{longtable}      % 长表格
+
+% 页面设置
+\geometry{left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm}
+
+% ---------------------------------------------------------
+% 1. 代码高亮通用样式配置
+% ---------------------------------------------------------
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    frame=single
+}
+
+% 应用全局样式
+\lstset{style=mystyle}
+
+% ---------------------------------------------------------
+% 2. JSON 语言高亮特殊定义
+% ---------------------------------------------------------
+\colorlet{punct}{red!60!black}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily\footnotesize,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{backcolour},
+    literate=
+     *{:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+
+% 文档信息
+\title{\textbf{柔性绳驱光点定位系统 (FR-LPS)\\全栈设计规格书 V3.6}}
+\author{项目负责人: 陶柏霖 \\ 指导老师: 李玉玲}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+本文档详细描述了一套基于计算机视觉反馈的四轴绳驱柔性机械臂控制系统（版本 V3.6）。系统采用“视觉伺服闭环”架构，上位机基于 Python/PyQt6 开发，\textbf{在保留 V2.0 核心离散控制模型的基础上，升级为模块化策略模式架构，并针对人机交互进行了深度优化}。
+
+V3.6 版本整合了最新的硬件驱动实现与视觉算法模块：下位机（Arduino MEGA/MKS GEN L）固件升级为基于\textbf{同步差动控制（Synchronous Differential Control）}的高性能驱动逻辑，彻底解决了传统绳驱系统中的“虚假松弛”与“单侧牵制”问题，通过强制的“一收一放”协同机制，实现了高精度的光点轨迹跟随与绝对原点复位。在上位机端，新增了\textbf{协同力测试控制台}与\textbf{定点驻留生成器}，并完善了视觉偏置的自动标定逻辑，构建了完备的闭环控制体系。文档完整涵盖了机械结构、电气规范、软硬件控制逻辑及全栈代码实现细节。
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{1. 系统原理与机械结构}
+
+\subsection{1.1 核心设计理念}
+系统被建模为一个\textbf{欠驱动柔性连续体机器人}。通过四根绳索牵引一根中心悬挂的柔性软管，改变软管末端激光笔的指向，从而在下方平面上投射出可控的光点。系统利用底部摄像头采集光点位置，形成视觉闭环反馈。
+
+\subsection{1.2 机械结构组成}
+主体框架为 $50 \times 50 \times 100$ cm 的角钢结构，垂直方向上严格分为三层平台：
+
+\begin{enumerate}
+    \item \textbf{顶层平台 (执行层)}：
+    \begin{itemize}
+        \item \textbf{布局}：安装 4 个 42 步进电机，分别位于前、后、左、右四个正交方位。
+        \item \textbf{传动}：绳索穿过顶板导孔（已加装特氟龙导管以减小摩擦），连接至下方悬挂的软管末端。
+    \end{itemize}
+    \item \textbf{中层平台 (投影层)}：
+    \begin{itemize}
+        \item \textbf{材质}：半透明磨砂亚克力板（特性：透光不透视）。
+        \item \textbf{作用}：接收激光投射的光点，形成清晰光斑供下方摄像头拍摄。
+        \item \textbf{标定}：板面四角贴有四个不同颜色的标记点，围成一个正方形区域，用于计算机视觉系统的透视变换矩阵计算。
+    \end{itemize}
+    \item \textbf{底层平台 (感知层)}：
+    \begin{itemize}
+        \item \textbf{布局}：放置免驱 USB 摄像头，镜头垂直朝上，采用“背投式”拍摄中层平台的透射画面。
+        \item \textbf{优势}：背投式设计彻底消除了机械臂本体运动对光点的遮挡干扰，保证了视觉反馈的连续性。
+    \end{itemize}
+\end{enumerate}
+
+\section{2. 硬件电气系统与固件实现}
+
+\subsection{2.1 核心硬件选型}
+\begin{itemize}
+    \item \textbf{主控板}：MKS GEN L V2.1。
+    \begin{itemize}
+        \item 核心：Arduino MEGA 2560。
+        \item 优势：板载 24V 降压电路，集成度高，支持 TMC 系列驱动。
+    \end{itemize}
+    \item \textbf{电机驱动}：TMC2209 $\times 4$。
+    \begin{itemize}
+        \item 接口模式：UART 模式（用于动态配置电流/细分） + STEP/DIR 接口（用于实时运动控制）。
+        \item 细分配置：软件设定 16 细分，开启内部 256 插值 (Interpolation)，实现静音与平滑控制。
+    \end{itemize}
+    \item \textbf{执行器}：42 步进电机 ($1.8^\circ$ 步距角) $\times 4$。
+    \item \textbf{电源系统}：24V 400W 开关电源，提供充沛扭矩，防止高速运动时丢步。
+    \item \textbf{视觉传感器 (V3.1 升级)}：
+    \begin{itemize}
+        \item \textbf{型号}：免驱 USB 摄像头。
+        \item \textbf{分辨率支持}：除了基础的 640x480 和 1920x1080，V3.1 新增了对 \textbf{1280x720 MJPG} 格式的支持。
+        \item \textbf{驱动优化}：底层驱动强制使用 \texttt{cv2.CAP\_DSHOW} 后端，解决了部分高分屏下摄像头初始化缓慢或卡顿的问题。
+    \end{itemize}
+\end{itemize}
+
+\subsection{2.2 接线拓扑与引脚映射 (关键)}
+基于 Marlin/Arduino 标准引脚定义，详细映射如下表：
+
+\begin{longtable}{|c|c|c|c|c|}
+\hline
+\textbf{轴名称} & \textbf{驱动插槽} & \textbf{STEP 引脚} & \textbf{DIR 引脚} & \textbf{UART 引脚 (软串口)} \\ \hline
+上电机 (U) & X 轴 & \textbf{D54} & \textbf{D55} & \textbf{D63} \\ \hline
+下电机 (D) & Y 轴 & \textbf{D60} & \textbf{D61} & \textbf{D64} \\ \hline
+左电机 (L) & Z 轴 & \textbf{D46} & \textbf{D48} & \textbf{D65} \\ \hline
+右电机 (R) & E0 轴 & \textbf{D26} & \textbf{D28} & \textbf{D66} \\ \hline
+\end{longtable}
+
+\textbf{安装与接线注意事项：}
+\begin{enumerate}
+    \item \textbf{跳线设置}：必须在主板 X, Y, Z, E0 插槽下方的 UART 针脚处插上黑色跳线帽，以启用 TMC2209 的 UART 通信功能。
+    \item \textbf{电源极性}：24V 电源正负极接入绿色端子，务必拧紧，接反必烧。
+    \item \textbf{驱动方向}：安装 TMC2209 驱动模块时，GND 针脚必须对准主板 GND 插孔（通常电位器调节孔朝向主板外侧），插反会瞬间烧毁主板与驱动。
+\end{enumerate}
+
+\subsection{2.3 下位机固件实现 (V3.6 升级)}
+固件采用 Arduino 框架编写，位于 \texttt{Hardware.ino} 单文件中。核心依赖库为 \texttt{TMCStepper}（负责 UART 配置）和 \texttt{AccelStepper}（负责梯形加减速运动）。
+
+\subsubsection{2.3.1 核心对象初始化}
+\begin{lstlisting}[language=C++]
+// 示例：U轴初始化
+TMC2209Stepper driver_U(U_SERIAL_RX, U_SERIAL_TX, R_SENSE, U_DRIVER_ADDR);
+AccelStepper stepper_U(AccelStepper::DRIVER, U_STEP_PIN, U_DIR_PIN);
+
+void setup() {
+    // TMC 配置：开启驱动，设置电流 800mA，16细分
+    driver_U.begin(); 
+    driver_U.rms_current(800); 
+    driver_U.microsteps(16);
+    // 运动配置：最大速度 2000，加速度 1000
+    stepper_U.setMaxSpeed(2000); 
+    stepper_U.setAcceleration(1000);
+}
+\end{lstlisting}
+
+\subsubsection{2.3.2 核心控制循环与中断}
+为了保证电机运动的平滑性与串口通信的非阻塞性，系统采用了 \texttt{serialEvent} 事件机制：
+\begin{lstlisting}[language=C++]
+void loop() {
+    // 必须极高频调用 run() 以维持脉冲输出
+    stepper_U.run();
+    stepper_D.run();
+    stepper_L.run();
+    stepper_R.run();
+    
+    // 仅在指令完整接收后处理，避免阻塞
+    if (stringComplete) {
+        parseCommand(inputString);
+        inputString = "";
+        stringComplete = false;
+    }
+}
+
+// 串口中断：自动接收数据至缓冲区
+void serialEvent() {
+    while (Serial.available()) {
+        char inChar = (char)Serial.read();
+        inputString += inChar;
+        if (inChar == '\n') stringComplete = true;
+    }
+}
+\end{lstlisting}
+
+\section{3. 逻辑与算法控制}
+
+\subsection{3.1 离散时间控制模型}
+系统被建模为一个周期性离散控制系统，采样周期 $T_s$ 可配置（默认 $0.2s$）。
+
+\subsubsection{3.1.1 控制时序与单位映射}
+\begin{enumerate}
+    \item \textbf{感知 ($t_0$)}：摄像头采集图像，提取光点原始坐标 $P_{raw}$，并结合标定偏置 $(a,b)$ 计算系统坐标 $P_k$：
+    \[ P_k = P_{raw} - P_{offset} \]
+    随后计算与目标点的误差：
+    \[ e_k = P_{target} - P_k \]
+    \item \textbf{决策 ($t_1$)}：上位机根据物理误差 $e_k$ 和选定的算法（PID/MPC），计算理想控制量 $u_k$。
+    
+    \textbf{特别声明：} 此处的控制输入 $u_k = (N_h, N_v)$ \textbf{并非代表光点的物理移动距离，而是代表水平和竖直方向上电机的“移动单位”（即脉冲数）}。
+    
+    \begin{itemize}
+        \item \textbf{单位物理定义}：所谓“1 个移动单位”在电气层面上等同于发送给驱动器的 \textbf{1 个脉冲信号 (Pulse)}。
+        \item \textbf{角度换算}：一个单位能让电机真实旋转的角度 $\theta_{unit}$ 取决于电机固有的\textbf{步距角} $\theta_{step}$ 和驱动器的\textbf{细分设置} $M$：
+        \begin{equation}
+            \theta_{unit} = \frac{\theta_{step}}{M}
+        \end{equation}
+        \item \textbf{计算示例}：本项目使用步距角为 $1.8^\circ$ 的 42 步进电机，TMC2209 驱动设置为 16 细分。此时，上位机发送 $N=1$ 的指令，电机轴实际旋转角度为：
+        \[ \Delta \theta = \frac{1.8^\circ}{16} = 0.1125^\circ \]
+        因此，上位机输出的控制量实质上是\textbf{离散的脉冲计数}。
+    \end{itemize}
+    
+    \item \textbf{传输 ($t_2$)}：将包含脉冲单位的指令 $(N_h, N_v)$ 通过串口下发至下位机。
+    \item \textbf{执行 ($t_3$)}：下位机根据接收到的脉冲单位，结合各电机的状态量，分配实际驱动指令。
+\end{enumerate}
+
+\subsubsection{3.1.2 有效时间与速度限幅 (Clamping)}
+为保证在下一帧采集前动作完成，避免时序混叠，电机运动时间必须满足：
+\begin{equation}
+    T_{move} \le T_s - T_{vision\_delay} - T_{comm\_delay} \approx T_s - 0.05s
+\end{equation}
+因此，上位机必须对控制输入进行幅度限制：
+\begin{equation}
+    |u_{max}| = V_{max} \times (T_s - 0.05)
+\end{equation}
+其中 $V_{max}$ 是电机不丢步的最大速度（例如 $2000~steps/s$）。
+
+\subsection{3.2 同步差动控制机制 (Synchronous Differential Control) [V3.6 核心]}
+针对绳驱系统单向受力及欠驱动特性导致的“运动死区”和“轨迹跑偏”问题，V3.6 版本废弃了旧版基于状态量的被动预紧策略，采用了基于几何约束的主动协同策略。
+
+\begin{itemize}
+    \item \textbf{核心原理}：将四根绳索视为两对互补的\textbf{差动对}（水平对：左L/右R；垂直对：上U/下D）。假设绳索在工作空间内始终保持张紧状态（通过初始标定保证），则任何方向的运动都必须伴随着“一侧收紧、对侧释放”的同步动作，以维持几何中心的动态平衡。
+    \item \textbf{控制律}：
+    \begin{itemize}
+        \item \textbf{水平轴 (X)}：
+        \[ \Delta Steps_R = \Delta x, \quad \Delta Steps_L = -\Delta x \]
+        \item \textbf{垂直轴 (Y)}：
+        \[ \Delta Steps_U = \Delta y, \quad \Delta Steps_D = -\Delta y \]
+    \end{itemize}
+    \item \textbf{优势}：彻底消除了因单侧电机“只拉不放”导致的系统刚度过大问题，确保光点能够沿直线矢量运动，而非受某一根绷紧绳索的牵制做圆弧运动。
+\end{itemize}
+
+\subsubsection{3.2.1 状态流转实例分析}
+假设上位机计算出控制输入 $u=(100, -50)$，即要求水平向右 100 单位，垂直向下 50 单位。
+
+\textbf{时刻 T1：执行水平动作 ($\Delta x = 100$)}
+\begin{itemize}
+    \item \textbf{右电机 (R)}：接收 $+100$ 步指令，执行正转（收紧）。
+    \item \textbf{左电机 (L)}：接收 $-100$ 步指令，执行反转（释放）。
+    \item \textbf{物理效果}：右绳收紧拉动光点，同时左绳主动释放等量长度，消除了反向阻力，光点得以顺利向右移动。
+    \item \textbf{状态记录}：系统在后台更新状态量 $S_R \leftarrow S_R + 100, S_L \leftarrow S_L - 100$，以供调试监测。
+\end{itemize}
+
+\textbf{时刻 T1：执行垂直动作 ($\Delta y = -50$)}
+\begin{itemize}
+    \item \textbf{下电机 (D)}：接收 $+50$ 步指令（$-\Delta y$），执行正转（收紧）。
+    \item \textbf{上电机 (U)}：接收 $-50$ 步指令（$\Delta y$），执行反转（释放）。
+    \item \textbf{物理效果}：上下电机协同动作，光点向下移动。
+    \item \textbf{状态记录}：$S_D \leftarrow S_D + 50, S_U \leftarrow S_U - 50$。
+\end{itemize}
+
+通过这种“一收一放”的强制协同机制，单片机确保了系统在全工作空间内的运动线性度和响应速度。
+
+\subsection{3.3 模块化算法开发协议 (Modular Algorithm Protocol)}
+本系统采用了策略模式（Strategy Pattern）架构，允许用户自定义新的控制算法而无需修改主程序代码。所有自定义算法必须遵循严格的开发模板和接口协议。
+
+\subsubsection{3.3.1 算法基类与继承}
+所有新的控制算法必须在 \texttt{algorithms/} 目录下创建新的 \texttt{.py} 文件，并定义一个继承自 \texttt{BaseAlgorithm} 的类。
+
+\textbf{基类定义} (\texttt{algorithms/base\_algorithm.py}):
+\begin{lstlisting}[language=python]
+from abc import ABC, abstractmethod
+from PyQt6.QtWidgets import QWidget
+
+class BaseAlgorithm(ABC):
+    def __init__(self, config_path):
+        self.config_path = config_path
+        self.load_config()
+    
+    # ... (配置加载逻辑)
+\end{lstlisting}
+
+\subsubsection{3.3.2 必须实现的核心接口}
+任何算法类都**必须**重写以下四个抽象方法，否则系统将无法加载：
+
+\begin{enumerate}
+    \item \textbf{\texttt{get\_name(self) -> str}}
+    \begin{itemize}
+        \item \textbf{作用}：返回算法的唯一显示名称，将出现在“自动追踪”界面的下拉菜单中。
+        \item \textbf{示例}：\texttt{return "PID Controller (Basic)"}
+    \end{itemize}
+
+    \item \textbf{\texttt{get\_settings\_widget(self) -> QWidget}}
+    \begin{itemize}
+        \item \textbf{作用}：构建并返回该算法专属的参数设置界面（如 PID 参数输入框）。
+        \item \textbf{要求}：返回一个标准的 PyQt6 \texttt{QWidget} 对象，内部需自行处理参数的保存与更新逻辑。
+    \end{itemize}
+
+    \item \textbf{\texttt{calculate\_control(...)}}
+    \begin{itemize}
+        \item \textbf{作用}：核心控制逻辑，计算下一时刻的电机动作。
+        \item \textbf{返回值}：返回元组 \texttt{(delta\_x, delta\_y)}，单位为脉冲数。
+    \end{itemize}
+
+    \item \textbf{\texttt{reset(self) -> None} [V3.6 新增]}
+    \begin{itemize}
+        \item \textbf{作用}：重置算法内部状态（如清空积分项）。
+        \item \textbf{必要性}：在每次点击“开始追踪”时被系统强制调用，防止系统在二次启动瞬间因残留的历史状态导致电机暴冲。
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{3.3.3 插件加载机制}
+系统启动时，\texttt{AlgorithmManager} 会自动扫描 \texttt{algorithms/} 目录：
+\begin{itemize}
+    \item 自动识别所有包含 \texttt{BaseAlgorithm} 子类的模块。
+    \item 为每个算法分配独立的配置文件路径：\texttt{algorithms/configs/<module\_name>.json}。
+    \item 用户可在运行时通过下拉菜单实现“热插拔”切换。
+\end{itemize}
+
+\subsection{3.4 初始复位与软硬件联合标定策略}
+针对柔性绳驱系统开机时绳索松弛及光点未归中的问题，V3.2 正式实现了“重力辅助机械复位”结合“视觉偏置软件补偿”的双重标定流程。
+
+\subsubsection{3.4.1 机械零位归中：临界张紧法 (Critical Tensioning)}
+利用柔性软管在自然重力作用下垂直悬挂的特性，通过人机交互调整，使系统达到“几何中心对齐且绳索处于临界拉紧”的状态。操作步骤如下：
+
+\begin{enumerate}
+    \item \textbf{全局释放 (Global Release)}：
+    操作员点击“全部放松”或手动控制四个电机反转释放绳索，直至软管完全受重力作用自然下垂。此时光点物理位置回归自然中心。
+    
+    \item \textbf{对角张紧 (Diagonal Tensioning)}：
+    以“上(U) + 左(L)”电机组为例：
+    \begin{itemize}
+        \item \textbf{阶段一（过冲）}：手动点动收紧 U 和 L 电机，直到观察到光点**刚刚开始**偏离自然中心。此状态表明绳索已完全吃力并克服了松弛。
+        \item \textbf{阶段二（回调）}：以微小步距（如 10 steps）逐步放松 U 和 L 电机，直至光点**刚好重新回到**自然中心位置。
+    \end{itemize}
+    此时，U 和 L 轴即处于“零位移下的临界张紧状态”。
+    
+    \item \textbf{全向闭环}：
+    对“下(D) + 右(R)”电机组重复上述“过冲-回调”步骤。最终实现四根绳索均处于绷紧状态，且光点位于机械几何中心。
+\end{enumerate}
+
+\subsubsection{3.4.2 软件视觉原点偏置补偿 (Visual Offset Calibration) [V3.4 更新]}
+\textbf{（本功能已在 V3.4 中完全实现，并集成了视觉调试标记）}
+
+为了解决视觉坐标系与物理坐标系的偏差，系统引入了独立的视觉处理模块 \texttt{VisionProcessor}。
+
+\begin{enumerate}
+    \item \textbf{视觉处理算法}：
+    采用 HSV 颜色空间转换与阈值分割技术，提取红色激光点。
+    \begin{itemize}
+        \item \textbf{预处理}：将 RGB 图像转为 HSV，并进行高斯模糊去噪。
+        \item \textbf{阈值}：设定双区间红色阈值（0-10, 160-180），合并掩膜。
+        \item \textbf{定位}：提取最大轮廓，利用图像矩（Image Moments）计算质心坐标 $(C_x, C_y)$，实现亚像素级精度。
+    \end{itemize}
+    
+    \item \textbf{实时调试标记}：
+    在校准界面中，视觉模块会自动在识别到的光点处绘制一个黄色实心圆圈及坐标文字，方便用户直观判断识别准确性。
+    
+    \item \textbf{标定流程}：
+    用户点击“标定原点”时，系统会优先读取当前识别到的真实光点坐标作为全局偏置。若未检测到光点，则回退到模拟值并发出警告。
+    \[ \text{Offset}_x = x_{detected}, \quad \text{Offset}_y = y_{detected} \]
+\end{enumerate}
+
+\section{4. 上位机软件架构设计 (V3.6)} % 版本号更新
+
+\subsection{4.1 技术栈与架构}
+软件基于 \textbf{Python 3.9+}，采用 \textbf{PyQt6 (界面)} + \textbf{OpenCV (视觉)} + \textbf{PySerial (通信)}。遵循 \textbf{MVC (Model-View-Controller)} 设计模式，严格分离 UI 代码与业务逻辑代码。
+
+\subsection{4.2 工程目录结构 (V3.6 完整版)} % 版本号更新
+基于实际项目结构（FlexibleArmControl12）更新：
+
+\begin{lstlisting}[language=bash]
+FlexibleArmControl12/
+|-- .venv/                   # Python 虚拟环境
+|-- algorithms/              # [算法层] 存放 PID/MPC 等算法插件
+|   |-- base_algorithm.py    # [核心协议] 算法基类定义
+|   |-- configs/             # 算法配置文件
+|-- core/                    # [核心层] 底层驱动
+|   |-- hardware.py          # [核心] 串口通讯、摄像头驱动与健康监测
+|   |-- vision_processor.py  # [V3.4 新增] 独立视觉处理模块(HSV+绘图)
+|   |-- config_manager.py    # 全局配置管理
+|   |-- algorithm_manager.py # 算法加载器
+|-- logic/                   # [逻辑层] 业务逻辑 (继承自 UI)
+|   |-- home_logic.py
+|   |-- calib_logic.py       # 含标定与偏置补偿逻辑
+|   |-- settings_logic.py
+|   |-- dummy_logic.py       # 自动追踪闭环逻辑 (含安全保护)
+|   |-- test_logic.py        # [V3.6 新增] 协同力控制测试逻辑
+|   |-- trajectory_editor_logic.py # 轨迹编辑与文件IO
+|-- source/                  # [资源层] 静态资源文件
+|   |-- Home_Background.png  # 主页背景图
+|-- trajectories/            # [数据层] 存放生成的 .txt 轨迹文件
+|-- ui/                      # [视图层] 纯 PyQt6 界面定义
+|   |-- home_ui.py
+|   |-- calib_ui.py
+|   |-- settings_ui.py
+|   |-- dummy_ui.py
+|   |-- test_ui.py           # [V3.6 新增] 测试界面
+|   |-- trajectory_editor_ui.py
+|   |-- tracking_plot_widget.py
+|-- utils/                   # [工具层] 通用工具
+|   |-- icon_manager.py      # 图标资源管理器
+|-- config.json              # [数据] 系统运行参数配置
+|-- main.py                  # [入口] 程序启动入口
+|-- requirements.txt         # [依赖] 项目依赖库列表
+\end{lstlisting}
+
+\subsection{4.3 核心功能模块详解}
+
+\subsubsection{1. 轨迹编辑器 (Trajectory Editor) [V3.6 升级]}
+V3.6 版本对轨迹生成逻辑进行了重构，赋予用户更高的控制权：
+\begin{itemize}
+    \item \textbf{总点数控制 (Total Points)}：废弃了旧版的“固定距离步长”逻辑，改为由用户指定轨迹的总点数（如 1000 点）。这使得用户可以精确控制任务的总耗时（$T_{total} = N \times T_s$）和运动细腻度。
+    \item \textbf{定点驻留生成 (Station Keeping)}：新增“定点控制”工具，可生成坐标不变但时间延续的轨迹序列（例如在 $(5,5)$ 处驻留 1000 个周期）。这对于调试 PID 稳态精度及消除静差至关重要。
+    \item \textbf{平滑边界限制 (Clamping)}：
+    \begin{itemize}
+        \item \textit{问题}：旧版本当轨迹整体移动触碰边界时，直接拒绝移动，导致拖动“卡死”。
+        \item \textit{优化}：新算法计算当前所有轨迹点距离四个边界的最小余量，将鼠标位移量限制在余量范围内。即使鼠标移出画布区域，轨迹也会紧贴边界顺滑滑动。
+    \end{itemize}
+    \item \textbf{画布清空}：新增清空按钮，并带有二次确认弹窗，方便重置绘图。
+\end{itemize}
+
+\subsubsection{2. 双视图监控 (Dual-View Tracking)}
+\begin{itemize}
+    \item \textbf{左侧控制区}：轨迹加载、算法选择、参数设置、启停控制。
+    \item \textbf{右侧监控区}：
+        \begin{itemize}
+            \item \textbf{上视窗}：摄像头实时画面 (Machine Vision Feed)。
+            \item \textbf{下视窗}：\texttt{TrackingPlotWidget} 实时绘图，同时显示参考轨迹（灰线）、实际轨迹（红线）及目标点（绿点）。
+        \end{itemize}
+\end{itemize}
+
+\subsubsection{3. 协同力测试控制台 (Synergy Test Console) [V3.6 新增]}
+专为验证“同步差动控制”策略设计的独立功能页面：
+\begin{itemize}
+    \item \textbf{方向控制}：提供上、下、左、右四个点动按钮。
+    \item \textbf{协同逻辑验证}：点击任意方向时，上位机发送标准位移指令（如 `MOVE: 100, 0`），操作者可直观观察下位机是否正确执行了“右收左放”的协同动作。
+    \item \textbf{安全互锁}：集成了标定状态检测，只有在系统完成原点标定后才解锁控制按钮，防止盲目运动导致机械过载。
+\end{itemize}
+
+\subsection{4.4 硬件启动自检与参数同步机制 (Hardware Sync)}
+为确保系统启动时软硬件状态的一致性，系统引入了严格的“握手协议”与“闭环自检”流程。
+
+\subsubsection{4.4.1 参数分类与存储}
+系统参数被严格划分为以下三类：
+\begin{enumerate}
+    \item \textbf{纯软件参数}：界面主题、轨迹文件路径等，仅存储于本地 \texttt{config.json}。
+    \item \textbf{单片机参数 (MCU)}：细分 (Microsteps)、最大速度、加速度、运行电流 (Run Current)、保持电流 (Hold Current)、方向反转标志。此类参数需通过串口指令发送至下位机。
+    \item \textbf{摄像头参数 (Camera)}：分辨率、曝光、对焦、白平衡等。此类参数通过 OpenCV API 直接作用于硬件。
+\end{enumerate}
+
+\subsubsection{4.4.2 启动与重连流程}
+系统启动或用户点击“保存并应用”按钮时，将自动触发以下同步流程：
+
+\begin{enumerate}
+    \item \textbf{硬件识别与连接}：
+    \begin{itemize}
+        \item 尝试打开配置的 COM 端口。
+        \item 尝试初始化摄像头并读取测试帧。
+    \end{itemize}
+    \item \textbf{握手协议同步 (Handshake)}：
+    \begin{itemize}
+        \item 上位机依次发送配置指令（如 \texttt{CFG}, \texttt{CUR}, \texttt{INV}）。
+        \item 上位机阻塞等待下位机回复 \texttt{OK} 确认信号。
+        \item 若超时或回复错误，判定为同步失败。
+    \end{itemize}
+    \item \textbf{异常处理与引导}：
+    \begin{itemize}
+        \item 若任一环节失败，系统弹出警告提示，并引导用户进入“设置页面”手动修正端口或参数。
+        \item 修正后再次点击保存，系统将重新执行上述连接与同步流程，直至全部成功。
+    \end{itemize}
+\end{enumerate}
+
+此机制确保了在任何异常断电或重启后，硬件参数都能被正确恢复，避免了“参数悬空”导致的安全隐患。
+
+\subsection{4.5 运行时安全保护机制 (Runtime Safety)}
+\textbf{（本功能已在 V3.2 中完全实现，V3.3 新增智能释放）}
+
+为了解决 V3.1 中存在的安全隐患，V3.3 版本在底层和应用层引入了双重保护机制。
+
+\subsubsection{1. 硬件急停机制 (Hardware Emergency Stop)}
+上位机的“停止”按钮已不再仅仅是停止定时器的“软停止”，而是集成了硬件急停功能。
+\begin{itemize}
+    \item \textbf{触发方式}：用户点击界面“停止”按钮，或系统检测到严重故障。
+    \item \textbf{执行流程}：上位机立即通过串口发送最高优先级指令 \texttt{ESTOP}。
+    \item \textbf{底层响应}：下位机接收到此指令后，会立即触发中断，强制拉低所有步进电机的使能引脚或停止脉冲定时器，并清除所有待执行队列，确保物理运动瞬间停止。
+\end{itemize}
+
+\subsubsection{2. 运行时断连保护 (Connection Watchdog)}
+针对设备运行时可能发生的 USB 松动、干扰掉线或摄像头卡死问题，系统建立了心跳监测机制：
+\begin{enumerate}
+    \item \textbf{健康监测}：\texttt{HardwareInterface} 类中维护了 \texttt{serial\_failure\_count} 和 \texttt{camera\_failure\_count}。在控制循环中，若连续 $N$ 帧（默认为 5 帧）通信失败，即判定为连接丢失。
+    \item \textbf{信号触发}：一旦判定断连，底层立即触发 \texttt{connection\_lost} 信号。
+    \item \textbf{安全响应}：主程序接收信号后，自动切换至“停止”状态，调用急停逻辑，并通过弹窗提示用户“连接中断，请检查线路”，有效防止了程序崩溃或失控。
+\end{enumerate}
+
+\subsubsection{3. 自动复位与智能释放 (Auto Home \& Release) \textbf{[V3.6 新增]}}
+为提高系统的易用性，系统实现了基于绝对坐标的复位功能。
+\begin{enumerate}
+    \item \textbf{上位机操作}：用户点击“自动复位”或发送 \texttt{HOME} 指令。
+    \item \textbf{下位机响应}：下位机接收到指令后，调用 \texttt{AccelStepper} 的 \texttt{moveTo(0)} 函数，使四个电机同步运动，回到系统上电或上次标定 \texttt{ZERO} 时的\textbf{机械绝对零位}。
+    \item \textbf{逻辑一致性}：在同步差动模式下，绝对位置 0 即代表系统恢复到了初始的“几何中心临界张紧”状态。此操作无需人工干预，可一键完成设备的初始化归位。
+\end{enumerate}
+
+\section{5. 通信协议定义}
+上位机与 Arduino 之间通过 USB 虚拟串口 (115200 baud) 交互。V3.6 完善了全套指令集。
+
+\begin{itemize}
+    \item \textbf{运动指令}：\texttt{MOVE: <dx>, <dy>} 
+    \begin{itemize}
+        \item 功能：发送二维位移增量。
+        \item 示例：\texttt{MOVE: 100,-50} (水平动100步，垂直动-50步，硬件自动执行同步差动)。
+    \end{itemize}
+    \item \textbf{强制指令}：\texttt{M<id>:<steps>} 
+    \begin{itemize}
+        \item 功能：单轴强制驱动指令，用于硬件调试（界面2）。
+    \end{itemize}
+    \item \textbf{急停指令}：\texttt{ESTOP}
+    \begin{itemize}
+        \item 功能：最高优先级，强制停止所有动作并清空队列。
+    \end{itemize}
+    \item \textbf{复位指令 (新增)}：\texttt{HOME}
+    \begin{itemize}
+        \item \textbf{功能}：使所有电机以规划的速度回到机械绝对原点 (0,0,0,0)，并重置内部状态记录。
+        \item 回复：\texttt{HOME:OK}
+    \end{itemize}
+    \item \textbf{配置指令 (带握手)}：
+    \begin{itemize}
+        \item \textbf{运动学}：\texttt{CFG: <microsteps>, <speed>, <accel>} (回复 \texttt{CFG:OK})
+        \item \textbf{电流}：\texttt{CUR: <run\_ma>, <hold\_ma>} (回复 \texttt{CUR:OK})
+        \item \textbf{方向}：\texttt{INV: <u>, <d>, <l>, <r>} (1=反转, 0=正常; 回复 \texttt{INV:OK})
+    \end{itemize}
+    \item \textbf{归零指令}：\texttt{ZERO} 
+    \begin{itemize}
+        \item \textbf{功能}：将当前物理位置标记为机械原点 (0,0,0,0)，重置所有计数器。
+    \end{itemize}
+\end{itemize}
+
+\section{6. 配置文件说明 (config.json)}
+V3.3 配置文件结构如下，新增了视觉偏置补偿与安全相关参数：
+
+\begin{lstlisting}[language=json]
+{
+    "control": {
+        "port": "COM3",         // 串口号
+        "time_step": 0.2,       // 离散控制周期 Ts(秒)
+        "microsteps": 16,       // 电机细分 (全局统一)
+        "max_speed": 2000,      // 电机运行速度(步/秒)
+        "acceleration": 1000,   // 梯形加减速斜率
+        "jog_step_coarse": 100, // [新增] 手动粗调步数
+        "jog_step_fine": 10,    // [新增] 手动微调步数
+        "run_current": 800,     // [新增] 运行电流 (mA)
+        "hold_current": 400,    // [新增] 保持电流 (mA)
+        "invert_u": false,      // [新增] U轴反向
+        "invert_d": false,      // [新增] D轴反向
+        "invert_l": false,      // [新增] L轴反向
+        "invert_r": false       // [新增] R轴反向
+    },
+    "vision": {
+        "camera_id": 0,         // 摄像头索引
+        "exposure": -5,         // 曝光值
+        "width": 1280,          // [V3.1] 推荐使用 1280x720 MJPG
+        "height": 720,
+        "vision_offset_x": 12.5, // [V3.2 新增] 视觉原点偏置 X
+        "vision_offset_y": -5.0, // [V3.2 新增] 视觉原点偏置 Y
+        "offset_calibrated": true // [V3.2 新增] 是否已标定
+    },
+    "ui": {
+        "dark_mode": false      // 深色模式开关
+    }
+}
+\end{lstlisting}
+
+\end{document}

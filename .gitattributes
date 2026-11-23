@@ -1,0 +1,3 @@
+# 关闭全部换行符转换：仓库内字节与工作区字节严格一致。
+# Windows 下的 LaTeX/数据文件保持原样，避免 CRLF/LF 在 checkout 时被静默改写。
+* -text
