@@ -1107,9 +1107,10 @@ $\vx_{k+1}^r,\ldots,\vx_{k+N}^r$.
 
 The single-freeze strategy captures variations in the lifted
 dynamics through one nominal rollout per sampling instant while
-retaining a convex QP. The following analysis quantifies the
-additional prediction error due to freezing and establishes
-sufficient conditions for practical closed-loop tracking.
+retaining a convex QP. Section~\ref{sec:freezing_error} quantifies the
+additional prediction error due to freezing, and
+Section~\ref{sec:closed_loop_stability} uses it to establish
+sufficient conditions for practical closed-loop output tracking.
 
 \subsection{Prediction Error Induced by Scheduling Freezing}
 \label{sec:freezing_error}
@@ -1124,8 +1125,12 @@ context recomputed at each step under the same $U_k$, while
 $\bar\vz_{i|k}$ is propagated under $\bar U_k$. All three trajectories
 start from the same encoded state and histories.
 
-For the recursive predictor, define the augmented state
-$q=\col(\vz,\mX,v)$ and the lifted update
+The frozen matrices are evaluated along the nominal rollout. The
+freezing error is therefore governed by the distance between the
+recursive trajectory under $U_k$ and the nominal one, which involves
+the lifted state and both history windows. To measure this distance,
+we collect these quantities in the augmented state
+$q=\col(\vz,\mX,v)$ and define the lifted update
 $f_z(q,\vu)=\mA(C(\mX,v))\vz+\mB(C(\mX,v))\vu$. The associated
 augmented transition map is
 \begin{equation}
@@ -1136,8 +1141,10 @@ f_z(q,\vu)\\ S_X\mX+E_XC_xf_z(q,\vu)\\ S_uv+E_u\vu
 \end{equation}
 Here $q$ belongs to the predictor's bounded augmented domain
 $\mathcal Q=\{\col(\vz,\mX,v):(\mX,v)\in\mathcal H,
-\norm{\vz}_2\le M_P\}$.
-From~\eqref{eq:context_lipschitz} and Cauchy--Schwarz, define
+\norm{\vz}_2\le M_P\}$. We next show that $\mathcal F$ is Lipschitz on
+$\mathcal Q$. Applying Cauchy--Schwarz
+to~\eqref{eq:context_lipschitz} bounds the context difference by
+$L_{Cq}\norm{\col(\mX-\mX',v-v')}_2$, where
 \begin{equation}
 \begin{aligned}
 L_{Cq}&=\sqrt{L_{Cx}^2+L_{Cu}^2},\\
@@ -1145,9 +1152,10 @@ L_{Cq}&=\sqrt{L_{Cx}^2+L_{Cu}^2},\\
 \end{aligned}
 \label{eq:augmented_sensitivity}
 \end{equation}
-In particular, the context difference is bounded by
-$L_{Cq}\norm{\col(\mX-\mX',v-v')}_2$. For any $q,q'\in\mathcal Q$
-and $\vu\in\mathcal U$, Lemma~\ref{lem:scheduling_regularity} gives
+The constant $\beta_C$ measures the sensitivity of the lifted update
+to the histories through the scheduled matrices. Indeed, for any
+$q,q'\in\mathcal Q$ and $\vu\in\mathcal U$,
+Lemma~\ref{lem:scheduling_regularity} gives
 \begin{equation*}
 \begin{aligned}
 \norm{f_z(q,\vu)-f_z(q',\vu)}_2
@@ -1217,13 +1225,15 @@ for $i=0,\ldots,N$, and $D_1=0$.
 \end{lemma}
 
 \begin{proof}
-Let $q_i^P=\col(\vz_i^P,\mX_i^P,v_i^P)$ and
+The proof first bounds the deviation of the recursive trajectory from
+the nominal one, and then propagates the resulting matrix mismatch
+through the lifted error. Let $q_i^P=\col(\vz_i^P,\mX_i^P,v_i^P)$ and
 $\bar q_i=\col(\bar\vz_i,\bar\mX_i,\bar v_i)$ be the augmented
 recursive and nominal trajectories. By
 Assumptions~\ref{asm:domain}--\ref{asm:bounds}, both trajectories
 remain in $\mathcal Q$ for $i=0,\ldots,N$, so
 \eqref{eq:augmented_lipschitz} applies at every step. Since
-$q_0^P=\bar q_0$, iterating it gives
+$q_0^P=\bar q_0$, iterating this estimate gives
 \begin{equation}
 \begin{aligned}
 \norm{q_i^P-\bar q_i}_2
@@ -1232,9 +1242,10 @@ $q_0^P=\bar q_0$, iterating it gives
 \end{aligned}
 \label{eq:augmented_deviation}
 \end{equation}
-where the final inequality follows from Cauchy--Schwarz. Let
-$\ve_i^F=\vz_i^P-\vz_i^F$. Subtracting the two prediction recursions
-and collecting terms yields
+where the final inequality follows from Cauchy--Schwarz. We now turn
+to the lifted error $\ve_i^F=\vz_i^P-\vz_i^F$. Subtracting the frozen
+recursion~\eqref{eq:frozen_model} from the recursive one and
+collecting terms yields
 \begin{equation}
 \begin{aligned}
 \ve_{i+1}^F={}&\bar\mA_i\ve_i^F\\
@@ -1243,7 +1254,8 @@ and collecting terms yields
 \end{aligned}
 \label{eq:freezing_recursion}
 \end{equation}
-The context deviation satisfies
+The two bracketed terms are driven by the context deviation, which
+satisfies
 $\norm{\vc_i^P-\bar\vc_i}_2\le L_{Cq}\norm{q_i^P-\bar q_i}_2$.
 Lemma~\ref{lem:scheduling_regularity} gives
 $\norm{\bar\mA_i}_2\le a$ and bounds the two matrix differences by
@@ -1254,9 +1266,9 @@ With $\norm{\vz_i^P}_2\le M_P$, $\norm{\vu_i}_2\le M_u$, and
 \norm{\ve_{i+1}^F}_2\le a\norm{\ve_i^F}_2+\beta_C K_i\delta_k.
 \label{eq:freezing_scalar_recursion}
 \end{equation}
-As $\ve_0^F=0$, induction with~\eqref{eq:freezing_constants} gives
-\eqref{eq:freezing_bound}. The shared initial context gives $K_0=0$
-and hence $D_1=0$.
+Because $\ve_0^F=0$, induction on $i$
+with~\eqref{eq:freezing_constants} gives~\eqref{eq:freezing_bound}.
+Finally, $K_0=0$ and $D_0=0$ give $D_1=0$.
 \end{proof}
 
 The first-step freezing error vanishes because the three trajectories
