@@ -1409,12 +1409,15 @@ particular, the first input blocks satisfy
 \end{lemma}
 
 \begin{proof}
-For each $i$, let $\vp_i=C_x\vz_{i|k}^F(U)-\vx_{k+i}^r$ and
+The proof bounds the objective difference term by term, converts it
+into a suboptimality gap, and then uses strong convexity to bound the
+distance between the minimizers. For each $i$, let
+$\vp_i=C_x\vz_{i|k}^F(U)-\vx_{k+i}^r$ and
 $\ve_i=C_x(\vz_{i|k}^E(U)-\vz_{i|k}^F(U))$. By~\eqref{eq:total_error}
 and~\eqref{eq:frozen_state_bound}, $\norm{\ve_i}_2\le\eta_i^{\max}$
-and $\norm{\vp_i}_2\le M_F+M_r$. As the input penalties coincide,
-the objective difference consists only of output-cost differences.
-Expanding each square gives
+and $\norm{\vp_i}_2\le M_F+M_r$. Since the input penalties coincide,
+the two objectives differ only in their output costs. Expanding each
+square gives
 \begin{equation}
 \begin{aligned}
 &|\norm{\vp_i+\ve_i}_{Q_x}^2-\norm{\vp_i}_{Q_x}^2|\\
@@ -1423,11 +1426,14 @@ Expanding each square gives
 \end{aligned}
 \label{eq:cost_perturbation}
 \end{equation}
-Summing proves~\eqref{eq:cost_perturbation_sum}. The ideal objective
-is continuous in $U$ by the continuity of $f$ and $h$ and the
-state-preserving readout. A minimizer exists by compactness, without
-any convexity requirement on the ideal problem.
-The optimality of $U_k^{F,*}$ and~\eqref{eq:cost_perturbation_sum} yield
+Summing over $i=1,\ldots,N$ proves~\eqref{eq:cost_perturbation_sum}.
+
+For the suboptimality gap, note first that the ideal objective is
+continuous in $U$, by the continuity of $f$ and $h$ and the
+state-preserving readout. A minimizer $U_k^{E,*}$ therefore exists on
+the compact set $\mathcal U^N$, and no convexity of the ideal problem
+is required. The optimality of $U_k^{F,*}$ for $J_k^F$,
+with~\eqref{eq:cost_perturbation_sum} applied twice, yields
 \begin{equation*}
 \begin{aligned}
 J_k^E(U_k^{F,*})&\le J_k^F(U_k^{F,*})+\bar\Delta_N\\
@@ -1435,9 +1441,11 @@ J_k^E(U_k^{F,*})&\le J_k^F(U_k^{F,*})+\bar\Delta_N\\
 &\le J_k^E(U_k^{E,*})+2\bar\Delta_N.
 \end{aligned}
 \end{equation*}
-Together with ideal optimality this proves~\eqref{eq:ideal_suboptimality}.
+The lower bound in~\eqref{eq:ideal_suboptimality} is the optimality
+of $U_k^{E,*}$ for $J_k^E$.
 
-With fixed matrices, the frozen prediction is affine in $U$ and the
+It remains to bound the distance between the two minimizers. With
+fixed matrices, the frozen prediction is affine in $U$ and the
 input penalty contributes $2(I_N\otimes R_u)$ to the Hessian, where
 $I_N$ is the $N$-dimensional identity and $\otimes$ is the Kronecker
 product. Thus $J_k^F$ is
@@ -1455,9 +1463,12 @@ strong convexity, this inequality gives
 \end{aligned}
 \label{eq:strong_convexity_gap}
 \end{equation}
-This proves~\eqref{eq:optimal_input_perturbation}. Selecting the first
-input block cannot increase the Euclidean norm, giving
-\eqref{eq:first_input_perturbation}.
+Here the second inequality applies~\eqref{eq:cost_perturbation_sum} to
+both objective values, and the third uses the optimality of
+$U_k^{E,*}$ for $J_k^E$. This
+proves~\eqref{eq:optimal_input_perturbation}. Since selecting the
+first input block cannot increase the Euclidean norm,
+\eqref{eq:first_input_perturbation} follows.
 \end{proof}
 
 Lemma~\ref{lem:objective_policy_perturbation} connects the prediction
@@ -1597,40 +1608,49 @@ In particular,
 \end{theorem}
 
 \begin{proof}
-At time $k$, let $U_k^{F,*}$ be the frozen optimal sequence and let
-$\xi_{i|k}^{E}$ denote the true augmented trajectory driven by
-that sequence from $\xi_{0|k}^{E}=\xi_k$. In this proof, use the
-abbreviation $\widetilde\xi_i=\xi_{i|k}^{E}$. For brevity, write
-$\ell_i=\ell_{k+i}(\widetilde\xi_i,\vu_{i|k}^{F,*})$ and define its remaining
-cost at step $i$ by
+The proof follows the true trajectory driven by the frozen optimal
+sequence. It first shows that every suffix of this sequence is nearly
+optimal for its remaining horizon, then uses cost controllability to
+bound the last suffix, and finally constructs a comparison sequence at
+the successor state. At time $k$, let $U_k^{F,*}$ be the frozen optimal
+sequence and let $\widetilde\xi_i=\xi_{i|k}^{E}$ denote the true
+augmented trajectory driven by that sequence from
+$\widetilde\xi_0=\xi_k$. Write
+$\ell_i=\ell_{k+i}(\widetilde\xi_i,\vu_{i|k}^{F,*})$ for the stage
+costs along this trajectory, and define the remaining cost at step $i$
+by
 \begin{equation}
 S_i=\sum_{j=i}^{N-1}\ell_j+p_{k+N}(\widetilde\xi_N),
 \qquad i=0,\ldots,N.
 \label{eq:remaining_cost}
 \end{equation}
-Here $S_i$ is a scalar remaining cost, distinct from the history shift matrices. From~\eqref{eq:ideal_suboptimality}
-and~\eqref{eq:corrected_value_function}, with
-$\omega_N=2\bar\Delta_N$,
+The scalar $S_i$ is unrelated to the history shift matrices $S_X$ and
+$S_u$. By~\eqref{eq:corrected_value_function},
+$S_0=p_k(\xi_k)+J_k^E(U_k^{F,*})$, so
+\eqref{eq:ideal_suboptimality} gives, with $\omega_N=2\bar\Delta_N$,
 \begin{equation}
 W_k(\xi_k)\le S_0\le W_k(\xi_k)+\omega_N.
 \label{eq:initial_value_gap}
 \end{equation}
-Every suffix is also at most $\omega_N$-suboptimal for its remaining
-horizon. Indeed, retaining the first $i$ inputs and replacing the
-remaining sequence by an ideal optimizer gives a feasible sequence
-of length $N$ for the true problem. Hence
+The same margin holds for every suffix. Indeed, retaining the first
+$i$ inputs and replacing the remaining ones by an ideal optimizer
+from $\widetilde\xi_i$ gives a feasible sequence of length $N$ for the
+true problem. Hence
 \begin{equation*}
 W_k(\xi_k)\le S_0-S_i+W_{N-i,k+i}(\widetilde\xi_i),
 \end{equation*}
-which implies
+which, together with~\eqref{eq:initial_value_gap}, implies
 \begin{equation}
 S_i\le W_{N-i,k+i}(\widetilde\xi_i)+\omega_N,
 \qquad i=0,\ldots,N-1.
 \label{eq:suffix_suboptimality}
 \end{equation}
-By Assumption~\ref{asm:cost_controllability},
-$S_i\le B_{\rm cc}\ell_i+d_{\rm cc}+\omega_N$. Since
-$S_{i+1}=S_i-\ell_i$, this gives
+Assumption~\ref{asm:cost_controllability} applies at $\xi_k$ and at
+the intermediate states $\widetilde\xi_i$. Because
+$\min_{\vu\in\mathcal U}\ell_{k+i}(\widetilde\xi_i,\vu)\le\ell_i$,
+it bounds the value function in~\eqref{eq:suffix_suboptimality} and
+gives $S_i\le B_{\rm cc}\ell_i+d_{\rm cc}+\omega_N$. Since
+$S_{i+1}=S_i-\ell_i$, this yields the recursion
 \begin{equation*}
 S_{i+1}\le\vartheta S_i+(d_{\rm cc}+\omega_N)/B_{\rm cc}.
 \end{equation*}
@@ -1644,14 +1664,15 @@ S_{N-1}\le{}&\vartheta^{N-1}W_k(\xi_k)\\
 \label{eq:last_suffix_bound}
 \end{equation}
 
-Under the receding-horizon implementation, $\xi_{k+1}=\widetilde\xi_1$ is the
-actual successor. To upper-bound the ideal value at that successor,
-retain the inputs $\vu_{1|k}^{F,*},\ldots,\vu_{N-2|k}^{F,*}$ and
-complete the sequence with a two-step ideal optimizer from
-$\widetilde\xi_{N-1}$ at time $k+N-1$. For $N=2$, the retained prefix is empty.
-Because there are only input constraints, this is a feasible
-comparison sequence. It is used solely in the proof and does not
-replace the nominal shift in~\eqref{eq:nominal_shift}. Therefore,
+We now turn to the successor state. Under the receding-horizon
+implementation, $\xi_{k+1}=\widetilde\xi_1$ is the actual successor.
+To upper-bound the value function there, retain the inputs
+$\vu_{1|k}^{F,*},\ldots,\vu_{N-2|k}^{F,*}$ and complete the sequence
+with a two-step ideal optimizer from $\widetilde\xi_{N-1}$ at time
+$k+N-1$; for $N=2$, the retained prefix is empty. Because the problem
+has input constraints only, this comparison sequence is feasible. It
+serves the proof alone and does not replace the nominal shift
+in~\eqref{eq:nominal_shift}. Therefore,
 \begin{equation}
 \begin{aligned}
 W_{k+1}(\xi_{k+1})\le{}&S_0-\ell_0-S_{N-1}\\
@@ -1662,10 +1683,12 @@ W_{k+1}(\xi_{k+1})\le{}&S_0-\ell_0-S_{N-1}\\
 \end{equation}
 where the second inequality follows from
 $W_{2,k+N-1}(\widetilde\xi_{N-1})\le B_{\rm cc}\ell_{N-1}+d_{\rm cc}$ and
-$\ell_{N-1}\le S_{N-1}$. The same cost-controllability condition at the
-initial state gives $\ell_0\ge(W_k(\xi_k)-d_{\rm cc})/B_{\rm cc}$.
-Substituting this estimate and~\eqref{eq:initial_value_gap} and
-\eqref{eq:last_suffix_bound} into~\eqref{eq:ideal_shift_identity}
+$\ell_{N-1}\le S_{N-1}$. It remains to bound $\ell_0$ from below.
+Cost controllability at the initial state gives
+$W_k(\xi_k)\le B_{\rm cc}\ell_0+d_{\rm cc}$, that is,
+$\ell_0\ge(W_k(\xi_k)-d_{\rm cc})/B_{\rm cc}$. Substituting this
+estimate, together with~\eqref{eq:initial_value_gap} and
+\eqref{eq:last_suffix_bound}, into~\eqref{eq:ideal_shift_identity}
 results in
 \begin{equation*}
 \begin{aligned}
@@ -1676,18 +1699,22 @@ results in
 &\qquad+B_{\rm cc}\omega_N.
 \end{aligned}
 \end{equation*}
-This is~\eqref{eq:robust_lyapunov_decrease} with
-\eqref{eq:robust_certificate_constants}.
+This is~\eqref{eq:robust_lyapunov_decrease} with the constants
+in~\eqref{eq:robust_certificate_constants}, since
+$B_{\rm cc}\omega_N=2B_{\rm cc}\bar\Delta_N$.
 
-For $\xi_k\in\Omega_{R,k}$, Assumption~\ref{asm:closed_loop_domain}
+The decrease inequality was derived for $\xi_k\in\mathcal O$, so it
+must be shown to persist along the closed loop. For
+$\xi_k\in\Omega_{R,k}$, Assumption~\ref{asm:closed_loop_domain}
 ensures $\xi_{k+1}\in\mathcal O$. Since $0<\lambda_N<1$ and
 $d_N\le\lambda_NR$,~\eqref{eq:robust_lyapunov_decrease} gives
-$W_{k+1}(\xi_{k+1})\le R$. The nominal sequence also remains feasible
-by~\eqref{eq:nominal_shift}. Induction therefore establishes
-forward invariance and validates all uniform estimates at subsequent
-sampling instants. Iterating the scalar decrease inequality and using
-\eqref{eq:lyapunov_output_lower_bound} proves
-\eqref{eq:finite_time_tracking_bound} and
+$W_{k+1}(\xi_{k+1})\le(1-\lambda_N)R+\lambda_NR=R$, that is,
+$\xi_{k+1}\in\Omega_{R,k+1}$. The nominal sequence also remains
+feasible by~\eqref{eq:nominal_shift}. Induction on $k$ therefore
+establishes forward invariance and validates all uniform estimates at
+subsequent sampling instants. Iterating the scalar decrease inequality
+and using~\eqref{eq:lyapunov_output_lower_bound} proves
+\eqref{eq:finite_time_tracking_bound}, and letting $k\to\infty$ gives
 \eqref{eq:conditional_ultimate_bound}.
 \end{proof}
 
