@@ -676,8 +676,8 @@ and Lipschitz constants, as established in the following lemma.
 \begin{lemma}[Regularity of the scheduled matrices]
 \label{lem:scheduling_regularity}
 Let $\gamma_\chi$ be defined by~\eqref{eq:scheduling_function} for
-$\chi\in\{A,B\}$, and let the low-rank factors have orthonormal
-columns, as required by the model structure. Define
+$\chi\in\{A,B\}$, with the low-rank factors satisfying the
+orthonormality constraints of the model. Define
 \begin{equation}
 \begin{aligned}
 a&=\norm{\mA_0}_2+g_A,\\
@@ -686,14 +686,8 @@ L_\chi&=g_\chi\Big(\tfrac12\norm{\mW_\chi^\pi}_2+\norm{\mW_\chi}_2\Big).
 \end{aligned}
 \label{eq:regularity_constants}
 \end{equation}
-Then, for all $\vc,\vc'\in\R^{d_c}$,
-\begin{equation}
-\begin{aligned}
-&\norm{\mU_\chi\operatorname{diag}(\gamma_\chi(\vc))\mV_\chi^\top}_2\\
-&\qquad=\max_{1\le j\le r_\chi}|\gamma_{\chi,j}(\vc)|\le g_\chi,
-\end{aligned}
-\label{eq:exact_correction_norm}
-\end{equation}
+Then the norm identity~\eqref{eq:gain_bound} holds, and for all
+$\vc,\vc'\in\R^{d_c}$,
 \begin{equation}
 \norm{\mA(\vc)}_2\le a,\qquad\norm{\mB(\vc)}_2\le b_B,
 \label{eq:uniform_matrix_bound}
@@ -716,20 +710,20 @@ $\norm{\mU\mathbf y}_2=\norm{\mathbf y}_2$ for every
 $\mathbf y\in\R^{r_\chi}$, so that
 \begin{equation*}
 \begin{aligned}
-&\norm{\mU\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
-=\norm{\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2\\
-&\quad=\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2
-\le\max_j\gamma_j^2\norm{\mV\mV^\top\mathbf w}_2^2\\
-&\quad\le\max_j\gamma_j^2\norm{\mathbf w}_2^2 ,
+\norm{\mU\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
+&=\norm{\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2\\
+&=\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2\\
+&\le\max_j\gamma_j^2\,\norm{\mV^\top\mathbf w}_2^2\\
+&\le\max_j\gamma_j^2\,\norm{\mathbf w}_2^2 ,
 \end{aligned}
 \end{equation*}
-where the last step uses $\norm{\mV\mV^\top}_2\le1$, which follows
-from the orthonormality of the columns of $\mV$.
+where the last step uses $\norm{\mV^\top}_2=1$, which follows from the
+orthonormal columns of $\mV$.
 Equality is attained by $\mathbf w=\mV_j$ at an index maximizing
 $|\gamma_j|$. Since every softmax entry lies in $[0,1]$ and
 $|\tanh(\cdot)|\le1$, each coefficient obeys
 $|\gamma_j(\vc)|\le g_\chi$, which proves
-\eqref{eq:exact_correction_norm}. Applying the triangle inequality
+\eqref{eq:gain_bound}. Applying the triangle inequality
 to~\eqref{eq:scheduled_A}--\eqref{eq:scheduled_B}, with this identity
 used for both correction terms, then
 yields~\eqref{eq:uniform_matrix_bound}.
@@ -747,22 +741,14 @@ $\sum_jp_j=1$,
 =\max_j2p_j(1-p_j)\le\tfrac12.
 \label{eq:softmax_jacobian_bound}
 \end{equation}
-Writing $\gamma(\vc)=g_\chi\vp(\vc)\odot\mathbf t(\vc)$, where
-$\vp(\vc)$ is the softmax branch and $\mathbf t(\vc)$ the tanh branch
+This bound transfers to the scheduling coefficients as follows. Write
+$\gamma(\vc)=g_\chi\vp(\vc)\odot\mathbf t(\vc)$, where $\vp(\vc)$ is
+the softmax branch and $\mathbf t(\vc)$ the tanh branch
 of~\eqref{eq:scheduling_function}, and $\odot$ denotes elementwise
-multiplication, gives
-\begin{equation*}
-\begin{aligned}
-\norm{\gamma(\vc)-\gamma(\vc')}_2
-&\le g_\chi\big(\norm{\vp(\vc)-\vp(\vc')}_2\\
-&\quad+\norm{\mathbf t(\vc)-\mathbf t(\vc')}_2\big)\\
-&\le L_\chi\norm{\vc-\vc'}_2.
-\end{aligned}
-\end{equation*}
-The two branches are handled separately. Since both arguments are
-affine in the context, \eqref{eq:softmax_jacobian_bound} applied to
-$\mW_\chi^\pi\vc+\vb_\chi^\pi$, together with the unit Lipschitz
-constant of $\tanh$ applied to $\mW_\chi\vc+\vb_\chi$, gives
+multiplication. Since both branches are affine in the context before
+the nonlinearity, the mean value inequality
+with~\eqref{eq:softmax_jacobian_bound} and the unit Lipschitz constant
+of $\tanh$ give
 \begin{equation*}
 \begin{aligned}
 \norm{\vp(\vc)-\vp(\vc')}_2
@@ -771,11 +757,24 @@ constant of $\tanh$ applied to $\mW_\chi\vc+\vb_\chi$, gives
 &\le\norm{\mW_\chi}_2\norm{\vc-\vc'}_2.
 \end{aligned}
 \end{equation*}
-Together with $\norm{\vp}_\infty,\norm{\mathbf t}_\infty\le1$ in the
-elementwise product, these estimates yield the coefficient bound with
-the constant $L_\chi$ of~\eqref{eq:regularity_constants}. Applying
-\eqref{eq:exact_correction_norm} to the coefficient difference
-$\Delta\gamma=\gamma(\vc)-\gamma(\vc')$ then gives
+The product is then split as
+$\vp\odot\mathbf t-\vp'\odot\mathbf t'
+=(\vp-\vp')\odot\mathbf t+\vp'\odot(\mathbf t-\mathbf t')$, with
+primes denoting evaluation at $\vc'$. Because
+$\norm{\vp'}_\infty,\norm{\mathbf t}_\infty\le1$, the two estimates
+combine into
+\begin{equation*}
+\begin{aligned}
+\norm{\gamma(\vc)-\gamma(\vc')}_2
+&\le g_\chi\big(\norm{\vp(\vc)-\vp(\vc')}_2\\
+&\quad+\norm{\mathbf t(\vc)-\mathbf t(\vc')}_2\big)\\
+&\le L_\chi\norm{\vc-\vc'}_2,
+\end{aligned}
+\end{equation*}
+with $L_\chi$ as in~\eqref{eq:regularity_constants}. Finally, the norm
+identity derived above holds for an arbitrary coefficient vector.
+Applying it to the coefficient difference
+$\Delta\gamma=\gamma(\vc)-\gamma(\vc')$ gives
 \begin{equation*}
 \norm{\mU\operatorname{diag}(\Delta\gamma)\mV^\top}_2
 =\max_j|\Delta\gamma_j|
