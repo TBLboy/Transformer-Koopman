@@ -600,10 +600,8 @@ $\vc_{i|k}^E=C(\mX_{i|k}^E,v_i)$, respectively. Here the superscript
 $E$ denotes quantities encoded from the physical trajectory. Without
 assuming exact closure in the learned coordinates, we write
 \begin{equation}
-\begin{aligned}
-\vz_{i+1|k}^E={}&\mA(\vc_{i|k}^E)\vz_{i|k}^E\\
-&+\mB(\vc_{i|k}^E)\vu_i+\vr_{i|k},
-\end{aligned}
+\vz_{i+1|k}^E=\mA(\vc_{i|k}^E)\vz_{i|k}^E
++\mB(\vc_{i|k}^E)\vu_i+\vr_{i|k},
 \label{eq:encoded_residual_identity}
 \end{equation}
 where $\vu_i=\vu_{i|k}$ and $\vr_{i|k}$ is the one-step lifted
@@ -711,10 +709,10 @@ $\mathbf y\in\R^{r_\chi}$, so that
 \begin{equation*}
 \begin{aligned}
 \norm{\mU\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
-&=\norm{\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2\\
-&=\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2\\
-&\le\max_j\gamma_j^2\,\norm{\mV^\top\mathbf w}_2^2\\
-&\le\max_j\gamma_j^2\,\norm{\mathbf w}_2^2 ,
+&=\norm{\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
+=\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2\\
+&\le\max_j\gamma_j^2\,\norm{\mV^\top\mathbf w}_2^2
+\le\max_j\gamma_j^2\,\norm{\mathbf w}_2^2 ,
 \end{aligned}
 \end{equation*}
 where the last step uses $\norm{\mV^\top}_2=1$, which follows from the
@@ -766,8 +764,8 @@ combine into
 \begin{equation*}
 \begin{aligned}
 \norm{\gamma(\vc)-\gamma(\vc')}_2
-&\le g_\chi\big(\norm{\vp(\vc)-\vp(\vc')}_2\\
-&\quad+\norm{\mathbf t(\vc)-\mathbf t(\vc')}_2\big)\\
+&\le g_\chi\big(\norm{\vp(\vc)-\vp(\vc')}_2
++\norm{\mathbf t(\vc)-\mathbf t(\vc')}_2\big)\\
 &\le L_\chi\norm{\vc-\vc'}_2,
 \end{aligned}
 \end{equation*}
@@ -806,12 +804,9 @@ Under Assumptions~\ref{asm:domain}--\ref{asm:context_lipschitz}, for
 any feasible $U_k$, with $\vz_{0|k}^E=\vz_{0|k}^P$ and coincident input
 histories as specified above, and $i=0,\ldots,N$,
 \begin{equation}
-\begin{aligned}
 \norm{\vx_{i|k}^E-\vx_{i|k}^P}_2
-&\le\norm{\vz_{i|k}^E-\vz_{i|k}^P}_2\\
-&\le \mathcal E_i,\\
-\mathcal E_i&=\varepsilon\sum_{j=0}^{i-1}\rho^j,
-\end{aligned}
+\le\norm{\vz_{i|k}^E-\vz_{i|k}^P}_2
+\le\mathcal E_i:=\varepsilon\sum_{j=0}^{i-1}\rho^j,
 \label{eq:prediction_error_bound}
 \end{equation}
 where $\vx_{i|k}^E=C_x\vz_{i|k}^E$,
@@ -834,8 +829,8 @@ $\ve_i=\vz_{i|k}^E-\vz_{i|k}^P$. Subtracting the propagated
 dynamics from~\eqref{eq:encoded_residual_identity} gives
 \begin{equation}
 \begin{aligned}
-\ve_{i+1}={}&\mA(\vc_i^P)\ve_i\\
-&+\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E\\
+\ve_{i+1}={}&\mA(\vc_i^P)\ve_i
++\big[\mA(\vc_i^E)-\mA(\vc_i^P)\big]\vz_i^E\\
 &+\big[\mB(\vc_i^E)-\mB(\vc_i^P)\big]\vu_i+\vr_i.
 \end{aligned}
 \label{eq:error_recursion}
@@ -852,11 +847,9 @@ along both trajectories. Adopting the convention $\ve_j=0$ for $j<0$
 and using the coordinate selection matrix $C_x$, with
 $\norm{C_x}_2=1$, we obtain
 \begin{equation}
-\begin{aligned}
 \norm{\mX_i^E-\mX_i^P}_2^2
-&=\sum_{j=0}^{P_h-1}\norm{C_x\ve_{i-j}}_2^2\\
-&\le\sum_{j=0}^{P_h-1}\norm{\ve_{i-j}}_2^2.
-\end{aligned}
+=\sum_{j=0}^{P_h-1}\norm{C_x\ve_{i-j}}_2^2
+\le\sum_{j=0}^{P_h-1}\norm{\ve_{i-j}}_2^2.
 \label{eq:history_error_bound}
 \end{equation}
 We now bound the four terms of~\eqref{eq:error_recursion} in turn.
@@ -880,10 +873,8 @@ $b\norm{\mX_i^E-\mX_i^P}_2$, with $b$ defined
 in~\eqref{eq:rho_definition}. Together
 with~\eqref{eq:history_error_bound}, this yields
 \begin{equation}
-\begin{aligned}
-\norm{\ve_{i+1}}_2\le{}&a\norm{\ve_i}_2+\varepsilon\\
-&+b\Big(\sum_{j=0}^{P_h-1}\norm{\ve_{i-j}}_2^2\Big)^{1/2}.
-\end{aligned}
+\norm{\ve_{i+1}}_2\le a\norm{\ve_i}_2+\varepsilon
++b\Big(\sum_{j=0}^{P_h-1}\norm{\ve_{i-j}}_2^2\Big)^{1/2}.
 \label{eq:error_inequality}
 \end{equation}
 
@@ -1018,11 +1009,9 @@ U_k=\col(\vu_{0|k},\ldots,\vu_{N-1|k})\in\R^{Nm}.
 Using the fixed linear readout $C_x$, we formulate the
 finite-horizon tracking objective directly in the measurement space,
 \begin{equation}
-\begin{aligned}
-J_k(U_k)={}&\sum_{i=1}^{N}
-\norm{C_x\vz_{i|k}-\vx_{k+i}^r}_{Q_x}^2\\
-&+\sum_{i=0}^{N-1}\norm{\vu_{i|k}}_{R_u}^2,
-\end{aligned}
+J_k(U_k)=\sum_{i=1}^{N}
+\norm{C_x\vz_{i|k}-\vx_{k+i}^r}_{Q_x}^2
++\sum_{i=0}^{N-1}\norm{\vu_{i|k}}_{R_u}^2,
 \label{eq:quadratic_template}
 \end{equation}
 where $Q_x\in\R^{n\times n}$ and $R_u\in\R^{m\times m}$
@@ -1234,11 +1223,9 @@ remain in $\mathcal Q$ for $i=0,\ldots,N$, so
 \eqref{eq:augmented_lipschitz} applies at every step. Since
 $q_0^P=\bar q_0$, iterating this estimate gives
 \begin{equation}
-\begin{aligned}
 \norm{q_i^P-\bar q_i}_2
-&\le L_u\sum_{j=0}^{i-1}L_q^{i-1-j}\norm{\vu_j-\bar\vu_j}_2\\
-&\le K_i\delta_k,
-\end{aligned}
+\le L_u\sum_{j=0}^{i-1}L_q^{i-1-j}\norm{\vu_j-\bar\vu_j}_2
+\le K_i\delta_k,
 \label{eq:augmented_deviation}
 \end{equation}
 where the final inequality follows from Cauchy--Schwarz. We now turn
@@ -1247,8 +1234,8 @@ recursion~\eqref{eq:frozen_model} from the recursive one and
 collecting terms yields
 \begin{equation}
 \begin{aligned}
-\ve_{i+1}^F={}&\bar\mA_i\ve_i^F\\
-&+\big[\mA(\vc_i^P)-\bar\mA_i\big]\vz_i^P\\
+\ve_{i+1}^F={}&\bar\mA_i\ve_i^F
++\big[\mA(\vc_i^P)-\bar\mA_i\big]\vz_i^P\\
 &+\big[\mB(\vc_i^P)-\bar\mB_i\big]\vu_i.
 \end{aligned}
 \label{eq:freezing_recursion}
@@ -1316,14 +1303,12 @@ from the learned
 predictor, introduce the true augmented state
 $\xi_k=\col(\vs_k,\mX_k,v_k)$ and its transition map
 \begin{equation}
-\begin{aligned}
-\xi_{k+1}&=\mathcal T(\xi_k,\vu_k)\\
-&=\begin{bmatrix}
+\xi_{k+1}=\mathcal T(\xi_k,\vu_k)
+=\begin{bmatrix}
 f(\vs_k,\vu_k)\\
 S_X\mX_k+E_Xh(f(\vs_k,\vu_k))\\
 S_uv_k+E_u\vu_k
 \end{bmatrix}.
-\end{aligned}
 \label{eq:true_augmented_transition}
 \end{equation}
 Unlike $\mathcal F$ in~\eqref{eq:augmented_update_map},
@@ -1383,11 +1368,8 @@ $J_k^E$ and $U_k^{F,*}$ the unique minimizer of $J_k^F$ on the
 nonempty, compact, and convex set $\mathcal U^N$.
 Define
 \begin{equation}
-\begin{aligned}
-\bar\Delta_N={}&\lambda_{\max}(Q_x)\sum_{i=1}^N
-\Big[2(M_F+M_r)\eta_i^{\max}\\
-&\qquad\qquad\qquad\quad +(\eta_i^{\max})^2\Big].
-\end{aligned}
+\bar\Delta_N=\lambda_{\max}(Q_x)\sum_{i=1}^N
+\Big[2(M_F+M_r)\eta_i^{\max}+(\eta_i^{\max})^2\Big].
 \label{eq:uniform_cost_perturbation}
 \end{equation}
 For every feasible $U$,
@@ -1443,8 +1425,8 @@ is required. The optimality of $U_k^{F,*}$ for $J_k^F$,
 with~\eqref{eq:cost_perturbation_sum} applied twice, yields
 \begin{equation*}
 \begin{aligned}
-J_k^E(U_k^{F,*})&\le J_k^F(U_k^{F,*})+\bar\Delta_N\\
-&\le J_k^F(U_k^{E,*})+\bar\Delta_N\\
+J_k^E(U_k^{F,*})&\le J_k^F(U_k^{F,*})+\bar\Delta_N
+\le J_k^F(U_k^{E,*})+\bar\Delta_N\\
 &\le J_k^E(U_k^{E,*})+2\bar\Delta_N.
 \end{aligned}
 \end{equation*}
@@ -1463,10 +1445,10 @@ $U\in\mathcal U^N$, rather than a vanishing gradient. Combined with
 strong convexity, this inequality gives
 \begin{equation}
 \begin{aligned}
-&\frac{\mu}{2}\norm{U_k^{E,*}-U_k^{F,*}}_2^2\\
-&\quad\le J_k^F(U_k^{E,*})-J_k^F(U_k^{F,*})\\
-&\quad\le J_k^E(U_k^{E,*})-J_k^E(U_k^{F,*})+2\bar\Delta_N\\
-&\quad\le2\bar\Delta_N.
+&\frac{\mu}{2}\norm{U_k^{E,*}-U_k^{F,*}}_2^2
+\le J_k^F(U_k^{E,*})-J_k^F(U_k^{F,*})\\
+&\quad\le J_k^E(U_k^{E,*})-J_k^E(U_k^{F,*})+2\bar\Delta_N
+\le2\bar\Delta_N.
 \end{aligned}
 \label{eq:strong_convexity_gap}
 \end{equation}
@@ -1490,11 +1472,8 @@ output cost for $\xi=\col(\vs,\mX,v)$, and define the stage cost
 $\ell_t(\xi,\vu)=p_t(\xi)+\norm{\vu}_{R_u}^2$. For a time $t$ and
 a horizon $j\ge1$, define the true-system value function
 \begin{equation}
-\begin{aligned}
-W_{j,t}(\xi)=\min_{U\in\mathcal U^j}\bigg[&\sum_{i=0}^{j-1}
-\ell_{t+i}(\xi_{i|t},\vu_{i|t})\\
-&+p_{t+j}(\xi_{j|t})\bigg],
-\end{aligned}
+W_{j,t}(\xi)=\min_{U\in\mathcal U^j}\bigg[\sum_{i=0}^{j-1}
+\ell_{t+i}(\xi_{i|t},\vu_{i|t})+p_{t+j}(\xi_{j|t})\bigg],
 \label{eq:ideal_value_function}
 \end{equation}
 where $\xi_{0|t}=\xi$ and
@@ -1584,8 +1563,8 @@ Lemma~\ref{lem:objective_policy_perturbation} hold. Define
 \begin{aligned}
 \vartheta&=1-1/B_{\rm cc},\\
 \lambda_N&=1/B_{\rm cc}-(B_{\rm cc}-1)\vartheta^{N-1},\\
-d_N&=\big[1+1/B_{\rm cc}\\
-&\qquad +(B_{\rm cc}-1)(1-\vartheta^{N-1})\big]d_{\rm cc}\\
+d_N&=\big[1+1/B_{\rm cc}
++(B_{\rm cc}-1)(1-\vartheta^{N-1})\big]d_{\rm cc}\\
 &\quad+2B_{\rm cc}\bar\Delta_N.
 \end{aligned}
 \label{eq:robust_certificate_constants}
@@ -1664,10 +1643,8 @@ S_{i+1}\le\vartheta S_i+(d_{\rm cc}+\omega_N)/B_{\rm cc}.
 Iterating from $i=0$ to $N-2$ and using~\eqref{eq:initial_value_gap}
 yields
 \begin{equation}
-\begin{aligned}
-S_{N-1}\le{}&\vartheta^{N-1}W_k(\xi_k)\\
-&+(1-\vartheta^{N-1})d_{\rm cc}+\omega_N.
-\end{aligned}
+S_{N-1}\le\vartheta^{N-1}W_k(\xi_k)
++(1-\vartheta^{N-1})d_{\rm cc}+\omega_N.
 \label{eq:last_suffix_bound}
 \end{equation}
 
@@ -1682,9 +1659,9 @@ serves the proof alone and does not replace the nominal shift
 in~\eqref{eq:nominal_shift}. Therefore,
 \begin{equation}
 \begin{aligned}
-W_{k+1}(\xi_{k+1})\le{}&S_0-\ell_0-S_{N-1}\\
-&+W_{2,k+N-1}(\widetilde\xi_{N-1})\\
-\le{}&S_0-\ell_0+(B_{\rm cc}-1)S_{N-1}+d_{\rm cc},
+W_{k+1}(\xi_{k+1})
+&\le S_0-\ell_0-S_{N-1}+W_{2,k+N-1}(\widetilde\xi_{N-1})\\
+&\le S_0-\ell_0+(B_{\rm cc}-1)S_{N-1}+d_{\rm cc},
 \end{aligned}
 \label{eq:ideal_shift_identity}
 \end{equation}
@@ -1699,11 +1676,10 @@ estimate, together with~\eqref{eq:initial_value_gap} and
 results in
 \begin{equation*}
 \begin{aligned}
-& W_{k+1}(\xi_{k+1})\\
-&\quad\le \big[1-1/B_{\rm cc}+(B_{\rm cc}-1)\vartheta^{N-1}\big]W_k(\xi_k)\\
-&\qquad+\big[1+1/B_{\rm cc}\\
-&\qquad\qquad +(B_{\rm cc}-1)(1-\vartheta^{N-1})\big]d_{\rm cc}\\
-&\qquad+B_{\rm cc}\omega_N.
+&W_{k+1}(\xi_{k+1})
+\le\big[1-1/B_{\rm cc}+(B_{\rm cc}-1)\vartheta^{N-1}\big]W_k(\xi_k)\\
+&\quad+\big[1+1/B_{\rm cc}
++(B_{\rm cc}-1)(1-\vartheta^{N-1})\big]d_{\rm cc}+B_{\rm cc}\omega_N.
 \end{aligned}
 \end{equation*}
 This is~\eqref{eq:robust_lyapunov_decrease} with the constants
