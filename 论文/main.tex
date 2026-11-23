@@ -676,8 +676,8 @@ and Lipschitz constants, as established in the following lemma.
 \begin{lemma}[Regularity of the scheduled matrices]
 \label{lem:scheduling_regularity}
 Let $\gamma_\chi$ be defined by~\eqref{eq:scheduling_function} for
-$\chi\in\{A,B\}$, and let the correction factors have orthonormal
-columns. Define
+$\chi\in\{A,B\}$, and let the low-rank factors have orthonormal
+columns, as required by the model structure. Define
 \begin{equation}
 \begin{aligned}
 a&=\norm{\mA_0}_2+g_A,\\
@@ -709,23 +709,33 @@ Then, for all $\vc,\vc'\in\R^{d_c}$,
 
 \begin{proof}
 For a fixed branch, suppress the subscript $\chi$ and let $\mV_j$ be
-the $j$th column of $\mV$. Orthonormality gives, for any compatible
-vector $\mathbf w$,
+the $j$th column of $\mV$. For any compatible vector $\mathbf w$, the
+orthonormal columns of $\mU$ imply $\norm{\mU\mathbf y}_2=\norm{\mathbf y}_2$
+for every $\mathbf y\in\R^{r_\chi}$, so that
 \begin{equation*}
 \begin{aligned}
-&\norm{\mU\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2\\
-&\quad=\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2\\
-&\quad\le\max_j\gamma_j^2\norm{\mathbf w}_2^2.
+&\norm{\mU\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2
+=\norm{\operatorname{diag}(\gamma)\mV^\top\mathbf w}_2^2\\
+&\quad=\sum_{j=1}^{r_\chi}\gamma_j^2(\mV_j^\top\mathbf w)^2
+\le\max_j\gamma_j^2\norm{\mV\mV^\top\mathbf w}_2^2\\
+&\quad\le\max_j\gamma_j^2\norm{\mathbf w}_2^2 ,
 \end{aligned}
 \end{equation*}
+where the last step uses $\norm{\mV\mV^\top}_2\le1$, which follows
+from the orthonormality of the columns of $\mV$.
 Equality is attained by choosing $\mathbf w=\mV_j$ for an index
 maximizing $|\gamma_j|$. Since each softmax entry belongs to $[0,1]$
 and $|\tanh(\cdot)|\le1$,~\eqref{eq:exact_correction_norm} follows.
-The triangle inequality then gives~\eqref{eq:uniform_matrix_bound}.
+The triangle inequality applied
+to~\eqref{eq:scheduled_A}--\eqref{eq:scheduled_B} then
+gives~\eqref{eq:uniform_matrix_bound}.
 
-For $\vp=\operatorname{softmax}(\boldsymbol\zeta)$, where
+For $\vp=\operatorname{softmax}(\boldsymbol\zeta)$ with
 $\boldsymbol\zeta\in\R^{r_\chi}$, the Jacobian is
-$\mathbf J=\operatorname{diag}(\vp)-\vp\vp^\top$. By symmetry and
+$\mathbf J=\operatorname{diag}(\vp)-\vp\vp^\top$, which is symmetric
+and positive semidefinite. Its spectral norm therefore equals the
+spectral radius, which is bounded by every induced matrix norm. Using
+the induced $\infty$-norm, that is, the maximum absolute row sum, and
 $\sum_jp_j=1$,
 \begin{equation}
 \norm{\mathbf J}_2\le\norm{\mathbf J}_\infty
@@ -744,10 +754,31 @@ multiplication, gives
 &\le L_\chi\norm{\vc-\vc'}_2.
 \end{aligned}
 \end{equation*}
-Here we used $\norm{\vp}_\infty,\norm{\mathbf t}_\infty\le1$,
-\eqref{eq:softmax_jacobian_bound}, and the unit Lipschitz constant
-of tanh. Applying the first norm identity to the difference of the
-correction coefficients proves~\eqref{eq:scheduled_lipschitz}.
+The two deviations are estimated separately. The arguments of the two
+branches are affine in the context, so
+\eqref{eq:softmax_jacobian_bound} applied to
+$\mW_\chi^\pi\vc+\vb_\chi^\pi$ and the unit Lipschitz constant of
+$\tanh$ applied to $\mW_\chi\vc+\vb_\chi$ give
+\begin{equation*}
+\begin{aligned}
+\norm{\vp(\vc)-\vp(\vc')}_2
+&\le\tfrac12\norm{\mW_\chi^\pi}_2\norm{\vc-\vc'}_2,\\
+\norm{\mathbf t(\vc)-\mathbf t(\vc')}_2
+&\le\norm{\mW_\chi}_2\norm{\vc-\vc'}_2.
+\end{aligned}
+\end{equation*}
+Together with $\norm{\vp}_\infty,\norm{\mathbf t}_\infty\le1$ in the
+elementwise product, these estimates yield the coefficient bound with
+the constant $L_\chi$ of~\eqref{eq:regularity_constants}. Applying
+\eqref{eq:exact_correction_norm} to the coefficient difference
+$\Delta\gamma=\gamma(\vc)-\gamma(\vc')$ then gives
+\begin{equation*}
+\norm{\mU\operatorname{diag}(\Delta\gamma)\mV^\top}_2
+=\max_j|\Delta\gamma_j|
+\le\norm{\Delta\gamma}_2
+\le L_\chi\norm{\vc-\vc'}_2 ,
+\end{equation*}
+which is~\eqref{eq:scheduled_lipschitz}.
 \end{proof}
 
 Lemma~\ref{lem:scheduling_regularity} characterizes how the correction
