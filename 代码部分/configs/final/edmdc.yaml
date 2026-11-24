@@ -1,0 +1,29 @@
+data:
+  dir: 数据/软体平台数据/处理后的数据
+shared:
+  d: 10
+  P_h: 8
+  H_R: 8
+eval:
+  horizons:
+  - 8
+  - 25
+  - 50
+  - 100
+  - full
+  select_horizon: 8
+  diverge_threshold_cm: 100.0
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+device: cpu
+variant: edmdc
+lifting:
+  kind: rbf
+closed_form:
+  ridge: 1.0e-06
+dynamics:
+  kind: fixed

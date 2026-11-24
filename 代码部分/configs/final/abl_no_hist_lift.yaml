@@ -1,0 +1,68 @@
+data:
+  dir: 数据/软体平台数据/处理后的数据
+shared:
+  d: 10
+  P_h: 8
+  H_R: 8
+eval:
+  horizons:
+  - 8
+  - 25
+  - 50
+  - 100
+  - full
+  select_horizon: 8
+  diverge_threshold_cm: 100.0
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+device: cpu
+variant: abl_no_hist_lift
+lifting:
+  kind: mlp
+  hidden: 64
+  layers: 2
+stage1:
+  batch_size: 128
+  weight_decay: 0.0001
+  grad_clip: 5.0
+  warmup_frac: 0.05
+  lr_min_ratio: 0.01
+  val_every: 1
+  snapshot_every: 20
+  lr: 0.001
+  epochs: 100
+  alpha: 0.1
+stage2:
+  batch_size: 128
+  weight_decay: 0.0001
+  grad_clip: 5.0
+  warmup_frac: 0.05
+  lr_min_ratio: 0.01
+  val_every: 1
+  snapshot_every: 20
+  trainable: scheduling
+  lr: 0.001
+  epochs: 100
+  alpha: 0.1
+dynamics:
+  kind: scheduled
+  r_A: 3
+  r_B: 2
+  g_A: 0.1
+  g_B: 0.1
+  d_u: 16
+  d_c: 16
+  hidden: 64
+  use_input_ctx: true
+  ctx_update: every_step
+  encoder:
+    patch: 2
+    d_model: 16
+    n_heads: 2
+    n_layers: 1
+    d_ff: 64
+    dropout: 0.0

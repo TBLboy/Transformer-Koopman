@@ -1,0 +1,16 @@
+# MLP 提升，只读当前测量。使用它的变体：deep_koopman、abl_no_hist_lift。
+lifting:
+  kind: mlp
+  hidden: 64
+  layers: 2
+
+stage1:
+  lr: 1.0e-3
+  epochs: 100
+  alpha: 0.1
+
+search:
+  lifting.hidden: [32, 64, 128]
+  lifting.layers: [2, 3]
+  stage1.lr: [5.0e-4, 1.0e-3, 3.0e-3]
+  stage1.alpha: [0.01, 0.1, 1.0]

@@ -1,0 +1,29 @@
+# 本文完整模型：Transformer 历史提升加调度矩阵（论文定义 1）。
+# 阶段二冻结提升映射与 A_0、B_0，只训练调度参数。
+lifting: transformer
+
+dynamics:
+  kind: scheduled
+  r_A: 3            # A 的低秩修正的秩，1 <= r_A <= d
+  r_B: 2            # B 的低秩修正的秩，1 <= r_B <= min(d, m)
+  g_A: 0.1          # 增益，修正的 2-范数上界（论文式 eq:gain_bound）；固定超参数，不训练
+  g_B: 0.1
+  d_u: 16           # 过去输入特征 e^u 的维数
+  d_c: 16           # 调度上下文 c 的维数
+  hidden: 64        # M_eta 与 H_phi 的隐层宽度
+  use_input_ctx: true       # 上下文是否包含过去输入
+  ctx_update: every_step    # every_step：沿预测历史逐步重算；once：只在段起点算一次
+
+stage2:
+  trainable: scheduling
+  lr: 1.0e-3
+  epochs: 100
+  alpha: 0.1
+
+search:
+  dynamics.r_A: [1, 2, 3, 5]
+  dynamics.r_B: [1, 2]
+  dynamics.g_A: [0.02, 0.1, 0.3]
+  dynamics.g_B: [0.02, 0.1, 0.3]
+  stage2.lr: [5.0e-4, 1.0e-3, 3.0e-3]
+  stage2.alpha: [0.01, 0.1, 1.0]

@@ -1,0 +1,8 @@
+# 消融：去掉历史提升。提升只读当前测量（MLP），调度上下文仍由历史生成。
+# 与 deep_koopman 共用同一种子的阶段一参数；调度部分的设置继承 full。
+inherit: full
+
+lifting: mlp
+
+dynamics:
+  encoder: transformer    # 调度自带的历史编码器，结构取自 configs/lifting/transformer.yaml，在阶段二训练

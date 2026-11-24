@@ -1,0 +1,16 @@
+# 消融：去掉调度。Transformer 历史提升加固定 A_0、B_0。
+# 与 full 共用同一种子的阶段一参数；阶段二用多步损失微调全部参数。
+lifting: transformer
+
+dynamics:
+  kind: fixed
+
+stage2:
+  trainable: all
+  lr: 3.0e-4
+  epochs: 50
+  alpha: 0.1
+
+search:
+  stage2.lr: [1.0e-4, 3.0e-4, 1.0e-3]
+  stage2.alpha: [0.01, 0.1, 1.0]

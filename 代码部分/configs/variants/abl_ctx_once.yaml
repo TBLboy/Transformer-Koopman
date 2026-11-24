@@ -1,0 +1,6 @@
+# 消融：上下文不随滚动更新，只在段起点计算一次（训练与评测一致）。
+# 其余设置继承 full，复用 full 的阶段一参数。
+inherit: full
+
+dynamics:
+  ctx_update: once

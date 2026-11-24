@@ -1,0 +1,16 @@
+# LSTM 提升，按时间顺序读入测量窗口，不读过去输入。使用它的变体：lstm_koopman。
+lifting:
+  kind: lstm
+  hidden: 32
+  layers: 1
+
+stage1:
+  lr: 1.0e-3
+  epochs: 100
+  alpha: 0.1
+
+search:
+  lifting.hidden: [16, 32, 64]
+  lifting.layers: [1, 2]
+  stage1.lr: [5.0e-4, 1.0e-3, 3.0e-3]
+  stage1.alpha: [0.01, 0.1, 1.0]

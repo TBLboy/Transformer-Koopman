@@ -1,0 +1,15 @@
+# 延迟坐标 EDMDc：z = col(x_k, 测量历史的主成分投影)，不学习；A、B 由最小二乘闭式解得到。
+# 历史只含测量，不含过去输入。
+lifting:
+  kind: delay_pca
+  n_rbf: 0          # 分给薄板样条径向基的最少维数；历史维数不够填满 d 时自动补足
+
+dynamics:
+  kind: fixed
+
+closed_form:
+  ridge: 1.0e-6
+
+search:
+  lifting.n_rbf: [0, 2, 4]
+  closed_form.ridge: [0.0, 1.0e-8, 1.0e-6, 1.0e-4, 1.0e-2]

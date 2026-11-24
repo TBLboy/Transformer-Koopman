@@ -1,0 +1,12 @@
+# EDMDc：z = col(x_k, 薄板样条径向基 × (d-3), 1)，只读当前测量；A、B 由最小二乘闭式解得到。
+lifting:
+  kind: rbf
+
+dynamics:
+  kind: fixed
+
+closed_form:
+  ridge: 1.0e-6     # 岭正则系数；0 表示最小范数最小二乘解（论文式 eq:edmd_control_solution）
+
+search:
+  closed_form.ridge: [0.0, 1.0e-8, 1.0e-6, 1.0e-4, 1.0e-2]

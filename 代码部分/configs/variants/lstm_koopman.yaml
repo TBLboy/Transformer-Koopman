@@ -1,0 +1,15 @@
+# LSTM-Koopman：LSTM 历史提升（只读测量历史）加固定 A_0、B_0。训练方式同 Deep Koopman。
+lifting: lstm
+
+dynamics:
+  kind: fixed
+
+stage2:
+  trainable: all
+  lr: 3.0e-4
+  epochs: 50
+  alpha: 0.1
+
+search:
+  stage2.lr: [1.0e-4, 3.0e-4, 1.0e-3]
+  stage2.alpha: [0.01, 0.1, 1.0]

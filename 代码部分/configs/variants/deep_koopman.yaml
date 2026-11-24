@@ -1,0 +1,16 @@
+# Deep Koopman：MLP 提升（只读当前测量）加固定 A_0、B_0。
+# 阶段一用一步损失；阶段二用视野 H_R 的多步损失微调全部参数。
+lifting: mlp
+
+dynamics:
+  kind: fixed
+
+stage2:
+  trainable: all
+  lr: 3.0e-4
+  epochs: 50
+  alpha: 0.1        # 多步损失里提升状态一致性项的权重 α_R
+
+search:
+  stage2.lr: [1.0e-4, 3.0e-4, 1.0e-3]
+  stage2.alpha: [0.01, 0.1, 1.0]

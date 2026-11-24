@@ -1,0 +1,21 @@
+# Transformer 历史提升（论文式 eq:patch_embedding 至 eq:lifting_head）与它的阶段一训练。
+# 使用它的变体：full、abl_no_sched、abl_no_input_ctx、abl_ctx_once。
+lifting:
+  kind: transformer
+  patch: 2        # patch 长度 p，须整除 P_h
+  d_model: 16
+  n_heads: 2
+  n_layers: 1     # L_T
+  d_ff: 64
+  dropout: 0.0
+
+stage1:
+  lr: 1.0e-3
+  epochs: 100
+  alpha: 0.1      # 一步损失里提升状态一致性项的权重 α_0
+
+search:
+  lifting.d_model: [16, 32]
+  lifting.n_layers: [1, 2]
+  stage1.lr: [5.0e-4, 1.0e-3, 3.0e-3]
+  stage1.alpha: [0.01, 0.1, 1.0]

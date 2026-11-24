@@ -1,0 +1,28 @@
+# 全体共用配置。提升配置和变体配置里不允许出现 data / shared / eval / seeds 这四个键。
+# 标注"待选型"的数值是初始值，参考旧工程，需在验证集上选定后再冻结。
+
+data:
+  dir: 数据/软体平台数据/处理后的数据   # 相对于 代码部分/
+
+shared:
+  d: 10      # 提升维数，所有模型共用（待选型）
+  P_h: 8     # 历史长度，所有历史模型共用，也是评测的统一预热长度（待选型）
+  H_R: 8     # 多步训练视野 = MPC 预测视野 N
+
+eval:
+  horizons: [8, 25, 50, 100, full]   # full = 一段覆盖 T - P_h 步
+  select_horizon: 8                  # 交接阶段一参数、默认评测所用的选模视野；主结论视野未定，可改
+  diverge_threshold_cm: 100.0        # 段 RMSE 非有限或超过该值记为发散段；只计数，不剔除
+
+seeds: [0, 1, 2, 3, 4]
+device: cpu
+
+# 各训练阶段的默认值，stage1 / stage2 配置可逐项覆盖。
+train:
+  batch_size: 128
+  weight_decay: 1.0e-4
+  grad_clip: 5.0
+  warmup_frac: 0.05     # 线性预热占总步数的比例
+  lr_min_ratio: 0.01    # 余弦衰减的终点学习率 / 峰值学习率
+  val_every: 1          # 每隔多少轮在验证集上评测全部视野
+  snapshot_every: 20    # 每隔多少轮额外存一份快照；0 表示不存

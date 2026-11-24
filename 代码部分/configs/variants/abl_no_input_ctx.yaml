@@ -1,0 +1,5 @@
+# 消融：上下文不含过去输入。其余设置继承 full，复用 full 的阶段一参数。
+inherit: full
+
+dynamics:
+  use_input_ctx: false
